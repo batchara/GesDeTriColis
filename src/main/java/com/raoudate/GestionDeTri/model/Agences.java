@@ -1,4 +1,38 @@
 package com.raoudate.GestionDeTri.model;
 
-public class Agences {
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@EqualsAndHashCode(callSuper = true)
+
+
+@Table(name = "agences")
+
+public class Agences extends AbstractEntity {
+    @Column(name = "nom")
+    private String nom;
+
+    @Column(name = "prenom")
+    private String prenom;
+
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "num_tel")
+    private String numTel;
+
+    // 1–1 : Agence possède la FK (JOIN COLUMN unique)
+
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "adresse_id", unique = true, nullable = false)
+    private Adresse adresse;  // typeAdresse = AGENCE recommandé
+
+
 }
