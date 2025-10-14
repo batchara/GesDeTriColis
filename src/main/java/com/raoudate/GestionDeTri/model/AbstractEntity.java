@@ -8,7 +8,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Data
 @MappedSuperclass
@@ -20,11 +19,11 @@ public class AbstractEntity implements Serializable {
     private Integer id;
 
     @CreatedDate
-    @Column(name = "date_creation", nullable = false, updatable = false)
+    @Column(name = "created_date", nullable = false, updatable = false)
     private Instant dateCreation;
 
     @LastModifiedDate
-    @Column(name = "date_modification")
+    @Column(name = "last_modified_date")
     private Instant dateModification;
 
 }

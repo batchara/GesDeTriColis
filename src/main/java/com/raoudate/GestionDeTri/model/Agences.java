@@ -28,11 +28,10 @@ public class Agences extends AbstractEntity {
     @Column(name = "num_tel")
     private String numTel;
 
-    // 1–1 : Agence possède la FK (JOIN COLUMN unique)
 
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "adresse_id", unique = true, nullable = false)
-    private Adresse adresse;  // typeAdresse = AGENCE recommandé
+    private Adresse adresse;
 
 
 }

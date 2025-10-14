@@ -1,0 +1,167 @@
+package com.raoudate.GestionDeTri.auth;
+
+import com.raoudate.GestionDeTri.email.EmailTemplateName;
+import com.raoudate.GestionDeTri.email.EmailsService;
+import com.raoudate.GestionDeTri.handler.InvalidTokenException;
+import com.raoudate.GestionDeTri.handler.TokenExpiredException;
+import com.raoudate.GestionDeTri.repository.RoleRepository;
+import com.raoudate.GestionDeTri.repository.TokenRepository;
+import com.raoudate.GestionDeTri.repository.UserRepository;
+import com.raoudate.GestionDeTri.security.JwtService;
+import com.raoudate.GestionDeTri.model.Token;
+import com.raoudate.GestionDeTri.model.User;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+@Service
+@RequiredArgsConstructor
+
+public class AuthenticationService {
+
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private  final TokenRepository tokenRepository;
+    private final EmailsService emailsService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+
+    @Value("${application.mailing.frontend.activation-url}")
+    private String activationUrl;
+
+    public void register( RegistrationRequest request) throws MessagingException {
+        var userRole = roleRepository.findByName("ROLE_USER")
+        //todo - better exception handling
+        .orElseThrow(() -> new IllegalStateException("ROLE_USER was not initialized "));
+
+        var user = User.builder()
+                .prenom(request.getFirstname())
+                .nom(request.getLastname())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .accountLocked(false)
+                .enabled(false)
+                .roles(List.of(userRole))
+                .build();
+
+        userRepository.saveAndFlush(user);
+
+        sendValidationEmail(user, null);
+
+
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    void sendValidationEmail(User user , Token oldToken) throws MessagingException {
+
+        if (oldToken != null) {
+        tokenRepository.delete(oldToken);
+    }
+        var newToken = generateAndeSaveActivationToken(user) ;
+
+        emailsService.sendEmail(
+                user.getEmail(),
+                user.nomComplet(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                activationUrl,
+                newToken,
+                "Account activation"
+
+        );
+
+
+    }
+
+    private String generateAndeSaveActivationToken(User user) {
+        //generation de Token
+        String generateToken = generateActivationToken(6);
+        var token = Token.builder()
+                .token(generateToken)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .user(user)
+                .build();
+        tokenRepository.save(token);
+
+        return generateToken;
+    }
+
+    private String generateActivationToken(int length) {
+        String Characters = "0123456789";
+
+        StringBuilder codeBuilder = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+
+        for (int i = 0; i < length; i++) {
+            int randomIndex = random.nextInt(Characters.length()); //de 0 à 9
+            codeBuilder.append(Characters.charAt(randomIndex));
+        }
+        return codeBuilder.toString();
+    }
+
+    public AuthenticationResponse authenticate( AuthenticationRequest request) {
+
+        var auth= authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+        var claims = new HashMap<String, Object>();
+        var user = ((User) auth.getPrincipal());
+        claims.put("fulName", user.getEmail());
+        var jwtToken = jwtService.generateToken(claims, user);
+        return AuthenticationResponse.builder()
+                .token(jwtToken).build();
+    }
+
+    @Transactional(noRollbackFor = TokenExpiredException.class)
+    public void activateAcount(String email, String token) throws MessagingException {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Token saveToken = tokenRepository.findByToken(token)
+                .filter(t -> t.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new InvalidTokenException("Invalid Token"));
+
+        if (LocalDateTime.now().isAfter(saveToken.getExpiresAt())) {
+                sendValidationEmail(user, saveToken);
+                throw new TokenExpiredException("Token expired. A new token has been sent to the same email");
+        }
+
+        user.setEnabled(true);
+        userRepository.save(user);
+        saveToken.setValidateAt(LocalDateTime.now());
+        tokenRepository.save(saveToken);
+        tokenRepository.delete(saveToken);
+
+        sendActivationConfirmationEmail(user);
+
+    }
+
+    private void sendActivationConfirmationEmail(User user) throws MessagingException {
+        String loginUrl = "http://localhost:8080/login";
+
+
+            emailsService.sendEmail(
+                    user.getEmail(),
+                    user.nomComplet(),
+                    EmailTemplateName.CONFIRM_ACCOUNT,
+                    loginUrl,
+                    null,
+                    "Your account has been activated!"
+            );
+
+    }
+}

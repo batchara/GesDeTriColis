@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Activated</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f6fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #27ae60;
+        }
+        p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Account Activated Successfully 🎉</h1>
+    <p th:text="'Hello ' + ${username} + ','"></p>
+    <p>Your account has been successfully activated. You can now log in and enjoy our services!</p>
+    <p><a th:href="${loginUrl}" style="color:#007bff; text-decoration:none;">Go to Log in</a></p>
+</div>
+</body>
+</html>

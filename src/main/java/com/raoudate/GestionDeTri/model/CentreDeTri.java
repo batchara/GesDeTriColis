@@ -20,13 +20,13 @@ import java.math.BigDecimal;
 
 
 public class CentreDeTri extends AbstractEntity {
-    @Column(nullable = false, length = 120)
+    @Column(name = "nom")
     private String nom;
 
-    @Column(length = 60)
+    @Column(name = "telephone", length = 15)
     private String telephone;
 
-    @Column(length = 180)
+    @Column(name ="adresseCentre ")
     private String adresseCentre;
 
     private BigDecimal latitude;

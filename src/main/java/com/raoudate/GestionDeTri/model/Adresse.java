@@ -4,7 +4,6 @@ import com.raoudate.GestionDeTri.Enum.TypeAdresse;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
@@ -21,8 +20,7 @@ public class Adresse extends AbstractEntity{
 
 
     @Column(length = 300, nullable = false)
-    private String adresseComplete;   // ex: "Rue XYZ, Quartier ABC, Lomé"
-
+    private String adresseComplete;   
     @Column(length = 100)
     private String quartier;
 
@@ -30,17 +28,15 @@ public class Adresse extends AbstractEntity{
     private String ville;
 
     @Column(length = 20)
-    private String codePostale;       // "codePostal" dans ton diagramme
+    private String codePostale;      
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private TypeAdresse typeAdresse;  // DESTINATAIRE / EXPEDITEUR / AGENCE
+    private TypeAdresse typeAdresse;  
 
-    // Géocodage
     private Double latitude;
     private Double longitude;
 
-    // Backref optionnelle vers Agence (si tu veux naviguer des deux côtés)
     @OneToOne(mappedBy = "adresse")
     private Agences agence;
 }

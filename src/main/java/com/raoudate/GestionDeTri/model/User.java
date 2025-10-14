@@ -1,0 +1,103 @@
+package com.raoudate.GestionDeTri.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+// audit fields are handled in AbstractEntity
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.security.Principal;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "utilisateurs")
+@EqualsAndHashCode(callSuper = true)
+public class User extends AbstractEntity implements UserDetails, Principal {
+
+    @Column(name = "nom")
+    private String nom;
+
+    @Column(name = "prenom")
+    private String prenom;
+
+    @Column(name = "date_naissance")
+    private LocalDate dateNaissance;
+
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
+
+    @Column(name = "mot_de_passe", nullable = false)
+    private String password;
+
+    @Column(name = "enabled", nullable = false)
+    @Builder.Default
+    private boolean enabled = true;
+
+    @Column(name = "account_locked", nullable = false)
+    @Builder.Default
+    private boolean accountLocked = false;
+
+    @Column(name = "num_tel", length = 32)
+    private String numTel;
+
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "id_user"),
+        inverseJoinColumns = @JoinColumn(name = "id_role")
+    )
+    @Builder.Default
+    private List<Role> roles = new ArrayList<>();
+
+
+ 
+    public String nomComplet() {
+        
+        String base = String.join(" ",
+                Optional.ofNullable(prenom).orElse(""),
+                Optional.ofNullable(nom).orElse("")
+        ).trim();
+        return base.isEmpty() ? email : base;
+    }
+
+    @Override
+    public String getName() {
+        return email;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles == null ? List.of()
+                : roles.stream()
+                .filter(Objects::nonNull)
+                .map(r -> new SimpleGrantedAuthority(r.getName()))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return !accountLocked; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return enabled; }
+}
+

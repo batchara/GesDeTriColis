@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.Dto;
 
-import com.raoudate.GestionDeTri.model.Roles;
+import com.raoudate.GestionDeTri.model.Role;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,29 +8,29 @@ import lombok.Data;
 @Builder
 public class RolesDTO {
     private Integer id;
-    private String nom;
+    private String name;
 
     // Conversion de l'entité vers le DTO
-    public static RolesDTO fromEntity(Roles roles) {
-        if (roles == null) {
+    public static RolesDTO fromEntity(Role role) {
+        if (role == null) {
             return null;
         }
 
         return RolesDTO.builder()
-                .id(roles.getId())
-                .nom(roles.getNom())
+                .id(role.getId())
+                .name(role.getName())
                 .build();
     }
 
     // Conversion de DTO vers l'entité
-    public static Roles toEntity(RolesDTO rolesDTO) {
+    public static Role toEntity(RolesDTO rolesDTO) {
         if (rolesDTO == null) {
             return null;
         }
 
-        Roles roles = new Roles();
-        roles.setId(rolesDTO.getId());
-        roles.setNom(rolesDTO.getNom());
-        return roles;
+        Role role = new Role();
+        role.setId(rolesDTO.getId());
+        role.setName(rolesDTO.getName());
+        return role;
     }
 }

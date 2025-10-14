@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.Dto;
 
-import com.raoudate.GestionDeTri.Enum.permissionName;
+import com.raoudate.GestionDeTri.Enum.Permission;
 import com.raoudate.GestionDeTri.model.Permissions;
 import lombok.Builder;
 import lombok.Data;
@@ -8,9 +8,8 @@ import lombok.Data;
 @Data
 @Builder
 public class PermissionDTO {
-
-    private permissionName nom;
-
+    // Correction : le champ nom doit être de type Permission (l'enum), pas Permissions (l'entité)
+    private Permission nom;
     private String description;
 
     public static PermissionDTO fromEntity(Permissions permissions) {
@@ -18,7 +17,7 @@ public class PermissionDTO {
             return null;
         }
         return PermissionDTO.builder()
-                .nom(permissions.getNom())
+                .nom(permissions.getNom()) // Correction ici
                 .description(permissions.getDescription())
                 .build();
     }
@@ -28,7 +27,7 @@ public class PermissionDTO {
             return null;
         }
         Permissions permissions = new Permissions();
-        permissions.setNom(dto.getNom());
+        permissions.setNom(dto.getNom()); // Correction ici
         permissions.setDescription(dto.getDescription());
         return permissions;
     }

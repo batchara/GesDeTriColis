@@ -19,19 +19,18 @@ import java.time.Instant;
 
 public class Colis extends AbstractEntity {
     @Column(nullable = false, unique = true, length = 60)
-    private String codeSuivi;           // CodeSuiv
+    private String codeSuivi;         
 
     @Column
-    private BigDecimal poids;               // en kg (si utile)
+    private BigDecimal poids;              
 
-    // Infos expéditeur / destinataire (du cahier de charge)
-    @Column(length = 120)
+    @Column(name = "nom_expediteur", length = 120)
     private String nomExp;
 
-    @Column(length = 120)
+    @Column(name = "nom_destinataire", length = 120)
     private String nomDest;
 
-    @Column(length = 40)
+    @Column(name = "tel_destinataire", length = 40)
     private String telDest;
 
     private Instant dateEnvoi;
@@ -53,12 +52,10 @@ public class Colis extends AbstractEntity {
     private Adresse adresse;
 
 
-    // Qui a scanné / créé l’enregistrement
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "operateur_id")
     private Operateur operateur;
 
-    // Centre de tri qui traite ce colis (1 centre -> N colis)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "centre_tri_id")
     private CentreDeTri centreTri;
