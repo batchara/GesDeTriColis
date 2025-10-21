@@ -1,16 +1,16 @@
 package com.raoudate.GestionDeTri.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.raoudate.GestionDeTri.Enum.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
 // audit fields are handled in AbstractEntity
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -45,16 +45,24 @@ public class User extends AbstractEntity implements UserDetails, Principal {
     @Builder.Default
     private boolean accountLocked = false;
 
-    @Column(name = "num_tel", length = 32)
+    @Column(name = "tel", length = 32)
     private String numTel;
 
+    @Enumerated(EnumType.STRING)
+    private RoleType role;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore  // ✅ Évite la sérialisation des tokens (relation inverse)
+    private List<Token> tokens;
+
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "id_user"),
         inverseJoinColumns = @JoinColumn(name = "id_role")
     )
+
     @Builder.Default
     private List<Role> roles = new ArrayList<>();
 
@@ -76,11 +84,8 @@ public class User extends AbstractEntity implements UserDetails, Principal {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles == null ? List.of()
-                : roles.stream()
-                .filter(Objects::nonNull)
-                .map(r -> new SimpleGrantedAuthority(r.getName()))
-                .collect(Collectors.toUnmodifiableList());
+        return role.getAuthorities();
+
     }
 
     @Override
@@ -99,5 +104,10 @@ public class User extends AbstractEntity implements UserDetails, Principal {
 
     @Override
     public boolean isEnabled() { return enabled; }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
 }
 

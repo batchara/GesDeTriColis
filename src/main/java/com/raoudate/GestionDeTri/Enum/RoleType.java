@@ -2,51 +2,66 @@ package com.raoudate.GestionDeTri.Enum;
 
 import lombok.Getter;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.raoudate.GestionDeTri.Enum.Permission.*;
 
+@Getter
 public enum RoleType {
-    USER(Collections.emptySet()),
 
-    ADMIN(
-            Set.of(
-                    ADMIN_READ,
-                    ADMIN_UPDATE,
-                    ADMIN_CREATE,
-                    ADMIN_DELETE,
 
-                    SUPERVISEUR_READ,
-                    SUPERVISEUR_UPDATE,
-                    SUPERVISEUR_CREATE,
-                    SUPERVISEUR_DELETE,
+   
 
-                    OPERATEUR_READ,
-                    OPERATEUR_UPDATE,
-                    OPERATEUR_CREATE,
-                    OPERATEUR_DELETE
-            )
-    ),
-
-    OPERATEUR(
-            Set.of(
-                    OPERATEUR_READ,
-                    OPERATEUR_UPDATE
-
-            )
-    ),
     SUPERVISEUR(
-            Set.of  (SUPERVISEUR_READ,
-                    SUPERVISEUR_UPDATE,
+            Set.of(
+                    SUPERVISEUR_READ,
                     SUPERVISEUR_CREATE,
-                    SUPERVISEUR_DELETE)
-    );
+                    SUPERVISEUR_UPDATE,
+                    SUPERVISEUR_DELETE,
+                    SUPERVISEUR_VIEW_DASHBOARD
+            )
+    ),
 
-    @Getter
-    private final Set <Permission> permission;
+    // ----- Admin -----
+        ADMIN(
+            Set.of(
+                    // Permissions admin
+                    ADMIN_READ,
+                    ADMIN_CREATE,
+                    ADMIN_UPDATE,
+                    ADMIN_DELETE,
+                    ADMIN_VIEW_DASHBOARD,
+                    SUPERVISEUR_CREATE,
+                    SUPERVISEUR_UPDATE,
+                    SUPERVISEUR_DELETE,
+                    SUPERVISEUR_VIEW_DASHBOARD
 
-    RoleType(Set<Permission> permission) {
-        this.permission = permission;
+            )
+    ),
+
+    // rôle vide (optionnel)
+    OPERATEUR(Collections.emptySet());
+
+    private final Set<Permission> permissions;
+
+    RoleType(Set<Permission> permissions) {
+        this.permissions = permissions;
     }
+
+        public List<SimpleGrantedAuthority> getAuthorities(){
+                // toList() may return an immutable list depending on the JVM implementation
+                // so create a mutable ArrayList to allow additions later
+                List<SimpleGrantedAuthority> authorities = getPermissions()
+                        .stream()
+                        .map(permission -> new SimpleGrantedAuthority(permission.name()))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + this.name()));
+                return authorities;
+        }
 }

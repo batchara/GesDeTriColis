@@ -1,14 +1,12 @@
 package com.raoudate.GestionDeTri.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.raoudate.GestionDeTri.model.User;
+
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -22,9 +20,7 @@ import java.util.ArrayList;
 @EntityListeners(AuditingEntityListener.class)
 public class Role extends AbstractEntity {
 
-    @Id
-    @GeneratedValue
-    private Integer id;
+
 
     @Column(unique = true)
     private String name;
@@ -32,6 +28,8 @@ public class Role extends AbstractEntity {
     @ManyToMany(mappedBy = "roles")
     @JsonIgnore
     private List<User> users;
+
+    
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(

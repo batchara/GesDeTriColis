@@ -3,7 +3,7 @@ package com.raoudate.GestionDeTri.controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/operateur")
+@RequestMapping("/operateur")
 
 public class OperateurController {
 

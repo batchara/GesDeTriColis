@@ -1,34 +1,92 @@
 package com.raoudate.GestionDeTri;
 
+import com.raoudate.GestionDeTri.auth.AuthenticationService;
+import com.raoudate.GestionDeTri.auth.RegistrationRequest;
+import com.raoudate.GestionDeTri.model.Role;
+import com.raoudate.GestionDeTri.repository.RoleRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.boot.CommandLineRunner;
-import com.raoudate.GestionDeTri.repository.RoleRepository;
-import com.raoudate.GestionDeTri.model.Role;
+import static com.raoudate.GestionDeTri.Enum.RoleType.ADMIN;
+import static com.raoudate.GestionDeTri.Enum.RoleType.SUPERVISEUR;
+
+// use RegistrationRequest.builder() directly
 
 @SpringBootApplication
 @EnableJpaAuditing
 @EnableAsync
 public class GestionDeTriApplication {
 
+	private static final Logger log = LoggerFactory.getLogger(GestionDeTriApplication.class);
+
 	public static void main(String[] args) {
 		SpringApplication.run(GestionDeTriApplication.class, args);
 	}
 
 	@Bean
-	public CommandLineRunner Runner(RoleRepository roleRepository) {
-		return args -> {
+	public CommandLineRunner Runner(AuthenticationService service, RoleRepository roleRepository, com.raoudate.GestionDeTri.repository.UserRepository userRepository) {
+	return args -> {
 
-			if(roleRepository.findByName("ROLE_USER").isEmpty()) {
-				roleRepository.save(
-						Role.builder().name("ROLE_USER").build()
-				);
+		// create roles with 'ROLE_' prefix because AuthenticationService expects 'ROLE_ADMIN', etc.
+		String adminRoleName = "ROLE_" + ADMIN.name();
+		if (roleRepository.findByName(adminRoleName).isEmpty()) {
+			Role r = new Role();
+			r.setName(adminRoleName);
+			roleRepository.save(r);
+			log.info("Created role {}", adminRoleName);
+		}
+		String supRoleName = "ROLE_" + SUPERVISEUR.name();
+		if (roleRepository.findByName(supRoleName).isEmpty()) {
+			Role r = new Role();
+			r.setName(supRoleName);
+			roleRepository.save(r);
+			log.info("Created role {}", supRoleName);
+		}
+		
+		var admin = RegistrationRequest.builder()
+			.firstname("Raoudate")
+			.lastname("BATCHA")
+			.email("raoudatebatcha@gmail.com")
+			.password("Admin123!")
+			.role(ADMIN)
+			.build();
+		if (userRepository.findByEmail(admin.getEmail()).isEmpty()) {
+			try {
+				String adminToken = service.register(admin);
+				log.info("Admin token: {}", adminToken);
+			} catch (jakarta.mail.MessagingException e) {
+				log.warn("Failed to send admin activation email at startup: {}", e.getMessage());
 			}
+		} else {
+			log.info("Admin user already exists: {}", admin.getEmail());
+		}
 
-		};
+		var superviseur = RegistrationRequest.builder()
+			.firstname("superviseur")
+			.lastname("BATCHA")
+			.email("justraodath@gmail.com")
+			.password("Admin123!")
+			.role(SUPERVISEUR)
+			.build();
+		if (userRepository.findByEmail(superviseur.getEmail()).isEmpty()) {
+			try {
+				String supToken = service.register(superviseur);
+				log.info("Superviseur token: {}", supToken);
+			} catch (jakarta.mail.MessagingException e) {
+				log.warn("Failed to send superviseur activation email at startup: {}", e.getMessage());
+			}
+		} else {
+			log.info("Superviseur user already exists: {}", superviseur.getEmail());
+		}
+	};
+
 	}
+
+
 
 }

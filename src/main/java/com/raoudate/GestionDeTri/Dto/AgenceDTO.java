@@ -10,7 +10,6 @@ import lombok.Data;
 public class AgenceDTO {
 
     private String nom;
-    private String prenom;
     private String email;
     private String numTel;
     private AdresseDTO adresse;
@@ -21,7 +20,7 @@ public class AgenceDTO {
         }
         return AgenceDTO.builder()
                 .nom(agences.getNom())
-                .prenom(agences.getPrenom())
+        
                 .email(agences.getEmail())
                 .numTel(agences.getNumTel())
                 .adresse(AdresseDTO.fromEntity(agences.getAdresse()))
@@ -34,7 +33,6 @@ public class AgenceDTO {
         }
         Agences agences = new Agences();
         agences.setNom(dto.getNom());
-        agences.setPrenom(dto.getPrenom());
         agences.setEmail(dto.getEmail());
         agences.setNumTel(dto.getNumTel());
         agences.setAdresse(AdresseDTO.toEntity(dto.getAdresse()));

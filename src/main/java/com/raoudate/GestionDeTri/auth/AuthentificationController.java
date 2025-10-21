@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name ="Authentification")
-
 public class AuthentificationController {
 
     private final AuthenticationService service;
