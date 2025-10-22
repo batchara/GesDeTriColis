@@ -18,7 +18,6 @@ public class Token {
     @GeneratedValue
     private Integer id;
 
-    @Column(length = 1000)
     private String token;
     private LocalDateTime expiresAt;
     private LocalDateTime createdAt;

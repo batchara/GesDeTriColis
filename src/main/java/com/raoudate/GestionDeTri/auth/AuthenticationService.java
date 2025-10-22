@@ -47,18 +47,6 @@ public class AuthenticationService {
     private String activationUrl;
 
     public String register( RegistrationRequest request) throws MessagingException {
-        // Vérification de l'unicité de l'email
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalStateException("Un compte avec cet email existe déjà");
-        }
-        
-        // Vérification de l'unicité du numéro de téléphone (si fourni)
-        if (request.getNumTel() != null && !request.getNumTel().isEmpty()) {
-            if (userRepository.findByNumTel(request.getNumTel()).isPresent()) {
-                throw new IllegalStateException("Un compte avec ce numéro de téléphone existe déjà");
-            }
-        }
-        
         // find default role entity (if needed for DB role table)
         var userRole = roleRepository.findByName("ROLE_ADMIN")
                 //todo - better exception handling
@@ -69,8 +57,6 @@ public class AuthenticationService {
                 .nom(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .dateNaissance(request.getDateNaissance())
-                .numTel(request.getNumTel())
                 .accountLocked(false)
                 .enabled(false)
                 .role(request.getRole())

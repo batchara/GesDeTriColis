@@ -16,14 +16,22 @@ import lombok.NoArgsConstructor;
 @Table(name = "agences")
 
 public class Agences extends AbstractEntity {
-    @Column(name = "nom")
-    private String nom;
+    
+
+    @Column(name = "code")
+    private String code;
 
     @Column(name = "email")
     private String email;
 
     @Column(name = "num_tel")
-    private String numTel;
+    private String tel;
+
+     @Column(length = 100)
+    private String region;
+
+     @Column(length = 100)
+    private String label;
 
 
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

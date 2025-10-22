@@ -1,6 +1,5 @@
 package com.raoudate.GestionDeTri.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.raoudate.GestionDeTri.Enum.Permission;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,7 +31,6 @@ public class Permissions extends AbstractEntity {
     private String description;
 
     @ManyToMany(mappedBy = "permissions")
-    @JsonIgnore  // ✅ Empêche la sérialisation circulaire
     private List<Role> roles = new ArrayList<>();
 
     public Permissions(Permission nom, String description) {

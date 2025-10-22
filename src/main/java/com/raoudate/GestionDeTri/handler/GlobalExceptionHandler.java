@@ -1,5 +1,6 @@
 package com.raoudate.GestionDeTri.handler;
 
+import com.raoudate.GestionDeTri.Exception.BusinessErrorCode;
 import jakarta.mail.MessagingException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.raoudate.GestionDeTri.handler.BusinessErrorCode.*;
+import static com.raoudate.GestionDeTri.Exception.BusinessErrorCode.*;
 import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class logoutService implements LogoutHandler {
+public class logoutServiceImp implements LogoutHandler {
 
 	private final TokenRepository tokenRepository;
 

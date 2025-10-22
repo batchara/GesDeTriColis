@@ -1,6 +1,5 @@
 package com.raoudate.GestionDeTri.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.raoudate.GestionDeTri.Enum.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,14 +44,13 @@ public class User extends AbstractEntity implements UserDetails, Principal {
     @Builder.Default
     private boolean accountLocked = false;
 
-    @Column(name = "tel", length = 32)
+    @Column(name = "num_tel", length = 32)
     private String numTel;
 
     @Enumerated(EnumType.STRING)
     private RoleType role;
 
     @OneToMany(mappedBy = "user")
-    @JsonIgnore  // ✅ Évite la sérialisation des tokens (relation inverse)
     private List<Token> tokens;
 
 

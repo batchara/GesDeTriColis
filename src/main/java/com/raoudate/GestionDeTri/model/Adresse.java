@@ -21,14 +21,9 @@ public class Adresse extends AbstractEntity{
 
     @Column(length = 300, nullable = false)
     private String adresseComplete;   
-    @Column(length = 100)
-    private String quartier;
-
-    @Column(length = 100)
-    private String ville;
 
     @Column(length = 20)
-    private String codePostale;      
+    private String rue;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)

@@ -11,12 +11,12 @@ import lombok.Data;
 public class AdresseDTO {
 
     private String adresseComplete;
-    private String quartier;
-    private String ville;
-    private String codePostale;
+ 
+    private String rue;
     private TypeAdresse typeAdresse;
     private Double latitude;
     private Double longitude;
+
 
     public static AdresseDTO fromEntity(Adresse adresse) {
         if (adresse == null) {
@@ -24,9 +24,7 @@ public class AdresseDTO {
         }
         return AdresseDTO.builder()
                 .adresseComplete(adresse.getAdresseComplete())
-                .quartier(adresse.getQuartier())
-                .ville(adresse.getVille())
-                .codePostale(adresse.getCodePostale())
+                .rue(adresse.getRue())
                 .typeAdresse(adresse.getTypeAdresse())
                 .latitude(adresse.getLatitude())
                 .longitude(adresse.getLongitude())
@@ -39,9 +37,7 @@ public class AdresseDTO {
         }
         Adresse adresse = new Adresse();
         adresse.setAdresseComplete(dto.getAdresseComplete());
-        adresse.setQuartier(dto.getQuartier());
-        adresse.setVille(dto.getVille());
-        adresse.setCodePostale(dto.getCodePostale());
+        adresse.setRue(dto.getRue());
         adresse.setTypeAdresse(dto.getTypeAdresse());
         adresse.setLatitude(dto.getLatitude());
         adresse.setLongitude(dto.getLongitude());

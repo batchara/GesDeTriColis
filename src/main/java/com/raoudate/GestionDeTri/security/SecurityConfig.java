@@ -23,96 +23,89 @@ import static com.raoudate.GestionDeTri.Enum.Permission.*;
 import static com.raoudate.GestionDeTri.Enum.RoleType.ADMIN;
 import static com.raoudate.GestionDeTri.Enum.RoleType.SUPERVISEUR;
 import static org.springframework.http.HttpMethod.*;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
+
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+
     private final AuthenticationProvider authenticationProvider;
+
     private final LogoutHandler logoutHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // IMPORTANT: activer CORS côté Spring Security
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(red -> red
-                .requestMatchers(OPTIONS, "/**").permitAll()
+                .cors(withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(red ->
+                        red.requestMatchers(
+                                        "/auth/**",
+                                        "/api/v1/auth/register",
+                                        "/v2/api-docs",
+                                        "/v3/api-docs",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/configuration/ui",
+                                        "/configuration/security",
+                                        "/webjars/**",
+                                        "/swagger-resources",
+                                        "/swagger-resources/**"
 
-                // publics
-                .requestMatchers(
-                    "/auth/**",
-                    "/api/v1/auth/register",
-                    "/v2/api-docs",
-                    "/v3/api-docs",
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/configuration/ui",
-                    "/configuration/security",
-                    "/webjars/**",
-                    "/swagger-resources",
-                    "/swagger-resources/**"
-                ).permitAll()
 
-                // management
-                .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(), SUPERVISEUR.name())
-                .requestMatchers(GET,    "/api/v1/management/**").hasAnyAuthority(ADMIN_READ.name(),    SUPERVISEUR_READ.name())
-                .requestMatchers(POST,   "/api/v1/management/**").hasAnyAuthority(ADMIN_CREATE.name(),  SUPERVISEUR_CREATE.name())
-                .requestMatchers(PUT,    "/api/v1/management/**").hasAnyAuthority(ADMIN_UPDATE.name(),  SUPERVISEUR_UPDATE.name())
-                .requestMatchers(DELETE, "/api/v1/management/**").hasAnyAuthority(ADMIN_DELETE.name(),  SUPERVISEUR_DELETE.name())
+                                ).permitAll()
 
-                // admin
-                .requestMatchers("/api/v1/admin/**").hasRole(ADMIN.name())
-                .requestMatchers(GET,    "/api/v1/admin/**").hasAuthority(ADMIN_READ.name())
-                .requestMatchers(POST,   "/api/v1/admin/**").hasAuthority(ADMIN_CREATE.name())
-                .requestMatchers(PUT,    "/api/v1/admin/**").hasAuthority(ADMIN_UPDATE.name())
-                .requestMatchers(DELETE, "/api/v1/admin/**").hasAuthority(ADMIN_DELETE.name())
 
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .logout(logout -> logout
-                .logoutUrl("/api/v1/auth/logout")
-                .addLogoutHandler(logoutHandler)
-                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
-            );
+                                .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(), SUPERVISEUR.name())
+
+                                .requestMatchers(GET,"/api/v1/management/**").hasAnyAuthority(ADMIN_READ.name(), SUPERVISEUR_READ.name())
+                                .requestMatchers(POST,"/api/v1/management/**").hasAnyAuthority(ADMIN_CREATE.name(), SUPERVISEUR_CREATE.name())
+                                .requestMatchers(PUT,"/api/v1/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), SUPERVISEUR_UPDATE.name())
+                                .requestMatchers(DELETE,"/api/v1/management/**").hasAnyAuthority(ADMIN_DELETE.name(), SUPERVISEUR_DELETE.name())
+
+                                .requestMatchers(GET,"/api/v1/admin/**").hasRole(ADMIN.name())
+
+                                .requestMatchers(GET,"/api/v1/admin/**").hasAuthority(ADMIN_READ.name())
+                                .requestMatchers(POST,"/api/v1/admin/**").hasAuthority(ADMIN_CREATE.name())
+                                .requestMatchers(PUT,"/api/v1/admin/**").hasAuthority(ADMIN_UPDATE.name())
+                                .requestMatchers(DELETE,"/api/v1/admin/**").hasAuthority(ADMIN_DELETE.name())
+
+                                .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        .logout(logout -> logout.logoutUrl("/api/v1/auth/logout")
+                        .addLogoutHandler(logoutHandler)
+                        .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
+                )
+        ;
+
 
         return http.build();
     }
 
     @Bean
-public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Autoriser l'UI Angular en dev ; adapte si ton front est sur un autre hôte/port
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:4200"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
 
-    // Liste EXACTE des origines que tu utilises en dev (seulement Angular en local)
-    configuration.setAllowedOrigins(Arrays.asList(
-        "http://localhost:4200"
-    ));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
-    // Ne PAS mélanger avec setAllowedOriginPatterns si allowCredentials=true
-    // => supprimer tout appel à setAllowedOriginPatterns
-    // cfg.setAllowedOriginPatterns(...); // à ne pas utiliser ici
 
-    // Méthodes
-    configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS","HEAD","PATCH"));
+}
 
-    // ⚠️ Assouplir les headers pour éviter la casse/minuscule/majuscule
-    configuration.setAllowedHeaders(Arrays.asList("*"));
 
-    // Headers exposés côté navigateur si tu veux les lire
-    configuration.setExposedHeaders(Arrays.asList("Authorization","Location","Content-Disposition"));
-
-    configuration.setAllowCredentials(true);
-    configuration.setMaxAge(3600L);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-}}
