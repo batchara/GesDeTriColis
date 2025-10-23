@@ -47,10 +47,12 @@ public class AuthenticationService {
     private String activationUrl;
 
     public String register( RegistrationRequest request) throws MessagingException {
-        // find default role entity (if needed for DB role table)
-        var userRole = roleRepository.findByName("ROLE_ADMIN")
-                //todo - better exception handling
-                .orElseThrow(() -> new IllegalStateException("ROLE_ADMIN was not initialized "));
+        // Trouver le rôle demandé dans la base de données (pas toujours ADMIN!)
+        String requestedRoleName = "ROLE_" + request.getRole().name();
+        var userRole = roleRepository.findByName(requestedRoleName)
+                .orElseThrow(() -> new IllegalStateException(
+                    requestedRoleName + " was not initialized. Please check role initialization."
+                ));
 
         var user = User.builder()
                 .prenom(request.getFirstname())

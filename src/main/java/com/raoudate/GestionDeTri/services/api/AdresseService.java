@@ -7,7 +7,6 @@ public interface AdresseService {
 
 	AdresseDTO save (AdresseDTO adresseDTO);
 
-    AdresseDTO findById(Integer id);
 
     List<AdresseDTO> findAll();
 

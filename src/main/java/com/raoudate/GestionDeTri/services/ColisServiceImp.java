@@ -13,11 +13,6 @@ public class ColisServiceImp implements ColisService {
         return null;
     }
 
-    @Override
-    public ColisDTO findById(Integer id) {
-        // TODO: implement retrieval by id
-        return null;
-    }
 
     @Override
     public List<ColisDTO> findAll() {
@@ -25,11 +20,7 @@ public class ColisServiceImp implements ColisService {
         return List.of();
     }
 
-    @Override
-    public List<ColisDTO> searchByReference(String reference) {
-        // TODO: implement search by reference
-        return List.of();
-    }
+
 
     @Override
     public ColisDTO update(Integer id, ColisDTO colisDTO) {
@@ -37,11 +28,7 @@ public class ColisServiceImp implements ColisService {
         return null;
     }
 
-    @Override
-    public List<ColisDTO> search(String term) {
-        // TODO: implement general search
-        return List.of();
-    }
+
 
     @Override
     public void delete(Integer id) {

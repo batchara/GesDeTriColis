@@ -7,8 +7,8 @@ import lombok.*;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 @Getter
 @Setter
@@ -27,7 +27,7 @@ public class Role extends AbstractEntity {
 
     @ManyToMany(mappedBy = "roles")
     @JsonIgnore
-    private List<User> users;
+    private Set<User> users;
 
     
 
@@ -37,8 +37,9 @@ public class Role extends AbstractEntity {
         joinColumns = @JoinColumn(name = "role_id"),
         inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @Builder.Default
-    private List<Permissions> permissions = new ArrayList<>();
+    private Set<Permissions> permissions = new HashSet<>();
 
 
 }

@@ -1,5 +1,6 @@
 package com.raoudate.GestionDeTri.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.raoudate.GestionDeTri.Enum.Permission;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,8 +13,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -31,7 +32,8 @@ public class Permissions extends AbstractEntity {
     private String description;
 
     @ManyToMany(mappedBy = "permissions")
-    private List<Role> roles = new ArrayList<>();
+    @JsonIgnore
+    private Set<Role> roles = new HashSet<>();
 
     public Permissions(Permission nom, String description) {
         this.nom = nom;

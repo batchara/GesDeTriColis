@@ -29,7 +29,11 @@ public class GestionDeTriApplication {
 	}
 
 	@Bean
-	public CommandLineRunner Runner(AuthenticationService service, RoleRepository roleRepository, com.raoudate.GestionDeTri.repository.UserRepository userRepository) {
+	public CommandLineRunner Runner(
+			AuthenticationService service, 
+			RoleRepository roleRepository, 
+			com.raoudate.GestionDeTri.repository.UserRepository userRepository,
+			com.raoudate.GestionDeTri.services.api.RoleService roleService) {
 	return args -> {
 
 		// create roles with 'ROLE_' prefix because AuthenticationService expects 'ROLE_ADMIN', etc.
@@ -46,6 +50,23 @@ public class GestionDeTriApplication {
 			r.setName(supRoleName);
 			roleRepository.save(r);
 			log.info("Created role {}", supRoleName);
+		}
+		
+		// Créer le rôle OPERATEUR
+		String operateurRoleName = "ROLE_OPERATEUR";
+		if (roleRepository.findByName(operateurRoleName).isEmpty()) {
+			Role r = new Role();
+			r.setName(operateurRoleName);
+			roleRepository.save(r);
+			log.info("Created role {}", operateurRoleName);
+		}
+		
+		// Initialiser les permissions des rôles au démarrage
+		try {
+			roleService.initializeRolePermissions();
+			log.info("✅ Permissions des rôles initialisées avec succès");
+		} catch (Exception e) {
+			log.error("❌ Erreur lors de l'initialisation des permissions: {}", e.getMessage());
 		}
 		
 		var admin = RegistrationRequest.builder()

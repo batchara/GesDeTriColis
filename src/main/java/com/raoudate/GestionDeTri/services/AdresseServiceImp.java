@@ -13,11 +13,6 @@ public class AdresseServiceImp implements AdresseService {
     }
 
     @Override
-    public AdresseDTO findById(Integer id) {
-        return null;
-    }
-
-    @Override
     public List<AdresseDTO> findAll() {
         return List.of();
     }

@@ -38,6 +38,21 @@ public class UserServiceImp implements UserService {
         repository.save(user);
     }
 
+    /**
+     * Récupérer tous les utilisateurs
+     */
+    public List<User> getAllUsers() {
+        return repository.findAll();
+    }
+
+    /**
+     * Récupérer un utilisateur par son ID
+     */
+    public User getUserById(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
+    }
+
     @Override
     public UserDTO save(UserDTO userDTO) {
         return null;
