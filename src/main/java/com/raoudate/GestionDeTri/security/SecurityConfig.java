@@ -78,7 +78,7 @@ public class SecurityConfig {
 
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers("/users/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

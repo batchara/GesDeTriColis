@@ -26,8 +26,7 @@ public class AdresseDTO {
                 .adresseComplete(adresse.getAdresseComplete())
                 .rue(adresse.getRue())
                 .typeAdresse(adresse.getTypeAdresse())
-                .latitude(adresse.getLatitude())
-                .longitude(adresse.getLongitude())
+            
                 .build();
     }
 
@@ -39,8 +38,6 @@ public class AdresseDTO {
         adresse.setAdresseComplete(dto.getAdresseComplete());
         adresse.setRue(dto.getRue());
         adresse.setTypeAdresse(dto.getTypeAdresse());
-        adresse.setLatitude(dto.getLatitude());
-        adresse.setLongitude(dto.getLongitude());
         return adresse;
     }
 }

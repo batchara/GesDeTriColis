@@ -32,6 +32,7 @@ public class Agences extends AbstractEntity {
 
      @Column(length = 100)
     private String label;
+    
 
 
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

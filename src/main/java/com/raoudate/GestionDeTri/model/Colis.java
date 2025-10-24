@@ -7,62 +7,56 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Builder
-@EqualsAndHashCode(callSuper = true)
-
-
 @Table(name = "colis")
-
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Colis extends AbstractEntity {
-    @Column(nullable = false, unique = true, length = 60)
-    private String codeSuivi;         
 
-    @Column
-    private BigDecimal poids;              
+    @Column(name = "code_suivi", unique = true, nullable = false)
+    private String codeSuivi;
 
-    @Column(name = "nom_expediteur", length = 120)
+    @Column(name = "poids")
+    private BigDecimal poids;
+
+    @Column(name = "nom_exp")
     private String nomExp;
 
-    @Column(name = "nom_destinataire", length = 120)
+    @Column(name = "nom_dest", nullable = false)
     private String nomDest;
 
-    @Column(name = "tel_destinataire", length = 40)
+    @Column(name = "tel_dest")
     private String telDest;
 
+    @Column(name = "date_envoi")
     private Instant dateEnvoi;
 
+    @Column(name = "date_prevue")
     private Instant datePrevue;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    @Builder.Default
-    private StatutColis statut = StatutColis.EN_ATTENTE;
+    @Column(name = "statut", nullable = false)
+    private StatutColis statut;
 
-    // OCR brut avant nettoyage/géocodage
-    @Column(length = 300)
+    @Column(name = "adresse_detectee", columnDefinition = "TEXT")
     private String adresseDetectee;
 
-    // Adresse normalisée (géocodée) = DESTINATAIRE
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne
     @JoinColumn(name = "adresse_id")
     private Adresse adresse;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "operateur_id")
     private Operateur operateur;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "centre_tri_id")
     private CentreDeTri centreTri;
 
-    // Agence affectée automatiquement
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "agence_id")
+    @ManyToOne
+    @JoinColumn(name = "agence_affectee_id")
     private Agences agenceAffectee;
 }
-

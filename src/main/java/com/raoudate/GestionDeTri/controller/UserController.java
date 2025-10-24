@@ -6,6 +6,7 @@ import com.raoudate.GestionDeTri.services.UserServiceImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -27,15 +28,15 @@ public class UserController {
     }
 
     /**
-     * Récupérer tous les utilisateurs (accessible uniquement aux ADMIN)
+     * Récupérer tous les utilisateurs (accessible aux ADMIN et SUPERVISEUR)
      */
     @GetMapping
-    //@PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     public ResponseEntity<List<User>> getAllUsers() {
 
         System.out.println("********** TESTING USER CONTROLLER **********");
         List<User> users = service.getAllUsers();
-        System.out.println("********** TESTING USER CONTROLLER **********");
+        System.out.println("********** NOMBRE D'UTILISATEURS: " + users.size() + " **********");
         return ResponseEntity.ok(users);
     }
 
@@ -43,7 +44,7 @@ public class UserController {
      * Récupérer un utilisateur par son ID (accessible aux ADMIN et SUPERVISEUR)
      */
     @GetMapping("/{id}")
-   // @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     public ResponseEntity<User> getUserById(@PathVariable Integer id) {
         User user = service.getUserById(id);
         return ResponseEntity.ok(user);
