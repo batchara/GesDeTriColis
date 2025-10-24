@@ -94,6 +94,50 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Activer un utilisateur (accessible aux ADMIN et SUPERVISEUR)
+     */
+    @PutMapping("/{id}/enable")
+    //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    public ResponseEntity<Void> enableUser(@PathVariable Integer id) {
+        System.out.println("✅ [UserController] Activation de l'utilisateur ID: " + id);
+        service.enableUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Désactiver un utilisateur (accessible aux ADMIN et SUPERVISEUR)
+     */
+    @PutMapping("/{id}/disable")
+    //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    public ResponseEntity<Void> disableUser(@PathVariable Integer id) {
+        System.out.println("❌ [UserController] Désactivation de l'utilisateur ID: " + id);
+        service.disableUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Verrouiller un utilisateur (accessible aux ADMIN et SUPERVISEUR)
+     */
+    @PutMapping("/{id}/lock")
+    //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    public ResponseEntity<Void> lockUser(@PathVariable Integer id) {
+        System.out.println("🔒 [UserController] Verrouillage de l'utilisateur ID: " + id);
+        service.lockUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Déverrouiller un utilisateur (accessible aux ADMIN et SUPERVISEUR)
+     */
+    @PutMapping("/{id}/unlock")
+    //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    public ResponseEntity<Void> unlockUser(@PathVariable Integer id) {
+        System.out.println("🔓 [UserController] Déverrouillage de l'utilisateur ID: " + id);
+        service.unlockUser(id);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping
     public ResponseEntity<?> changePassword(
             @RequestBody ChangePasswordRequest request,

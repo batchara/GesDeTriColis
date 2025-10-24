@@ -205,6 +205,54 @@ public class UserServiceImp implements UserService {
         System.out.println("✅ [deleteUser] Utilisateur supprimé avec succès: " + user.getEmail());
     }
 
+    /**
+     * Activer un utilisateur
+     */
+    public void enableUser(Integer id) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
+        
+        user.setEnabled(true);
+        repository.save(user);
+        System.out.println("✅ [enableUser] Utilisateur activé: " + user.getEmail());
+    }
+
+    /**
+     * Désactiver un utilisateur
+     */
+    public void disableUser(Integer id) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
+        
+        user.setEnabled(false);
+        repository.save(user);
+        System.out.println("❌ [disableUser] Utilisateur désactivé: " + user.getEmail());
+    }
+
+    /**
+     * Verrouiller un utilisateur
+     */
+    public void lockUser(Integer id) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
+        
+        user.setAccountLocked(true);
+        repository.save(user);
+        System.out.println("🔒 [lockUser] Utilisateur verrouillé: " + user.getEmail());
+    }
+
+    /**
+     * Déverrouiller un utilisateur
+     */
+    public void unlockUser(Integer id) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
+        
+        user.setAccountLocked(false);
+        repository.save(user);
+        System.out.println("🔓 [unlockUser] Utilisateur déverrouillé: " + user.getEmail());
+    }
+
     @Override
     public UserDTO save(UserDTO userDTO) {
         return null;
