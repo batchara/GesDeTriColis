@@ -57,7 +57,7 @@ public class User extends AbstractEntity implements UserDetails, Principal {
     private List<Token> tokens;
 
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "id_user"),

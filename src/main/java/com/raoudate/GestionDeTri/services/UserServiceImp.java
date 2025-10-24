@@ -63,10 +63,24 @@ public class UserServiceImp implements UserService {
      * Créer un nouvel utilisateur
      */
     public User createUser(CreateUserRequest request) {
+        System.out.println("🔵 [createUser] Début création utilisateur: " + request.getEmail());
+        
         // Vérifier si l'email existe déjà
         if (repository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalStateException("Un utilisateur avec cet email existe déjà");
         }
+
+        // Déterminer le nom du rôle
+        String roleNameTemp = request.getRole() != null ? request.getRole().toUpperCase() : "OPERATEUR";
+        final String roleName = roleNameTemp.startsWith("ROLE_") ? roleNameTemp : "ROLE_" + roleNameTemp;
+        
+        System.out.println("🔵 [createUser] Recherche du rôle: " + roleName);
+
+        // Récupérer le rôle depuis la base de données
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new IllegalStateException("Rôle " + roleName + " introuvable"));
+        
+        System.out.println("✅ [createUser] Rôle trouvé: " + role.getName() + " (ID: " + role.getId() + ")");
 
         // Créer le nouvel utilisateur
         User user = User.builder()
@@ -78,21 +92,20 @@ public class UserServiceImp implements UserService {
                 .dateNaissance(request.getDateNaissance())
                 .accountLocked(request.getAccountLocked() != null ? request.getAccountLocked() : false)
                 .enabled(request.getEnabled() != null ? request.getEnabled() : true)
+                .roles(new HashSet<>()) // Initialiser explicitement
                 .build();
 
-        // Assigner le rôle
-        String roleNameTemp = request.getRole() != null ? request.getRole().toUpperCase() : "OPERATEUR";
-        final String roleName = roleNameTemp.startsWith("ROLE_") ? roleNameTemp : "ROLE_" + roleNameTemp;
+        // Ajouter le rôle à l'utilisateur
+        user.getRoles().add(role);
+        
+        System.out.println("🔵 [createUser] Rôles assignés avant sauvegarde: " + user.getRoles().size());
 
-        Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new IllegalStateException("Rôle " + roleName + " introuvable"));
-
-        Set<Role> roles = new HashSet<>();
-        roles.add(role);
-        user.setRoles(roles);
-
+        // Sauvegarder l'utilisateur
         User savedUser = repository.save(user);
-        System.out.println("✅ Utilisateur créé avec succès: " + savedUser.getEmail());
+        
+        System.out.println("✅ [createUser] Utilisateur créé avec ID: " + savedUser.getId());
+        System.out.println("✅ [createUser] Rôles après sauvegarde: " + savedUser.getRoles().size());
+        
         return savedUser;
     }
 
