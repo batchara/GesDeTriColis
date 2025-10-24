@@ -148,6 +148,63 @@ public class UserServiceImp implements UserService {
         return updatedUser;
     }
 
+    /**
+     * Mettre à jour uniquement les rôles d'un utilisateur
+     */
+    public User updateUserRoles(Integer id, List<String> roleNames) {
+        System.out.println("🔄 [updateUserRoles] Début - User ID: " + id + ", Rôles demandés: " + roleNames);
+        
+        User user = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
+
+        // Construire le set de rôles
+        Set<Role> newRoles = new HashSet<>();
+        for (String roleName : roleNames) {
+            String tempRoleName = roleName.toUpperCase();
+            final String normalizedRoleName = tempRoleName.startsWith("ROLE_") ? tempRoleName : "ROLE_" + tempRoleName;
+            
+            System.out.println("🔍 [updateUserRoles] Recherche du rôle: " + normalizedRoleName);
+            Role role = roleRepository.findByName(normalizedRoleName)
+                    .orElseThrow(() -> new IllegalStateException("Rôle " + normalizedRoleName + " introuvable"));
+            
+            newRoles.add(role);
+            System.out.println("✅ [updateUserRoles] Rôle trouvé: " + role.getName());
+        }
+
+        // Remplacer les rôles existants
+        user.setRoles(newRoles);
+        User savedUser = repository.save(user);
+        
+        System.out.println("✅ [updateUserRoles] Rôles mis à jour avec succès pour: " + savedUser.getEmail());
+        System.out.println("✅ [updateUserRoles] Nouveaux rôles: " + savedUser.getRoles().stream()
+                .map(Role::getName)
+                .collect(java.util.stream.Collectors.joining(", ")));
+        
+        return savedUser;
+    }
+
+    /**
+     * Supprimer un utilisateur par son ID
+     */
+    public void deleteUser(Integer id) {
+        System.out.println("🗑️ [deleteUser] Début - User ID: " + id);
+        
+        // Vérifier que l'utilisateur existe
+        User user = repository.findById(id)
+                .orElseThrow(() -> {
+                    System.out.println("❌ [deleteUser] Utilisateur introuvable - ID: " + id);
+                    return new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable");
+                });
+        
+        System.out.println("🔍 [deleteUser] Utilisateur trouvé: " + user.getEmail());
+        System.out.println("🔍 [deleteUser] Nom: " + user.getPrenom() + " " + user.getNom());
+        
+        // Supprimer l'utilisateur (cascade delete s'occupera des relations)
+        repository.delete(user);
+        
+        System.out.println("✅ [deleteUser] Utilisateur supprimé avec succès: " + user.getEmail());
+    }
+
     @Override
     public UserDTO save(UserDTO userDTO) {
         return null;

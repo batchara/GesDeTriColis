@@ -71,6 +71,28 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
+    /**
+     * Mettre à jour les rôles d'un utilisateur (accessible uniquement aux ADMIN)
+     */
+    @PutMapping("/{id}/roles")
+    //@PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<User> updateUserRoles(@PathVariable Integer id, @RequestBody List<String> roles) {
+        System.out.println("🔄 [UserController] Mise à jour des rôles pour utilisateur ID: " + id + " - Rôles: " + roles);
+        User updatedUser = service.updateUserRoles(id, roles);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    /**
+     * Supprimer un utilisateur (accessible uniquement aux ADMIN)
+     */
+    @DeleteMapping("/{id}")
+    //@PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
+        System.out.println("🗑️ [UserController] Suppression de l'utilisateur ID: " + id);
+        service.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping
     public ResponseEntity<?> changePassword(
             @RequestBody ChangePasswordRequest request,

@@ -61,7 +61,6 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
                 .enabled(false)
-                .role(request.getRole())
                 .build();
 
         // add found Role entity to user's roles collection so DB relationship is established

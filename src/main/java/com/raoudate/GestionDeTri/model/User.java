@@ -1,7 +1,7 @@
 package com.raoudate.GestionDeTri.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.raoudate.GestionDeTri.Enum.RoleType;
+// import com.raoudate.GestionDeTri.Enum.RoleType; // DEPRECATED - Utiliser roles (ManyToMany)
 import jakarta.persistence.*;
 import lombok.*;
 // audit fields are handled in AbstractEntity
@@ -49,8 +49,9 @@ public class User extends AbstractEntity implements UserDetails, Principal {
     @Column(name = "num_tel", length = 32)
     private String numTel;
 
-    @Enumerated(EnumType.STRING)
-    private RoleType role;
+    // Ancienne colonne role (ENUM) - DEPRECATED - Utiliser roles (ManyToMany) à la place
+    // @Enumerated(EnumType.STRING)
+    // private RoleType role;
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
@@ -109,10 +110,10 @@ public class User extends AbstractEntity implements UserDetails, Principal {
             }
         }
         
-        // Si aucun rôle en base, fallback sur l'enum (pour compatibilité)
-        if (authorities.isEmpty() && role != null) {
-            System.out.println("⚠️ [getAuthorities] Fallback sur l'enum role: " + role);
-            return role.getAuthorities();
+        // Si aucun rôle n'est assigné, donner un rôle par défaut
+        if (authorities.isEmpty()) {
+            System.out.println("⚠️ [getAuthorities] Aucun rôle trouvé, utilisation du rôle par défaut: ROLE_OPERATEUR");
+            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_OPERATEUR"));
         }
         
         System.out.println("✅ [getAuthorities] Total authorities: " + authorities.size());
