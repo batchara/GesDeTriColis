@@ -53,15 +53,11 @@ public class AgenceController {
                     existingAgence.setLabel(agenceDTO.getNom());
                     existingAgence.setCode(agenceDTO.getCode());
                     existingAgence.setEmail(agenceDTO.getEmail());
-                    existingAgence.setTel(agenceDTO.getTel());
+                    existingAgence.setTel(agenceDTO.getTel() != null ? agenceDTO.getTel() : agenceDTO.getNumTel());
                     existingAgence.setRegion(agenceDTO.getRegion());
-                    if (agenceDTO.getAdresse() != null && existingAgence.getAdresse() != null) {
-                        existingAgence.getAdresse().setAdresseComplete(agenceDTO.getAdresse().getAdresseComplete());
-                        existingAgence.getAdresse().setRue(agenceDTO.getAdresse().getRue());
-                        existingAgence.getAdresse().setTypeAdresse(agenceDTO.getAdresse().getTypeAdresse());
-                        existingAgence.getAdresse().setLatitude(agenceDTO.getAdresse().getLatitude());
-                        existingAgence.getAdresse().setLongitude(agenceDTO.getAdresse().getLongitude());
-                    }
+                    existingAgence.setAdresseComplete(agenceDTO.getAdresseComplete());
+                    existingAgence.setLatitude(agenceDTO.getLatitude());
+                    existingAgence.setLongitude(agenceDTO.getLongitude());
                     Agences updatedAgence = agenceRepository.save(existingAgence);
                     return ResponseEntity.ok(AgenceDTO.fromEntity(updatedAgence));
                 })

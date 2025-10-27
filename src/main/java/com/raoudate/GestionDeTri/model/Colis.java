@@ -41,12 +41,8 @@ public class Colis extends AbstractEntity {
     @Column(name = "statut", nullable = false)
     private StatutColis statut;
 
-    @Column(name = "adresse_detectee", columnDefinition = "TEXT")
-    private String adresseDetectee;
-
-    @ManyToOne
-    @JoinColumn(name = "adresse_id")
-    private Adresse adresse;
+    @Column(name = "adresse_dest")
+    private String adresseDest;
 
     @ManyToOne
     @JoinColumn(name = "operateur_id")

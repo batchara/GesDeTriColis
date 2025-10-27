@@ -8,7 +8,6 @@ import com.raoudate.GestionDeTri.repository.UserRepository;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.repository.RoleRepository;
-import com.raoudate.GestionDeTri.repository.AdresseRepository;
 import com.raoudate.GestionDeTri.Enum.StatutColis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +33,6 @@ public class ExportImportService {
     private final AgenceRepository agenceRepository;
     private final ColisRepository colisRepository;
     private final RoleRepository roleRepository;
-    private final AdresseRepository adresseRepository;
     private final PasswordEncoder passwordEncoder;
 
     // ==================== EXPORT UTILISATEURS ====================
@@ -294,14 +292,7 @@ public class ExportImportService {
                 row.createCell(3).setCellValue(agence.getEmail() != null ? agence.getEmail() : "");
                 row.createCell(4).setCellValue(agence.getTel() != null ? agence.getTel() : "");
                 row.createCell(5).setCellValue(agence.getRegion() != null ? agence.getRegion() : "");
-                
-                String adresse = "";
-                if (agence.getAdresse() != null) {
-                    adresse = String.format("%s - %s", 
-                        agence.getAdresse().getRue() != null ? agence.getAdresse().getRue() : "",
-                        agence.getAdresse().getAdresseComplete() != null ? agence.getAdresse().getAdresseComplete() : "");
-                }
-                row.createCell(6).setCellValue(adresse);
+                row.createCell(6).setCellValue(agence.getAdresseComplete() != null ? agence.getAdresseComplete() : "");
             }
 
             for (int i = 0; i < headers.length; i++) {
@@ -327,13 +318,6 @@ public class ExportImportService {
             csvWriter.writeNext(headers);
 
             for (Agences agence : agences) {
-                String adresse = "";
-                if (agence.getAdresse() != null) {
-                    adresse = String.format("%s - %s", 
-                        agence.getAdresse().getRue() != null ? agence.getAdresse().getRue() : "",
-                        agence.getAdresse().getAdresseComplete() != null ? agence.getAdresse().getAdresseComplete() : "");
-                }
-
                 String[] data = {
                         agence.getId().toString(),
                         agence.getCode() != null ? agence.getCode() : "",
@@ -341,7 +325,7 @@ public class ExportImportService {
                         agence.getEmail() != null ? agence.getEmail() : "",
                         agence.getTel() != null ? agence.getTel() : "",
                         agence.getRegion() != null ? agence.getRegion() : "",
-                        adresse
+                        agence.getAdresseComplete() != null ? agence.getAdresseComplete() : ""
                 };
                 csvWriter.writeNext(data);
             }
@@ -491,12 +475,6 @@ public class ExportImportService {
                         }
                     }
 
-                    // Créer l'adresse
-                    Adresse adresse = Adresse.builder()
-                            .adresseComplete(adresseCompleteStr != null ? adresseCompleteStr : "")
-                            .build();
-                    adresse = adresseRepository.save(adresse);
-
                     // Créer l'agence
                     Agences agence = new Agences();
                     agence.setCode(code);
@@ -504,7 +482,7 @@ public class ExportImportService {
                     agence.setEmail(email);
                     agence.setTel(tel);
                     agence.setRegion(region);
-                    agence.setAdresse(adresse);
+                    agence.setAdresseComplete(adresseCompleteStr != null ? adresseCompleteStr : "");
 
                     agenceRepository.save(agence);
                     successCount++;
@@ -556,12 +534,6 @@ public class ExportImportService {
                         }
                     }
 
-                    // Créer l'adresse
-                    Adresse adresse = Adresse.builder()
-                            .adresseComplete(adresseCompleteStr != null ? adresseCompleteStr : "")
-                            .build();
-                    adresse = adresseRepository.save(adresse);
-
                     // Créer l'agence
                     Agences agence = new Agences();
                     agence.setCode(code);
@@ -569,7 +541,7 @@ public class ExportImportService {
                     agence.setEmail(email);
                     agence.setTel(tel);
                     agence.setRegion(region);
-                    agence.setAdresse(adresse);
+                    agence.setAdresseComplete(adresseCompleteStr != null ? adresseCompleteStr : "");
 
                     agenceRepository.save(agence);
                     successCount++;

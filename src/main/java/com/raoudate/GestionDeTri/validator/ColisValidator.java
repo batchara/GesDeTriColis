@@ -37,8 +37,8 @@ public class ColisValidator {
 			errors.add("Veuillez renseigner le téléphone du destinataire");
 		}
 
-		if (dto.getAdresse() == null && !StringUtils.hasText(dto.getAdresseDetectee())) {
-			errors.add("Veuillez renseigner une adresse (manuelle ou détectée)");
+		if (!StringUtils.hasText(dto.getAdresseDest())) {
+			errors.add("Veuillez renseigner l'adresse de destination");
 		}
 
 		return errors;

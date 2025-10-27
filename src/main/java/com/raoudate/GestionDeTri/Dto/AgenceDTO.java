@@ -18,10 +18,11 @@ public class AgenceDTO {
     private String email;
     private String tel;
     private String numTel; // Alias pour tel
-    private String quartier;
     private String region;
+    private String adresseComplete;
+    private Double latitude;
+    private Double longitude;
     private String status; // ACTIVE, INACTIVE
-    private AdresseDTO adresse;
 
     public static AgenceDTO fromEntity(Agences agences) {
         if (agences == null) {
@@ -35,8 +36,10 @@ public class AgenceDTO {
                 .email(agences.getEmail())
                 .tel(agences.getTel())
                 .numTel(agences.getTel())
+                .adresseComplete(agences.getAdresseComplete())
+                .latitude(agences.getLatitude())
+                .longitude(agences.getLongitude())
                 .status("ACTIVE") // Par défaut
-                .adresse(AdresseDTO.fromEntity(agences.getAdresse()))
                 .build();
     }
 
@@ -50,7 +53,9 @@ public class AgenceDTO {
         agences.setRegion(dto.getRegion());
         agences.setEmail(dto.getEmail());
         agences.setTel(dto.getTel() != null ? dto.getTel() : dto.getNumTel());
-        agences.setAdresse(AdresseDTO.toEntity(dto.getAdresse()));
+        agences.setAdresseComplete(dto.getAdresseComplete());
+        agences.setLatitude(dto.getLatitude());
+        agences.setLongitude(dto.getLongitude());
         return agences;
     }
 }

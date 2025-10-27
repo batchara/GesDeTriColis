@@ -20,8 +20,8 @@ public class AgenceValidators {
         if (!StringUtils.hasText(agenceDTO.getNom())) {
             errors.add("Veuillez renseigner le nom de l'agence");
         }
-        if (agenceDTO.getAdresse() == null) {
-            errors.add("Veuillez renseigner l'adresse de l'agence");
+        if (!StringUtils.hasText(agenceDTO.getAdresseComplete())) {
+            errors.add("Veuillez renseigner l'adresse complète de l'agence");
         }
 
           if(!StringUtils.hasText(agenceDTO.getRegion())) {
