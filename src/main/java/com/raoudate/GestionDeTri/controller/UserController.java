@@ -138,6 +138,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    
     @PatchMapping
     public ResponseEntity<?> changePassword(
             @RequestBody ChangePasswordRequest request,
@@ -145,5 +146,14 @@ public class UserController {
     ) {
         service.changePassword(request, connectedUser);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Vérifier si un utilisateur existe par email
+     */
+    @GetMapping("/exists/email/{email}")
+    public ResponseEntity<Boolean> checkUserExistsByEmail(@PathVariable String email) {
+        boolean exists = service.existsByEmail(email);
+        return ResponseEntity.ok(exists);
     }
 }

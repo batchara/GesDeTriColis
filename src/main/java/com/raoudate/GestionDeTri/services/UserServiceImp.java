@@ -1,6 +1,8 @@
 package com.raoudate.GestionDeTri.services;
 import com.raoudate.GestionDeTri.Dto.CreateUserRequest;
 import com.raoudate.GestionDeTri.Dto.UserDTO;
+import com.raoudate.GestionDeTri.Exception.BusinessErrorCode;
+import com.raoudate.GestionDeTri.Exception.BusinessException;
 import com.raoudate.GestionDeTri.auth.ChangePasswordRequest;
 import com.raoudate.GestionDeTri.model.Role;
 import com.raoudate.GestionDeTri.model.User;
@@ -67,7 +69,7 @@ public class UserServiceImp implements UserService {
         
         // Vérifier si l'email existe déjà
         if (repository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalStateException("Un utilisateur avec cet email existe déjà");
+            throw new BusinessException(BusinessErrorCode.USER_ALREADY_EXISTS);
         }
 
         // Déterminer le nom du rôle
@@ -291,5 +293,12 @@ public class UserServiceImp implements UserService {
     @Override
     public void delete(Integer id) {
 
+    }
+
+    /**
+     * Vérifier si un utilisateur existe par email
+     */
+    public boolean existsByEmail(String email) {
+        return repository.findByEmail(email).isPresent();
     }
 }

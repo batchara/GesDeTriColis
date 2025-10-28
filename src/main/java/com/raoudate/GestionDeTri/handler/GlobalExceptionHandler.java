@@ -1,6 +1,7 @@
 package com.raoudate.GestionDeTri.handler;
 
 import com.raoudate.GestionDeTri.Exception.BusinessErrorCode;
+import com.raoudate.GestionDeTri.Exception.BusinessException;
 import jakarta.mail.MessagingException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -140,7 +141,16 @@ public class GlobalExceptionHandler {
                 );
     }
 
-
-
-
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ExceptionResponse> handleException(BusinessException exp) {
+        return ResponseEntity
+                .status(exp.getErrorCode().getHttpStatus())
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorCode(exp.getErrorCode().getCode() + "")
+                                .businessErrorDescription(exp.getErrorCode().getDescription())
+                                .error(exp.getMessage())
+                                .build()
+                );
+    }
 }

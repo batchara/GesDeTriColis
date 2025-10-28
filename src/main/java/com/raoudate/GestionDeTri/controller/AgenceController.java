@@ -1,6 +1,8 @@
 package com.raoudate.GestionDeTri.controller;
 
 import com.raoudate.GestionDeTri.Dto.AgenceDTO;
+import com.raoudate.GestionDeTri.Exception.BusinessErrorCode;
+import com.raoudate.GestionDeTri.Exception.BusinessException;
 import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,17 @@ public class AgenceController {
     @PostMapping
     public ResponseEntity<AgenceDTO> createAgence(@RequestBody AgenceDTO agenceDTO) {
         System.out.println("********** CREATING AGENCY: " + agenceDTO.getNom() + " **********");
+        
+        // Vérifier si l'agence existe déjà par code
+        if (agenceDTO.getCode() != null && agenceRepository.findByCode(agenceDTO.getCode()).isPresent()) {
+            throw new BusinessException(BusinessErrorCode.AGENCE_ALREADY_EXISTS);
+        }
+        
+        // Vérifier si l'agence existe déjà par label (nom)
+        if (agenceDTO.getNom() != null && agenceRepository.findByLabel(agenceDTO.getNom()).isPresent()) {
+            throw new BusinessException(BusinessErrorCode.AGENCE_ALREADY_EXISTS);
+        }
+        
         Agences agence = AgenceDTO.toEntity(agenceDTO);
         Agences savedAgence = agenceRepository.save(agence);
         return ResponseEntity.ok(AgenceDTO.fromEntity(savedAgence));
@@ -74,5 +87,17 @@ public class AgenceController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/exists/code/{code}")
+    public ResponseEntity<Boolean> checkAgencyExistsByCode(@PathVariable String code) {
+        boolean exists = agenceRepository.findByCode(code).isPresent();
+        return ResponseEntity.ok(exists);
+    }
+
+    @GetMapping("/exists/name/{name}")
+    public ResponseEntity<Boolean> checkAgencyExistsByName(@PathVariable String name) {
+        boolean exists = agenceRepository.findByLabel(name).isPresent();
+        return ResponseEntity.ok(exists);
     }
 }

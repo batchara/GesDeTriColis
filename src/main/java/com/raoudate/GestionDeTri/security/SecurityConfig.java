@@ -98,8 +98,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Autoriser l'UI Angular en dev ; adapte si ton front est sur un autre hôte/port
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:4200"));
+        // Autoriser l'UI Angular en dev : localhost + accès via IP du réseau local
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:4200",
+            "http://127.0.0.1:4200",
+            "http://*:4200"  // Permet l'accès depuis n'importe quelle IP sur le port 4200
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

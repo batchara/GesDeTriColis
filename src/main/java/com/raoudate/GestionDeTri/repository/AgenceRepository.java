@@ -9,5 +9,5 @@ public interface AgenceRepository extends JpaRepository<Agences, Integer> {
 
     Optional<Agences> findByLabel(String label);
 
-    Optional<Agences> findByCode(Agences code);
+    Optional<Agences> findByCode(String code);
 }
