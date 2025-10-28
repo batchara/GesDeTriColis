@@ -39,7 +39,7 @@ public class AgenceDTO {
                 .adresseComplete(agences.getAdresseComplete())
                 .latitude(agences.getLatitude())
                 .longitude(agences.getLongitude())
-                .status("ACTIVE") // Par défaut
+                .status(agences.getStatus() != null ? agences.getStatus() : "ACTIVE")
                 .build();
     }
 
@@ -56,6 +56,7 @@ public class AgenceDTO {
         agences.setAdresseComplete(dto.getAdresseComplete());
         agences.setLatitude(dto.getLatitude());
         agences.setLongitude(dto.getLongitude());
+        agences.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
         return agences;
     }
 }

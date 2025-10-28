@@ -58,6 +58,9 @@ public class AgenceController {
                     existingAgence.setAdresseComplete(agenceDTO.getAdresseComplete());
                     existingAgence.setLatitude(agenceDTO.getLatitude());
                     existingAgence.setLongitude(agenceDTO.getLongitude());
+                    if (agenceDTO.getStatus() != null) {
+                        existingAgence.setStatus(agenceDTO.getStatus());
+                    }
                     Agences updatedAgence = agenceRepository.save(existingAgence);
                     return ResponseEntity.ok(AgenceDTO.fromEntity(updatedAgence));
                 })

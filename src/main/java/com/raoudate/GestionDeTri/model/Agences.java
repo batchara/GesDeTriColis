@@ -37,7 +37,10 @@ public class Agences extends AbstractEntity {
     private Double longitude;
     
     @Column(length = 300, nullable = false)
-    private String adresseComplete;   
+    private String adresseComplete;
+    
+    @Column(length = 20)
+    private String status = "ACTIVE";  // Valeurs possibles: ACTIVE, MAINTENANCE
 
 
 
