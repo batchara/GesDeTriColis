@@ -77,6 +77,7 @@ public class SecurityConfig {
                                 .requestMatchers(DELETE,"/api/v1/admin/**").hasAuthority(ADMIN_DELETE.name())
 
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/home/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
                                 .requestMatchers("/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -21,6 +22,7 @@ import static com.raoudate.GestionDeTri.Enum.RoleType.OPERATEUR;
 @SpringBootApplication
 @EnableJpaAuditing
 @EnableAsync
+@EnableCaching
 public class GestionDeTriApplication {
 
 	private static final Logger log = LoggerFactory.getLogger(GestionDeTriApplication.class);
