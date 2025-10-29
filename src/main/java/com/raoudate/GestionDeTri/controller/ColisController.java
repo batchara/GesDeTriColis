@@ -22,10 +22,10 @@ public class ColisController {
 
     /**
      * Récupérer tous les colis
-     * Accessible par Admin et Superviseur
+     * Accessible par Admin, Superviseur et Opérateur
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR', 'OPERATEUR')")
     public ResponseEntity<List<ColisDTO>> getAllColis() {
         log.info("Récupération de tous les colis");
         List<ColisDTO> colisList = colisService.findAll();
@@ -34,10 +34,10 @@ public class ColisController {
 
     /**
      * Créer un nouveau colis
-     * Accessible par Admin et Superviseur
+     * Accessible par Admin, Superviseur et Opérateur
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR', 'OPERATEUR')")
     public ResponseEntity<ColisDTO> createColis(@RequestBody ColisDTO colisDTO) {
         log.info("Création d'un nouveau colis pour destinataire: {}", colisDTO.getNomDest());
         try {
@@ -51,10 +51,10 @@ public class ColisController {
 
     /**
      * Mettre à jour un colis existant
-     * Accessible par Admin et Superviseur
+     * Accessible par Admin, Superviseur et Opérateur
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR', 'OPERATEUR')")
     public ResponseEntity<ColisDTO> updateColis(
             @PathVariable Integer id,
             @RequestBody ColisDTO colisDTO) {

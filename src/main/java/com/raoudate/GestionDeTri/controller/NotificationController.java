@@ -18,7 +18,7 @@ import java.util.Map;
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "http://localhost:4200")
+// Pas besoin de @CrossOrigin ici car déjà configuré globalement dans SecurityConfig
 public class NotificationController {
 
     private final NotificationServiceImp notificationService;

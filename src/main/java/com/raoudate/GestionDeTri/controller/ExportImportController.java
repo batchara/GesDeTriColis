@@ -108,7 +108,7 @@ public class ExportImportController {
     // ==================== EXPORT AGENCES ====================
 
     @GetMapping("/agences/export/excel")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     @Operation(summary = "Exporter les agences en Excel", description = "Télécharge un fichier Excel contenant toutes les agences")
     public ResponseEntity<InputStreamResource> exportAgencesToExcel() {
         log.info("📥 Export des agences en Excel");
@@ -126,7 +126,7 @@ public class ExportImportController {
     }
 
     @GetMapping("/agences/export/csv")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     @Operation(summary = "Exporter les agences en CSV", description = "Télécharge un fichier CSV contenant toutes les agences")
     public ResponseEntity<InputStreamResource> exportAgencesToCSV() {
         log.info("📥 Export des agences en CSV");

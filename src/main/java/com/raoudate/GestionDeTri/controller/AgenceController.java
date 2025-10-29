@@ -7,6 +7,7 @@ import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,6 +59,7 @@ public class AgenceController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     public ResponseEntity<AgenceDTO> updateAgence(
             @PathVariable Integer id,
             @RequestBody AgenceDTO agenceDTO) {
@@ -81,6 +83,7 @@ public class AgenceController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     public ResponseEntity<Void> deleteAgence(@PathVariable Integer id) {
         if (agenceRepository.existsById(id)) {
             agenceRepository.deleteById(id);
