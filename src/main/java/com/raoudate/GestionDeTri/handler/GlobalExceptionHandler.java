@@ -128,6 +128,17 @@ public class GlobalExceptionHandler {
                 );
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ExceptionResponse> handleException(IllegalStateException exp) {
+        return ResponseEntity
+                .status(FORBIDDEN)
+                .body(
+                        ExceptionResponse.builder()
+                                .error(exp.getMessage())
+                                .build()
+                );
+    }
+
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<ExceptionResponse> handleException(TokenExpiredException exp) {
         return ResponseEntity

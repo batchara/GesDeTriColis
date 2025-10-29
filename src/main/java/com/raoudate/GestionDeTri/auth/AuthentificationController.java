@@ -41,5 +41,12 @@ public class AuthentificationController {
         return ResponseEntity.ok(new MessageResponse("Votre compte a été activé avec succès !"));
     }
 
+    @PostMapping("/resend-activation")
+    public ResponseEntity<MessageResponse> resendActivation(
+            @RequestParam String email) throws MessagingException {
+        service.resendActivation(email);
+        return ResponseEntity.ok(new MessageResponse("Un nouveau code d'activation a été envoyé à votre email."));
+    }
+
 
 }

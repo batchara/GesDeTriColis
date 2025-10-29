@@ -47,8 +47,12 @@ public class AuthenticationService {
     private String activationUrl;
 
     public String register( RegistrationRequest request) throws MessagingException {
-        // Trouver le rôle demandé dans la base de données (pas toujours ADMIN!)
-        String requestedRoleName = "ROLE_" + request.getRole().name();
+        // Si aucun rôle n'est spécifié, utiliser OPERATEUR par défaut (inscription publique)
+        // Si un rôle est spécifié, l'utiliser (création par admin)
+        String requestedRoleName = request.getRole() != null 
+            ? "ROLE_" + request.getRole().name() 
+            : "ROLE_OPERATEUR";
+            
         var userRole = roleRepository.findByName(requestedRoleName)
                 .orElseThrow(() -> new IllegalStateException(
                     requestedRoleName + " was not initialized. Please check role initialization."
@@ -131,6 +135,17 @@ public class AuthenticationService {
         );
         var claims = new HashMap<String, Object>();
         var user = ((User) auth.getPrincipal());
+        
+        // Vérifier si le compte est activé
+        if (!user.isEnabled()) {
+            throw new IllegalStateException("Votre compte n'est pas activé. Veuillez vérifier votre email pour activer votre compte.");
+        }
+        
+        // Vérifier si le compte est bloqué
+        if (!user.isAccountNonLocked()) {
+            throw new IllegalStateException("Votre compte est bloqué. Veuillez contacter l'administrateur pour plus d'informations.");
+        }
+        
         claims.put("fulName", user.getEmail());
         var jwtToken = jwtService.generateToken(claims, user);
                 // persist the generated JWT so we can revoke it on logout
@@ -187,5 +202,20 @@ public class AuthenticationService {
                     "Your account has been activated!"
             );
 
+    }
+
+    public void resendActivation(String email) throws MessagingException {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé avec cet email"));
+
+        if (user.isEnabled()) {
+            throw new IllegalStateException("Le compte est déjà activé");
+        }
+
+        // Récupérer l'ancien token s'il existe
+        Token oldToken = tokenRepository.findTopByUserOrderByCreatedAtDesc(user).orElse(null);
+
+        // Générer et envoyer un nouveau token
+        sendValidationEmail(user, oldToken);
     }
 }

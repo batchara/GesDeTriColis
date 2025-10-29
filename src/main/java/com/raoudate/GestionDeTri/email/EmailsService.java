@@ -35,7 +35,7 @@ public class EmailsService {
         if(emailTemplate==null){
             templateName = "activate_account";
         }else{
-            templateName = emailTemplate.name();
+            templateName = emailTemplate.getName();
         }
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();

@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.boot.CommandLineRunner;
 import static com.raoudate.GestionDeTri.Enum.RoleType.ADMIN;
 import static com.raoudate.GestionDeTri.Enum.RoleType.SUPERVISEUR;
+import static com.raoudate.GestionDeTri.Enum.RoleType.OPERATEUR;
 
 // use RegistrationRequest.builder() directly
 
@@ -53,7 +54,7 @@ public class GestionDeTriApplication {
 		}
 		
 		// Créer le rôle OPERATEUR
-		String operateurRoleName = "ROLE_OPERATEUR";
+		String operateurRoleName = "ROLE_" + OPERATEUR.name();
 		if (roleRepository.findByName(operateurRoleName).isEmpty()) {
 			Role r = new Role();
 			r.setName(operateurRoleName);
