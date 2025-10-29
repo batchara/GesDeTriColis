@@ -86,24 +86,17 @@ public class User extends AbstractEntity implements UserDetails, Principal {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Utiliser les permissions de la base de données plutôt que celles de l'enum
         List<GrantedAuthority> authorities = new ArrayList<>();
-        
-        System.out.println("🔍 [getAuthorities] User: " + email);
-        System.out.println("🔍 [getAuthorities] Nombre de rôles: " + (roles != null ? roles.size() : 0));
         
         // Ajouter les permissions depuis les rôles de la base de données
         if (roles != null) {
             for (Role dbRole : roles) {
                 // Ajouter le rôle lui-même
-                System.out.println("🔍 [getAuthorities] Rôle: " + dbRole.getName());
                 authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(dbRole.getName()));
                 
                 // Ajouter toutes les permissions du rôle
                 if (dbRole.getPermissions() != null) {
-                    System.out.println("🔍 [getAuthorities] Nombre de permissions: " + dbRole.getPermissions().size());
                     for (Permissions permission : dbRole.getPermissions()) {
-                        System.out.println("🔍 [getAuthorities] Permission: " + permission.getNom().name());
                         authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(permission.getNom().name()));
                     }
                 }
@@ -112,12 +105,8 @@ public class User extends AbstractEntity implements UserDetails, Principal {
         
         // Si aucun rôle n'est assigné, donner un rôle par défaut
         if (authorities.isEmpty()) {
-            System.out.println("⚠️ [getAuthorities] Aucun rôle trouvé, utilisation du rôle par défaut: ROLE_OPERATEUR");
             authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_OPERATEUR"));
         }
-        
-        System.out.println("✅ [getAuthorities] Total authorities: " + authorities.size());
-        authorities.forEach(auth -> System.out.println("   - " + auth.getAuthority()));
         
         return authorities;
     }

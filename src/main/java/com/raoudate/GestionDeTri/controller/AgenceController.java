@@ -22,12 +22,10 @@ public class AgenceController {
 
     @GetMapping
     public ResponseEntity<List<AgenceDTO>> getAllAgences() {
-        System.out.println("********** GETTING ALL AGENCIES **********");
         List<Agences> agences = agenceRepository.findAll();
         List<AgenceDTO> agenceDTOs = agences.stream()
                 .map(AgenceDTO::fromEntity)
                 .collect(Collectors.toList());
-        System.out.println("********** NOMBRE D'AGENCES: " + agenceDTOs.size() + " **********");
         return ResponseEntity.ok(agenceDTOs);
     }
 
@@ -41,8 +39,6 @@ public class AgenceController {
 
     @PostMapping
     public ResponseEntity<AgenceDTO> createAgence(@RequestBody AgenceDTO agenceDTO) {
-        System.out.println("********** CREATING AGENCY: " + agenceDTO.getNom() + " **********");
-        
         // Vérifier si l'agence existe déjà par code
         if (agenceDTO.getCode() != null && agenceRepository.findByCode(agenceDTO.getCode()).isPresent()) {
             throw new BusinessException(BusinessErrorCode.AGENCE_ALREADY_EXISTS);
