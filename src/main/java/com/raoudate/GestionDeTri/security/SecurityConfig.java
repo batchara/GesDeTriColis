@@ -79,6 +79,7 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/home/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/audit/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
                                 .requestMatchers("/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 .requestMatchers("/api/colis/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")

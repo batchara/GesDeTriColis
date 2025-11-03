@@ -1,5 +1,6 @@
 package com.raoudate.GestionDeTri.auth;
 
+import com.raoudate.GestionDeTri.audit.AuditLogService;
 import com.raoudate.GestionDeTri.email.EmailTemplateName;
 import com.raoudate.GestionDeTri.email.EmailsService;
 import com.raoudate.GestionDeTri.handler.InvalidTokenException;
@@ -11,15 +12,19 @@ import com.raoudate.GestionDeTri.repository.UserRepository;
 import com.raoudate.GestionDeTri.security.JwtService;
 import com.raoudate.GestionDeTri.model.Token;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -42,6 +47,7 @@ public class AuthenticationService {
     private final EmailsService emailsService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final AuditLogService auditLogService;
 
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
@@ -126,43 +132,81 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate( AuthenticationRequest request) {
-
-        var auth= authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        var claims = new HashMap<String, Object>();
-        var user = ((User) auth.getPrincipal());
+        String ipAddress = getClientIpAddress();
+        String userAgent = getUserAgent();
         
-        // Vérifier si le compte est activé
-        if (!user.isEnabled()) {
-            throw new IllegalStateException("Votre compte n'est pas activé. Veuillez vérifier votre email pour activer votre compte.");
+        try {
+            var auth= authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            var claims = new HashMap<String, Object>();
+            var user = ((User) auth.getPrincipal());
+            
+            // Vérifier si le compte est activé
+            if (!user.isEnabled()) {
+                auditLogService.logAuthentication(
+                    request.getEmail(),
+                    "FAILED",
+                    "Tentative de connexion - Compte non activé",
+                    ipAddress,
+                    userAgent
+                );
+                throw new IllegalStateException("Votre compte n'est pas activé. Veuillez vérifier votre email pour activer votre compte.");
+            }
+            
+            // Vérifier si le compte est bloqué
+            if (!user.isAccountNonLocked()) {
+                auditLogService.logAuthentication(
+                    request.getEmail(),
+                    "FAILED",
+                    "Tentative de connexion - Compte bloqué",
+                    ipAddress,
+                    userAgent
+                );
+                throw new IllegalStateException("Votre compte est bloqué. Veuillez contacter l'administrateur pour plus d'informations.");
+            }
+            
+            claims.put("fulName", user.getEmail());
+            var jwtToken = jwtService.generateToken(claims, user);
+                    // persist the generated JWT so we can revoke it on logout
+                    try {
+                            Date expiration = jwtService.extractClaim(jwtToken, Claims::getExpiration);
+                            var tokenEntity = Token.builder()
+                                            .token(jwtToken)
+                                            .createdAt(LocalDateTime.now())
+                                            .expiresAt(expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+                                            .user(user)
+                                            .build();
+                            tokenRepository.save(tokenEntity);
+                    } catch (Exception ignored) {
+                            // if persisting token fails for any reason, continue returning token
+                    }
+            
+            // Logger la connexion réussie
+            auditLogService.logAuthentication(
+                request.getEmail(),
+                "SUCCESS",
+                "Connexion réussie",
+                ipAddress,
+                userAgent
+            );
+            
+            return AuthenticationResponse.builder()
+                    .token(jwtToken).build();
+        } catch (BadCredentialsException e) {
+            // Logger l'échec de connexion
+            auditLogService.logAuthentication(
+                request.getEmail(),
+                "FAILED",
+                "Identifiants invalides",
+                ipAddress,
+                userAgent
+            );
+            throw e;
         }
-        
-        // Vérifier si le compte est bloqué
-        if (!user.isAccountNonLocked()) {
-            throw new IllegalStateException("Votre compte est bloqué. Veuillez contacter l'administrateur pour plus d'informations.");
-        }
-        
-        claims.put("fulName", user.getEmail());
-        var jwtToken = jwtService.generateToken(claims, user);
-                // persist the generated JWT so we can revoke it on logout
-                try {
-                        Date expiration = jwtService.extractClaim(jwtToken, Claims::getExpiration);
-                        var tokenEntity = Token.builder()
-                                        .token(jwtToken)
-                                        .createdAt(LocalDateTime.now())
-                                        .expiresAt(expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
-                                        .user(user)
-                                        .build();
-                        tokenRepository.save(tokenEntity);
-                } catch (Exception ignored) {
-                        // if persisting token fails for any reason, continue returning token
-                }
-        return AuthenticationResponse.builder()
-                .token(jwtToken).build();
     }
 
     @Transactional(noRollbackFor = TokenExpiredException.class)
@@ -217,5 +261,32 @@ public class AuthenticationService {
 
         // Générer et envoyer un nouveau token
         sendValidationEmail(user, oldToken);
+    }
+    
+    private String getClientIpAddress() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) 
+                RequestContextHolder.currentRequestAttributes();
+            jakarta.servlet.http.HttpServletRequest request = attributes.getRequest();
+            
+            String xForwardedFor = request.getHeader("X-Forwarded-For");
+            if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+                return xForwardedFor.split(",")[0].trim();
+            }
+            return request.getRemoteAddr();
+        } catch (Exception e) {
+            return "UNKNOWN";
+        }
+    }
+
+    private String getUserAgent() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) 
+                RequestContextHolder.currentRequestAttributes();
+            jakarta.servlet.http.HttpServletRequest request = attributes.getRequest();
+            return request.getHeader("User-Agent");
+        } catch (Exception e) {
+            return "UNKNOWN";
+        }
     }
 }

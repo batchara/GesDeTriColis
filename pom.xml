@@ -112,6 +112,12 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- AOP pour l'audit automatique -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
 		<!-- Apache POI pour Excel -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>
