@@ -30,6 +30,16 @@ public class UserController {
     }
 
     /**
+     * Rechercher des utilisateurs par nom, prénom ou email
+     */
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    public ResponseEntity<List<User>> searchUsers(@RequestParam String query) {
+        List<User> users = service.searchUsers(query);
+        return ResponseEntity.ok(users);
+    }
+
+    /**
      * Récupérer un utilisateur par son ID (accessible aux ADMIN et SUPERVISEUR)
      */
     @GetMapping("/{id}")

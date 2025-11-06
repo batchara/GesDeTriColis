@@ -3,11 +3,13 @@ package com.raoudate.GestionDeTri.services;
 import com.raoudate.GestionDeTri.Dto.NotificationDTO;
 import com.raoudate.GestionDeTri.Enum.NotificationEntity;
 import com.raoudate.GestionDeTri.Enum.NotificationStatus;
+import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.model.Notification;
 import com.raoudate.GestionDeTri.model.User;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.repository.NotificationRepository;
+import com.raoudate.GestionDeTri.repository.TokenRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
 import com.raoudate.GestionDeTri.services.api.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class NotificationServiceImp implements NotificationService {
     private final UserRepository userRepository;
     private final AgenceRepository agenceRepository;
     private final ColisRepository colisRepository;
+    private final TokenRepository tokenRepository;
 
     @Override
     @Transactional
@@ -56,6 +59,12 @@ public class NotificationServiceImp implements NotificationService {
         
         List<Notification> notifications = notificationRepository
                 .findByTargetUserIdOrderByDateCreationDesc(userEmail);
+        
+        long traiteeCount = notifications.stream()
+                .filter(n -> n.getStatus() == NotificationStatus.TRAITEE)
+                .count();
+        
+        log.info("📊 Total notifications: {}, dont TRAITEE: {}", notifications.size(), traiteeCount);
         
         return notifications.stream()
                 .map(NotificationDTO::fromEntity)
@@ -131,25 +140,62 @@ public class NotificationServiceImp implements NotificationService {
         // Effectuer la suppression selon le type d'entité
         switch (entityType) {
             case UTILISATEUR:
-                userRepository.deleteById(entityId);
-                log.info("Utilisateur {} supprimé", entityId);
+                // ⚠️ Vérifier si l'utilisateur existe encore (peut avoir été supprimé entre-temps)
+                if (userRepository.existsById(entityId)) {
+                    User userToDelete = userRepository.findById(entityId).get();
+                    tokenRepository.deleteAllByUser(userToDelete);
+                    log.info("🗑️ Tokens de l'utilisateur {} supprimés", entityId);
+                    
+                    userRepository.deleteById(entityId);
+                    log.info("✅ Utilisateur {} supprimé", entityId);
+                } else {
+                    log.warn("⚠️ Utilisateur {} déjà supprimé, notification marquée comme traitée", entityId);
+                }
                 break;
+                
             case AGENCE:
-                agenceRepository.deleteById(entityId);
-                log.info("Agence {} supprimée", entityId);
+                // ⚠️ Vérifier si l'agence existe encore
+                if (agenceRepository.existsById(entityId)) {
+                    Agences agenceToDelete = agenceRepository.findById(entityId).get();
+                    
+                    // Désaffecter les colis de cette agence (les mettre à null)
+                    long colisCount = colisRepository.countByAgenceAffectee(agenceToDelete);
+                    if (colisCount > 0) {
+                        log.info("⚠️ Désaffectation de {} colis de l'agence {}", colisCount, entityId);
+                        colisRepository.findByAgenceAffectee(agenceToDelete)
+                            .forEach(colis -> {
+                                colis.setAgenceAffectee(null);
+                                colisRepository.save(colis);
+                            });
+                    }
+                    
+                    agenceRepository.deleteById(entityId);
+                    log.info("✅ Agence {} supprimée (avec {} colis désaffectés)", entityId, colisCount);
+                } else {
+                    log.warn("⚠️ Agence {} déjà supprimée, notification marquée comme traitée", entityId);
+                }
                 break;
+                
             case COLIS:
-                colisRepository.deleteById(entityId);
-                log.info("Colis {} supprimé", entityId);
+                if (colisRepository.existsById(entityId)) {
+                    colisRepository.deleteById(entityId);
+                    log.info("✅ Colis {} supprimé", entityId);
+                } else {
+                    log.warn("⚠️ Colis {} déjà supprimé, notification marquée comme traitée", entityId);
+                }
                 break;
             default:
                 throw new IllegalStateException("Type d'entité non géré: " + entityType);
         }
         
-        // Mettre à jour la notification originale (garder dans l'historique)
+        // ✅ Mettre à jour la notification originale et la garder dans l'historique
         notification.setStatus(NotificationStatus.TRAITEE);
+        notification.setActionRequired(false); // Plus d'action requise
         notification.setReason("Approuvée par l'administrateur");
-        notificationRepository.save(notification);
+        Notification savedNotification = notificationRepository.save(notification);
+        log.info("📚 Notification {} marquée comme TRAITEE et conservée dans l'historique", notificationId);
+        log.info("📚 Vérification après save - Status: {}, ActionRequired: {}, Reason: {}", 
+                savedNotification.getStatus(), savedNotification.getActionRequired(), savedNotification.getReason());
         
         // Créer une notification de réponse pour le superviseur
         Notification responseNotification = Notification.builder()
@@ -189,10 +235,12 @@ public class NotificationServiceImp implements NotificationService {
         NotificationEntity entityType = notification.getEntityType();
         Integer entityId = notification.getEntityId();
         
-        // Mettre à jour la notification originale (garder dans l'historique)
+        // ✅ Mettre à jour la notification originale et la garder dans l'historique
         notification.setStatus(NotificationStatus.TRAITEE);
+        notification.setActionRequired(false); // Plus d'action requise
         notification.setReason(reason != null ? reason : "Rejetée par l'administrateur");
         notificationRepository.save(notification);
+        log.info("Notification {} marquée comme TRAITEE et conservée dans l'historique", notificationId);
         
         // Créer une notification de réponse pour le superviseur
         Notification responseNotification = Notification.builder()
@@ -250,10 +298,12 @@ public class NotificationServiceImp implements NotificationService {
         // Note: La modification réelle de l'agence sera faite dans le contrôleur
         // car nous avons besoin des données complètes de l'agence
         
-        // Mettre à jour la notification originale
+        // ✅ Mettre à jour la notification originale et la garder dans l'historique
         notification.setStatus(NotificationStatus.TRAITEE);
+        notification.setActionRequired(false); // Plus d'action requise
         notification.setReason("Approuvée par l'administrateur");
         notificationRepository.save(notification);
+        log.info("Notification {} marquée comme TRAITEE et conservée dans l'historique", notificationId);
         
         // Créer une notification de réponse pour le superviseur
         Notification responseNotification = Notification.builder()
@@ -291,10 +341,12 @@ public class NotificationServiceImp implements NotificationService {
         NotificationEntity entityType = notification.getEntityType();
         Integer entityId = notification.getEntityId();
         
-        // Mettre à jour la notification originale
+        // ✅ Mettre à jour la notification originale et la garder dans l'historique
         notification.setStatus(NotificationStatus.TRAITEE);
+        notification.setActionRequired(false); // Plus d'action requise
         notification.setReason(reason != null ? reason : "Rejetée par l'administrateur");
         notificationRepository.save(notification);
+        log.info("Notification {} marquée comme TRAITEE et conservée dans l'historique", notificationId);
         
         // Créer une notification de réponse pour le superviseur
         Notification responseNotification = Notification.builder()

@@ -11,4 +11,5 @@ import lombok.Setter;
 public class AuthenticationResponse {
 
     private final String token;
+    private final boolean mustChangePassword;
 }

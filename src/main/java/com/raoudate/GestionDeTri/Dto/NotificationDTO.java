@@ -38,7 +38,7 @@ public class NotificationDTO {
             return null;
         }
 
-        return NotificationDTO.builder()
+        NotificationDTO dto = NotificationDTO.builder()
                 .id(notification.getId())
                 .type(notification.getType())
                 .entityType(notification.getEntityType())
@@ -53,6 +53,13 @@ public class NotificationDTO {
                 .details(notification.getDetails())
                 .createdAt(notification.getDateCreation())
                 .build();
+        
+        // Log pour debug
+        if (notification.getStatus() == com.raoudate.GestionDeTri.Enum.NotificationStatus.TRAITEE) {
+            System.out.println("📚 Notification TRAITEE convertie - ID: " + notification.getId() + ", Reason: " + notification.getReason());
+        }
+        
+        return dto;
     }
 
     /**

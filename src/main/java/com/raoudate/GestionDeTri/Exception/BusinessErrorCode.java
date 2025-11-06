@@ -31,6 +31,8 @@ public enum  BusinessErrorCode {
     AGENCE_NOT_FOUND(5100, NOT_FOUND, "Agence not found"),
     AGENCE_INVALID(5101, BAD_REQUEST, "Agence data is invalid"),
     AGENCE_ALREADY_EXISTS(5102, CONFLICT, "Agence already exists"),
+    AGENCE_CODE_ALREADY_EXISTS(5103, CONFLICT, "Une agence avec ce code existe déjà"),
+    AGENCE_NAME_ALREADY_EXISTS(5104, CONFLICT, "Une agence avec ce nom existe déjà"),
 
     // Adresse
     ADRESSE_NOT_FOUND(5200, NOT_FOUND, "Adresse not found"),
@@ -52,7 +54,8 @@ public enum  BusinessErrorCode {
     ACCESS_DENIED(6000, FORBIDDEN, "Access denied"),
     VALIDATION_ERROR(6001, BAD_REQUEST, "Validation error"),
     DUPLICATE_RESOURCE(6002, CONFLICT, "Duplicate resource"),
-    OPERATION_FAILED(6003, INTERNAL_SERVER_ERROR, "Operation failed");
+    OPERATION_FAILED(6003, INTERNAL_SERVER_ERROR, "Operation failed"),
+    EMAIL_SENDING_FAILED(6004, INTERNAL_SERVER_ERROR, "Failed to send email");
 
 
 

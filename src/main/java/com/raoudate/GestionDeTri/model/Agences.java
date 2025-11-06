@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class Agences extends AbstractEntity {
     
 
-    @Column(name = "code")
+    @Column(name = "code", unique = true, nullable = false)
     private String code;
 
     @Column(name = "email")
@@ -30,7 +30,7 @@ public class Agences extends AbstractEntity {
      @Column(length = 100)
     private String region;
 
-     @Column(length = 100)
+     @Column(length = 100, unique = true, nullable = false)
     private String label;
 
     private Double latitude;

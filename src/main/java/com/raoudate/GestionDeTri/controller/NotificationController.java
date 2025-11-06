@@ -40,7 +40,7 @@ public class NotificationController {
      * Récupérer toutes les notifications de l'utilisateur connecté
      */
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     public ResponseEntity<List<NotificationDTO>> getAllNotifications(Authentication authentication) {
         String userEmail = authentication.getName();
         log.info("Récupération des notifications pour: {}", userEmail);
@@ -53,7 +53,7 @@ public class NotificationController {
      * Récupérer les notifications non lues
      */
     @GetMapping("/unread")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(Authentication authentication) {
         String userEmail = authentication.getName();
         log.info("Récupération des notifications non lues pour: {}", userEmail);
@@ -66,7 +66,7 @@ public class NotificationController {
      * Compter les notifications non lues
      */
     @GetMapping("/unread/count")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     public ResponseEntity<Long> getUnreadCount(Authentication authentication) {
         String userEmail = authentication.getName();
         long count = notificationService.getUnreadCount(userEmail);
@@ -77,7 +77,7 @@ public class NotificationController {
      * Marquer une notification comme lue
      */
     @PutMapping("/{id}/read")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     public ResponseEntity<NotificationDTO> markAsRead(@PathVariable Integer id) {
         log.info("Marquage de la notification {} comme lue", id);
         
@@ -89,7 +89,7 @@ public class NotificationController {
      * Marquer toutes les notifications comme lues
      */
     @PutMapping("/read-all")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
         String userEmail = authentication.getName();
         log.info("Marquage de toutes les notifications comme lues pour: {}", userEmail);

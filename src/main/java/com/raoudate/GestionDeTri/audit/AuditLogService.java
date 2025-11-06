@@ -162,13 +162,15 @@ public class AuditLogService {
     /**
      * Récupère les logs filtrés
      */
-    public List<AuditLog> getFilteredLogs(String action, String username, String startDate, String endDate) {
+    public List<AuditLog> getFilteredLogs(String action, String username, String entityType, String startDate, String endDate) {
         List<AuditLog> allLogs = getAllLogs();
         
         return allLogs.stream()
                 .filter(l -> action == null || action.isEmpty() || l.getAction().equals(action))
                 .filter(l -> username == null || username.isEmpty() || 
                         (l.getUsername() != null && l.getUsername().contains(username)))
+                .filter(l -> entityType == null || entityType.isEmpty() ||
+                        (l.getEntityType() != null && l.getEntityType().equals(entityType)))
                 .collect(Collectors.toList());
     }
 
@@ -227,9 +229,13 @@ public class AuditLogService {
     private String getCurrentUserRole() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getAuthorities() != null && !auth.getAuthorities().isEmpty()) {
+            // Extraire uniquement le rôle principal (ROLE_ADMIN, ROLE_SUPERVISEUR, ROLE_OPERATEUR)
+            // et masquer les permissions détaillées pour des raisons de sécurité
             return auth.getAuthorities().stream()
                     .map(Object::toString)
-                    .collect(Collectors.joining(", "));
+                    .filter(authority -> authority.startsWith("ROLE_"))
+                    .findFirst()
+                    .orElse("UNKNOWN");
         }
         return "UNKNOWN";
     }

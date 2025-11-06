@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(red ->
                         red.requestMatchers(
                                         "/auth/**",
-                                        "/api/v1/auth/register",
+                                        "/api/v1/auth/**",
                                         "/v2/api-docs",
                                         "/v3/api-docs",
                                         "/v3/api-docs/**",
@@ -57,9 +57,10 @@ public class SecurityConfig {
                                         "/webjars/**",
                                         "/swagger-resources",
                                         "/swagger-resources/**"
-
-
                                 ).permitAll()
+                                
+                                // Endpoint d'inscription réservé aux administrateurs uniquement
+                                .requestMatchers("/auth/register").hasRole(ADMIN.name())
 
 
                                 .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(), SUPERVISEUR.name())
@@ -76,13 +77,14 @@ public class SecurityConfig {
                                 .requestMatchers(PUT,"/api/v1/admin/**").hasAuthority(ADMIN_UPDATE.name())
                                 .requestMatchers(DELETE,"/api/v1/admin/**").hasAuthority(ADMIN_DELETE.name())
 
-                                .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/home/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/audit/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
                                 .requestMatchers("/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 .requestMatchers("/api/colis/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
+                                .requestMatchers("/api/v1/ocr/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OPERATEUR")
+                                .requestMatchers("/ocr/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OPERATEUR")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -107,9 +109,11 @@ public class SecurityConfig {
             "http://127.0.0.1:4200",
             "http://*:4200"  // Permet l'accès depuis n'importe quelle IP sur le port 4200
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // Cache preflight requests for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

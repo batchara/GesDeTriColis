@@ -4,17 +4,26 @@ import com.raoudate.GestionDeTri.Dto.UserDTO;
 import com.raoudate.GestionDeTri.Exception.BusinessErrorCode;
 import com.raoudate.GestionDeTri.Exception.BusinessException;
 import com.raoudate.GestionDeTri.auth.ChangePasswordRequest;
+import com.raoudate.GestionDeTri.email.EmailTemplateName;
+import com.raoudate.GestionDeTri.email.EmailsService;
 import com.raoudate.GestionDeTri.model.Role;
+import com.raoudate.GestionDeTri.model.Token;
 import com.raoudate.GestionDeTri.model.User;
 import com.raoudate.GestionDeTri.repository.RoleRepository;
+import com.raoudate.GestionDeTri.repository.TokenRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
 import com.raoudate.GestionDeTri.services.api.UserService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +35,11 @@ public class UserServiceImp implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository repository;
     private final RoleRepository roleRepository;
+    private final TokenRepository tokenRepository;
+    private final EmailsService emailsService;
+    
+    @Value("${application.mailing.frontend.activation-url}")
+    private String activationUrl;
     public void changePassword(ChangePasswordRequest request, Principal connectedUser) {
 
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
@@ -54,6 +68,28 @@ public class UserServiceImp implements UserService {
     }
 
     /**
+     * Rechercher des utilisateurs par nom, prénom ou email
+     * Tri par pertinence : correspondances exactes en premier
+     */
+    public List<User> searchUsers(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAllUsers();
+        }
+        
+        String trimmedSearch = searchTerm.trim();
+        
+        // Si la recherche est trop courte (1-2 caractères), limiter les résultats
+        List<User> results = repository.searchUsers(trimmedSearch);
+        
+        if (trimmedSearch.length() <= 2) {
+            // Limiter à 10 résultats pour les recherches courtes
+            return results.stream().limit(10).toList();
+        }
+        
+        return results;
+    }
+
+    /**
      * Récupérer un utilisateur par son ID
      */
     public User getUserById(Integer id) {
@@ -62,8 +98,9 @@ public class UserServiceImp implements UserService {
     }
 
     /**
-     * Créer un nouvel utilisateur
+     * Créer un nouvel utilisateur avec envoi d'email d'activation
      */
+    @Transactional
     public User createUser(CreateUserRequest request) {
         System.out.println("🔵 [createUser] Début création utilisateur: " + request.getEmail());
         
@@ -84,17 +121,25 @@ public class UserServiceImp implements UserService {
         
         System.out.println("✅ [createUser] Rôle trouvé: " + role.getName() + " (ID: " + role.getId() + ")");
 
-        // Créer le nouvel utilisateur
+        // Utiliser le mot de passe fourni par l'admin (temporaire)
+        // Si aucun mot de passe n'est fourni, en générer un automatiquement
+        String temporaryPassword = (request.getPassword() != null && !request.getPassword().isEmpty()) 
+                ? request.getPassword() 
+                : generateTemporaryPassword();
+        System.out.println("🔵 [createUser] Mot de passe temporaire : " + (request.getPassword() != null ? "fourni par l'admin" : "généré automatiquement"));
+
+        // Créer le nouvel utilisateur (compte désactivé par défaut)
         User user = User.builder()
                 .nom(request.getNom())
                 .prenom(request.getPrenom())
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(passwordEncoder.encode(temporaryPassword))
                 .numTel(request.getNumTel())
                 .dateNaissance(request.getDateNaissance())
-                .accountLocked(request.getAccountLocked() != null ? request.getAccountLocked() : false)
-                .enabled(request.getEnabled() != null ? request.getEnabled() : true)
-                .roles(new HashSet<>()) // Initialiser explicitement
+                .accountLocked(false)
+                .enabled(false) // Compte désactivé jusqu'à l'activation
+                .mustChangePassword(true) // Forcer le changement de mot de passe
+                .roles(new HashSet<>())
                 .build();
 
         // Ajouter le rôle à l'utilisateur
@@ -108,7 +153,95 @@ public class UserServiceImp implements UserService {
         System.out.println("✅ [createUser] Utilisateur créé avec ID: " + savedUser.getId());
         System.out.println("✅ [createUser] Rôles après sauvegarde: " + savedUser.getRoles().size());
         
+        // Envoyer l'email d'activation avec le code
+        try {
+            sendActivationEmail(savedUser, temporaryPassword);
+            System.out.println("✅ [createUser] Email d'activation envoyé à: " + savedUser.getEmail());
+        } catch (MessagingException e) {
+            System.err.println("❌ [createUser] Échec envoi email: " + e.getMessage());
+            // Supprimer l'utilisateur si l'email ne peut pas être envoyé
+            repository.delete(savedUser);
+            throw new BusinessException(BusinessErrorCode.EMAIL_SENDING_FAILED);
+        }
+        
         return savedUser;
+    }
+    
+    /**
+     * Générer un mot de passe temporaire sécurisé
+     */
+    private String generateTemporaryPassword() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&+=!";
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder(12);
+        
+        // Assurer au moins un de chaque type
+        password.append("ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(random.nextInt(26))); // Majuscule
+        password.append("abcdefghijklmnopqrstuvwxyz".charAt(random.nextInt(26))); // Minuscule
+        password.append("0123456789".charAt(random.nextInt(10))); // Chiffre
+        password.append("@#$%^&+=!".charAt(random.nextInt(9))); // Caractère spécial
+        
+        // Remplir le reste
+        for (int i = 4; i < 12; i++) {
+            password.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        
+        // Mélanger les caractères
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = passwordArray.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[j];
+            passwordArray[j] = temp;
+        }
+        
+        return new String(passwordArray);
+    }
+    
+    /**
+     * Envoyer l'email d'activation avec le code
+     */
+    private void sendActivationEmail(User user, String temporaryPassword) throws MessagingException {
+        // Générer un code d'activation à 6 chiffres
+        String activationCode = generateActivationCode();
+        
+        // Sauvegarder le token d'activation avec le mot de passe temporaire
+        Token token = Token.builder()
+                .token(activationCode)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .temporaryPassword(temporaryPassword) // Stocker le mot de passe temporaire
+                .user(user)
+                .build();
+        tokenRepository.save(token);
+        
+        // Envoyer l'email avec le code d'activation uniquement
+        emailsService.sendEmail(
+                user.getEmail(),
+                user.nomComplet(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                activationUrl,
+                activationCode,
+                "Activation de votre compte - Société des Postes du Togo"
+        );
+        
+        System.out.println("📧 Email d'activation envoyé avec le code: " + activationCode);
+        System.out.println("🔐 Mot de passe temporaire stocké dans le token");
+    }
+    
+    /**
+     * Générer un code d'activation à 6 chiffres
+     */
+    private String generateActivationCode() {
+        String characters = "0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder code = new StringBuilder(6);
+        
+        for (int i = 0; i < 6; i++) {
+            code.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        
+        return code.toString();
     }
 
     /**
@@ -201,10 +334,23 @@ public class UserServiceImp implements UserService {
         System.out.println("🔍 [deleteUser] Utilisateur trouvé: " + user.getEmail());
         System.out.println("🔍 [deleteUser] Nom: " + user.getPrenom() + " " + user.getNom());
         
-        // Supprimer l'utilisateur (cascade delete s'occupera des relations)
-        repository.delete(user);
+        // Soft delete : marquer l'utilisateur comme supprimé au lieu de le supprimer physiquement
+        user.setDeleted(true);
+        user.setDeletedAt(java.time.Instant.now());
         
-        System.out.println("✅ [deleteUser] Utilisateur supprimé avec succès: " + user.getEmail());
+        // Récupérer l'utilisateur connecté pour traçabilité
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            user.setDeletedBy(authentication.getName());
+        } else {
+            user.setDeletedBy("SYSTEM");
+        }
+        
+        repository.save(user);
+        
+        System.out.println("✅ [deleteUser] Utilisateur marqué comme supprimé (soft delete): " + user.getEmail());
+        System.out.println("📋 [deleteUser] Supprimé par: " + user.getDeletedBy() + " à " + user.getDeletedAt());
     }
 
     /**
@@ -244,15 +390,18 @@ public class UserServiceImp implements UserService {
     }
 
     /**
-     * Déverrouiller un utilisateur
+     * 🔓 Déverrouiller un utilisateur et réinitialiser le compteur de tentatives
      */
     public void unlockUser(Integer id) {
         User user = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
         
         user.setAccountLocked(false);
+        user.setFailedLoginAttempts(0);
+        user.setLockTime(null);
+        user.setLastFailedLogin(null);
         repository.save(user);
-        System.out.println("🔓 [unlockUser] Utilisateur déverrouillé: " + user.getEmail());
+        System.out.println("🔓 [unlockUser] Utilisateur déverrouillé et compteur réinitialisé: " + user.getEmail());
     }
 
     @Override

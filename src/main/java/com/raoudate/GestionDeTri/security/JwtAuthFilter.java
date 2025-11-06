@@ -33,7 +33,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         System.out.println("🔐 [JwtAuthFilter] Requête: " + request.getMethod() + " " + request.getRequestURI());
         
-        if(request.getServletPath().contains("/api/v1/auth") ) {
+        if(request.getServletPath().contains("/auth") ) {
             System.out.println("✅ [JwtAuthFilter] Endpoint d'auth, skip filter");
             filterChain.doFilter(request, response);
             return;

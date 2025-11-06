@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Activation</title>
+    <title>Activation de Compte</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,35 +28,59 @@
         }
 
         .activation-code {
-            font-size: 20px;
+            font-size: 32px;
             font-weight: bold;
-            color: #000;
-            margin: 15px 0;
+            color: #007bff;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            letter-spacing: 5px;
         }
 
         .activation-link a {
             display: inline-block;
-            padding: 10px 15px;
+            padding: 12px 30px;
             background-color: #007bff;
             color: #fff !important;
             text-decoration: none;
             border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .activation-link a:hover {
+            background-color: #0056b3;
+        }
+        
+        .instructions {
+            margin: 20px 0;
+            color: #666;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Account Activation</h1>
-    <p class="greeting" th:text="'Hello ' + ${username} + ','"></p>
-    <p>Thank you for signing up! Please use the following activation code to activate your account:</p>
+    <h1>Activation de Compte</h1>
+    <p class="greeting" th:text="'Bonjour ' + ${username} + ','"></p>
+    <p class="instructions">
+        Merci de vous être inscrit ! Un compte a été créé pour vous.<br>
+        Veuillez utiliser le code d'activation ci-dessous pour activer votre compte :
+    </p>
     <div class="activation-code">
         <span th:text="${activationCode}"></span>
     </div>
+    <p class="instructions">
+        Cliquez sur le bouton ci-dessous pour accéder à la page d'activation.<br>
+        Vous devrez saisir votre <strong>adresse email</strong> et le <strong>code d'activation</strong> ci-dessus.
+    </p>
     <div class="activation-link">
-        <a th:href="${confirmationUrl}" target="_blank">Activate your account</a>
+        <a th:href="${confirmationUrl}" target="_blank">Activer mon compte</a>
     </div>
+    <p style="margin-top: 20px; font-size: 12px; color: #999;">
+        Ce code expire dans 15 minutes.
+    </p>
 </div>
 </body>
-
-
 </html>

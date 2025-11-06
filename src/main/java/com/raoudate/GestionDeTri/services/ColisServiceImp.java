@@ -100,12 +100,25 @@ public class ColisServiceImp implements ColisService {
     public void delete(Integer id) {
         log.info("Suppression du colis avec l'ID: {}", id);
         
-        if (!colisRepository.existsById(id)) {
-            throw new RuntimeException("Colis non trouvé avec l'ID: " + id);
+        Colis colis = colisRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Colis non trouvé avec l'ID: " + id));
+        
+        // Soft delete : marquer le colis comme supprimé au lieu de le supprimer physiquement
+        colis.setDeleted(true);
+        colis.setDeletedAt(java.time.Instant.now());
+        
+        // Récupérer l'utilisateur connecté pour traçabilité
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            colis.setDeletedBy(authentication.getName());
+        } else {
+            colis.setDeletedBy("SYSTEM");
         }
         
-        colisRepository.deleteById(id);
-        log.info("Colis supprimé avec succès");
+        colisRepository.save(colis);
+        log.info("Colis marqué comme supprimé (soft delete): {} - Supprimé par: {} à {}", 
+                 colis.getCodeSuivi(), colis.getDeletedBy(), colis.getDeletedAt());
     }
     
     /**

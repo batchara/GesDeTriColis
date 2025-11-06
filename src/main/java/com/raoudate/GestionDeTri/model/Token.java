@@ -22,6 +22,10 @@ public class Token {
     private LocalDateTime expiresAt;
     private LocalDateTime createdAt;
     private LocalDateTime validateAt;
+    
+    // Mot de passe temporaire (stocké temporairement pour l'envoyer après activation)
+    @Column(length = 500)
+    private String temporaryPassword;
 
     @ManyToOne
     @JoinColumn(name = "user_id" , nullable = false)

@@ -13,6 +13,9 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
     Optional<Token> findByToken(String token);
 
     Optional<Token> findTopByUserOrderByCreatedAtDesc(User user);
+    
+    @Query("SELECT t FROM Token t WHERE t.user.id = :userId")
+    java.util.List<Token> findAllByUserId(Integer userId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Token t WHERE t.user = :user")

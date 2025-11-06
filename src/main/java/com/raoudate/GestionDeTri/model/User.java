@@ -48,12 +48,30 @@ public class User extends AbstractEntity implements UserDetails, Principal {
 
     @Column(name = "num_tel", length = 32)
     private String numTel;
+    
+    // Indicateur pour forcer le changement de mot de passe à la première connexion
+    @Column(name = "must_change_password", nullable = false)
+    @Builder.Default
+    private boolean mustChangePassword = false;
+    
+    // 🔒 Sécurité: Compteur de tentatives de connexion échouées
+    @Column(name = "failed_login_attempts", nullable = false)
+    @Builder.Default
+    private int failedLoginAttempts = 0;
+    
+    // 🔒 Sécurité: Date du dernier échec de connexion
+    @Column(name = "last_failed_login")
+    private LocalDate lastFailedLogin;
+    
+    // 🔒 Sécurité: Date de verrouillage du compte
+    @Column(name = "lock_time")
+    private LocalDate lockTime;
 
     // Ancienne colonne role (ENUM) - DEPRECATED - Utiliser roles (ManyToMany) à la place
     // @Enumerated(EnumType.STRING)
     // private RoleType role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Token> tokens;
 

@@ -69,11 +69,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MessagingException.class)
 
     public  ResponseEntity<ExceptionResponse> handleException(MessagingException exp) {
+        // Message plus clair pour l'utilisateur
+        String userMessage = "Impossible d'envoyer l'email. Veuillez vérifier que votre adresse email est valide et fonctionnelle.";
+        
+        // Log l'erreur complète pour le debug
+        exp.printStackTrace();
+        
         return ResponseEntity
-                .status(INTERNAL_SERVER_ERROR)
+                .status(BAD_REQUEST)
                 .body(
                         ExceptionResponse.builder()
-                                .error(exp.getMessage())
+                                .error(userMessage)
                                 .build()
                 );
 

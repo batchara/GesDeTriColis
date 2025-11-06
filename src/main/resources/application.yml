@@ -32,6 +32,10 @@ spring:
           connectiontimeout: 5000
           timeout: 3000
           writetimeout: 5000
+        debug: true
+        transport:
+          protocol: smtp
+    test-connection: false
 
 springdoc:
   api-docs:
@@ -54,6 +58,15 @@ application:
   mailing:
     frontend:
       activation-url: http://localhost:4200/activate-account
+
+ocr:
+  tesseract:
+    # Chemin vers les données de langue Tesseract
+    # Sur macOS avec Homebrew: /opt/homebrew/share/tessdata ou /usr/local/share/tessdata
+    # Le service essaiera de détecter automatiquement si ce chemin n'existe pas
+    datapath: /opt/homebrew/share/tessdata
+    # Langue pour la reconnaissance (fra = français)
+    language: fra
 
 debug: true
 
