@@ -450,4 +450,39 @@ public class UserServiceImp implements UserService {
     public boolean existsByEmail(String email) {
         return repository.findByEmail(email).isPresent();
     }
+
+    /**
+     * Récupérer un utilisateur par son email
+     */
+    public User getUserByEmail(String email) {
+        return repository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'email " + email + " introuvable"));
+    }
+
+    /**
+     * Mettre à jour uniquement les informations personnelles d'un utilisateur
+     * (nom, prénom, date de naissance, numéro de téléphone)
+     * Cette méthode est utilisée lorsqu'un utilisateur modifie son propre profil
+     */
+    public User updateUserPersonalInfo(Integer id, CreateUserRequest request) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
+
+        // Mettre à jour uniquement les informations personnelles
+        if (request.getNom() != null) user.setNom(request.getNom());
+        if (request.getPrenom() != null) user.setPrenom(request.getPrenom());
+        if (request.getDateNaissance() != null) user.setDateNaissance(request.getDateNaissance());
+        if (request.getNumTel() != null) user.setNumTel(request.getNumTel());
+
+        // NE PAS permettre la modification de :
+        // - l'email
+        // - le mot de passe (utiliser le endpoint dédié)
+        // - les rôles
+        // - le statut enabled/locked
+
+        User updatedUser = repository.save(user);
+        System.out.println("✅ Informations personnelles mises à jour pour: " + updatedUser.getEmail());
+        return updatedUser;
+    }
 }
+

@@ -80,6 +80,10 @@ public class SecurityConfig {
                                 .requestMatchers("/home/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/audit/**").hasAuthority("ROLE_ADMIN")
+                                // Permettre à tous les utilisateurs authentifiés d'accéder à leur propre profil
+                                .requestMatchers(GET, "/users/me").authenticated()
+                                .requestMatchers(PUT, "/users/me").authenticated()
+                                // Les autres endpoints /users nécessitent ADMIN ou SUPERVISEUR
                                 .requestMatchers("/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
                                 .requestMatchers("/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 .requestMatchers("/api/colis/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")

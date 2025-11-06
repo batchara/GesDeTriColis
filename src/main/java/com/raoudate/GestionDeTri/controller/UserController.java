@@ -147,4 +147,40 @@ public class UserController {
         boolean exists = service.existsByEmail(email);
         return ResponseEntity.ok(exists);
     }
+
+    /**
+     * Récupérer le profil de l'utilisateur connecté
+     */
+    @GetMapping("/me")
+    public ResponseEntity<User> getCurrentUserProfile(Principal connectedUser) {
+        if (connectedUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        // Le Principal contient l'email de l'utilisateur
+        String email = connectedUser.getName();
+        User user = service.getUserByEmail(email);
+        return ResponseEntity.ok(user);
+    }
+
+    /**
+     * Mettre à jour le profil de l'utilisateur connecté (informations personnelles uniquement)
+     */
+    @PutMapping("/me")
+    public ResponseEntity<User> updateCurrentUserProfile(
+            @RequestBody CreateUserRequest request,
+            Principal connectedUser) {
+        if (connectedUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        // Le Principal contient l'email de l'utilisateur
+        String email = connectedUser.getName();
+        User user = service.getUserByEmail(email);
+        
+        // L'utilisateur ne peut modifier que ses informations personnelles
+        User updatedUser = service.updateUserPersonalInfo(user.getId(), request);
+        return ResponseEntity.ok(updatedUser);
+    }
 }
+
