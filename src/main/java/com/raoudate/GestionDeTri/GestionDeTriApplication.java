@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.CommandLineRunner;
 import static com.raoudate.GestionDeTri.Enum.RoleType.ADMIN;
 import static com.raoudate.GestionDeTri.Enum.RoleType.SUPERVISEUR;
@@ -21,6 +22,7 @@ import static com.raoudate.GestionDeTri.Enum.RoleType.OPERATEUR;
 @SpringBootApplication
 @EnableAsync
 @EnableCaching
+@EnableScheduling
 public class GestionDeTriApplication {
 
 	private static final Logger log = LoggerFactory.getLogger(GestionDeTriApplication.class);
@@ -31,7 +33,7 @@ public class GestionDeTriApplication {
 
 	@Bean
 	public CommandLineRunner Runner(
-			AuthenticationService service, 
+			AuthenticationService service,  
 			RoleRepository roleRepository, 
 			com.raoudate.GestionDeTri.repository.UserRepository userRepository,
 			com.raoudate.GestionDeTri.services.api.RoleService roleService) {
@@ -108,7 +110,5 @@ public class GestionDeTriApplication {
 	};
 
 	}
-
-
 
 }

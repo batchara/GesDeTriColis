@@ -1,6 +1,8 @@
 package com.raoudate.GestionDeTri.controller;
 
 import com.raoudate.GestionDeTri.Dto.ColisDTO;
+import com.raoudate.GestionDeTri.model.Colis;
+import com.raoudate.GestionDeTri.scheduler.ColisRetourScheduler;
 import com.raoudate.GestionDeTri.services.api.ColisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/colis")
@@ -19,6 +24,7 @@ import java.util.List;
 public class ColisController {
 
     private final ColisService colisService;
+    private final ColisRetourScheduler colisRetourScheduler;
 
     /**
      * Récupérer tous les colis
@@ -81,6 +87,55 @@ public class ColisController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             log.error("Erreur lors de la suppression du colis", e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Récupérer les colis proches du retour automatique (dans les 7 prochains jours)
+     * Accessible par Admin et Superviseur
+     */
+    @GetMapping("/proche-retour")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    public ResponseEntity<List<Map<String, Object>>> getColisProcheDuRetour() {
+        log.info("Récupération des colis proches du retour automatique");
+        List<Colis> colisList = colisRetourScheduler.getColisProcheDuRetour();
+        
+        List<Map<String, Object>> response = colisList.stream()
+            .map(colis -> {
+                Map<String, Object> colisInfo = new HashMap<>();
+                colisInfo.put("colis", ColisDTO.fromEntity(colis));
+                colisInfo.put("joursRestants", colisRetourScheduler.getJoursRestantsAvantRetour(colis));
+                return colisInfo;
+            })
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Calculer les jours restants avant retour automatique pour un colis
+     * Accessible par tous les rôles
+     */
+    @GetMapping("/{id}/jours-restants-retour")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR', 'OPERATEUR')")
+    public ResponseEntity<Map<String, Object>> getJoursRestantsRetour(@PathVariable Integer id) {
+        log.info("Calcul des jours restants avant retour pour le colis ID: {}", id);
+        try {
+            ColisDTO colisDTO = colisService.findById(id);
+            Colis colis = ColisDTO.toEntity(colisDTO);
+            long joursRestants = colisRetourScheduler.getJoursRestantsAvantRetour(colis);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("colisId", id);
+            response.put("codeSuivi", colis.getCodeSuivi());
+            response.put("statut", colis.getStatut());
+            response.put("joursRestants", joursRestants);
+            response.put("dateReception", colis.getDateReception());
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            log.error("Erreur lors du calcul des jours restants", e);
             return ResponseEntity.notFound().build();
         }
     }

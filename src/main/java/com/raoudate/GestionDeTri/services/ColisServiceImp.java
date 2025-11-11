@@ -61,11 +61,23 @@ public class ColisServiceImp implements ColisService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ColisDTO findById(Integer id) {
+        log.info("Récupération du colis avec l'ID: {}", id);
+        Colis colis = colisRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Colis non trouvé avec l'ID: " + id));
+        return ColisDTO.fromEntity(colis);
+    }
+
+    @Override
     public ColisDTO update(Integer id, ColisDTO colisDTO) {
         log.info("Mise à jour du colis avec l'ID: {}", id);
         
         Colis existingColis = colisRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Colis non trouvé avec l'ID: " + id));
+        
+        // Sauvegarder l'ancien statut pour détecter les changements
+        StatutColis ancienStatut = existingColis.getStatut();
         
         // Mettre à jour les champs
         if (colisDTO.getPoids() != null) {
@@ -87,7 +99,19 @@ public class ColisServiceImp implements ColisService {
             existingColis.setDatePrevue(colisDTO.getDatePrevue());
         }
         if (colisDTO.getStatut() != null) {
-            existingColis.setStatut(colisDTO.getStatut());
+            StatutColis nouveauStatut = colisDTO.getStatut();
+            existingColis.setStatut(nouveauStatut);
+            
+            // Mettre à jour les dates selon le nouveau statut
+            if (ancienStatut != nouveauStatut) {
+                if (nouveauStatut == StatutColis.RECEPTIONNE && existingColis.getDateReception() == null) {
+                    existingColis.setDateReception(Instant.now());
+                    log.info("Date de réception mise à jour pour le colis: {}", existingColis.getCodeSuivi());
+                } else if (nouveauStatut == StatutColis.RETOUR && existingColis.getDateRetour() == null) {
+                    existingColis.setDateRetour(Instant.now());
+                    log.info("Date de retour mise à jour pour le colis: {}", existingColis.getCodeSuivi());
+                }
+            }
         }
         
         Colis updatedColis = colisRepository.save(existingColis);

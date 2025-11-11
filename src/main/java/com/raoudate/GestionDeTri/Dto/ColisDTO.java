@@ -22,6 +22,8 @@ public class ColisDTO {
     private String adresseDest; // Adresse du destinataire
     private Instant dateEnvoi;
     private Instant datePrevue;
+    private Instant dateReception; // Date de réception à l'agence
+    private Instant dateRetour; // Date de passage en statut RETOUR
     private StatutColis statut;
     private CentreDeTriDTO centreTri;
     private AgenceDTO agenceAffectee;
@@ -40,6 +42,8 @@ public class ColisDTO {
                 .adresseDest(colis.getAdresseDest())
                 .dateEnvoi(colis.getDateEnvoi())
                 .datePrevue(colis.getDatePrevue())
+                .dateReception(colis.getDateReception())
+                .dateRetour(colis.getDateRetour())
                 .statut(colis.getStatut())
                 .centreTri(CentreDeTriDTO.fromEntity(colis.getCentreTri()))
                 .agenceAffectee(AgenceDTO.fromEntity(colis.getAgenceAffectee()))
@@ -60,6 +64,8 @@ public class ColisDTO {
         colis.setAdresseDest(dto.getAdresseDest());
         colis.setDateEnvoi(dto.getDateEnvoi());
         colis.setDatePrevue(dto.getDatePrevue());
+        colis.setDateReception(dto.getDateReception());
+        colis.setDateRetour(dto.getDateRetour());
         colis.setStatut(dto.getStatut());
         colis.setCentreTri(CentreDeTriDTO.toEntity(dto.getCentreTri()));
         colis.setAgenceAffectee(AgenceDTO.toEntity(dto.getAgenceAffectee()));

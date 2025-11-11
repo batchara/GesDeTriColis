@@ -37,6 +37,12 @@ public class Colis extends AbstractEntity {
     @Column(name = "date_prevue")
     private Instant datePrevue;
 
+    @Column(name = "date_reception")
+    private Instant dateReception;
+
+    @Column(name = "date_retour")
+    private Instant dateRetour;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "statut", nullable = false)
     private StatutColis statut;
