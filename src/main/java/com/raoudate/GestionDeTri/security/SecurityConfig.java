@@ -78,6 +78,12 @@ public class SecurityConfig {
                                 .requestMatchers(DELETE,"/api/v1/admin/**").hasAuthority(ADMIN_DELETE.name())
 
                                 .requestMatchers("/home/**").permitAll()
+                                // Permettre la lecture des agences sans authentification (pour tests)
+                                .requestMatchers(GET, "/agences/**").permitAll()
+                                // Permettre l'accès à l'OCR sans authentification (pour tests)
+                                .requestMatchers("/scan/**").permitAll()
+                                // Les autres opérations sur les agences nécessitent une authentification
+                                .requestMatchers("/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/audit/**").hasAuthority("ROLE_ADMIN")
                                 // Permettre à tous les utilisateurs authentifiés d'accéder à leur propre profil
@@ -85,7 +91,6 @@ public class SecurityConfig {
                                 .requestMatchers(PUT, "/users/me").authenticated()
                                 // Les autres endpoints /users nécessitent ADMIN ou SUPERVISEUR
                                 .requestMatchers("/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
-                                .requestMatchers("/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 .requestMatchers("/api/colis/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 .requestMatchers("/api/v1/ocr/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OPERATEUR")
                                 .requestMatchers("/ocr/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OPERATEUR")

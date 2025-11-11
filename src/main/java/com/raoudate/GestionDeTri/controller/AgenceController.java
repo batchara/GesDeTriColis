@@ -201,21 +201,55 @@ public class AgenceController {
     }
 
     /**
-     * Recherche paginée d'agences par nom ou code
+     * Recherche paginée d'agences par région, nom et/ou code
+     * Utilise le paramètre 'keyword' pour chercher dans le nom OU le code
+     * Utilise le paramètre 'region' pour filtrer par région
      */
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> searchAgences(
-            @RequestParam String keyword,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String region,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "label") String sortBy,
             @RequestParam(defaultValue = "ASC") String direction) {
         
+        // Logs de débogage
+        System.out.println("🔍 [AgenceController] Recherche d'agences avec paramètres:");
+        System.out.println("  - keyword: " + keyword);
+        System.out.println("  - region: " + region);
+        
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
         
-        Page<Agences> agencesPage = agenceRepository.findByLabelContainingIgnoreCaseOrCodeContainingIgnoreCase(
-                keyword, keyword, pageable);
+        Page<Agences> agencesPage;
+        String searchType = "";
+        
+        // Si keyword ET région fournis
+        if (keyword != null && !keyword.trim().isEmpty() && region != null && !region.trim().isEmpty()) {
+            searchType = "Région + Keyword (nom OU code)";
+            agencesPage = agenceRepository.findByRegionContainingIgnoreCaseAndLabelContainingIgnoreCaseOrRegionContainingIgnoreCaseAndCodeContainingIgnoreCase(
+                    region, keyword, region, keyword, pageable);
+        }
+        // Si seulement keyword
+        else if (keyword != null && !keyword.trim().isEmpty()) {
+            searchType = "Keyword seul (cherche dans nom OU code)";
+            agencesPage = agenceRepository.findByLabelContainingIgnoreCaseOrCodeContainingIgnoreCase(
+                    keyword, keyword, pageable);
+        }
+        // Si seulement région
+        else if (region != null && !region.trim().isEmpty()) {
+            searchType = "Région seule";
+            agencesPage = agenceRepository.findByRegionContainingIgnoreCase(region, pageable);
+        }
+        // Retourner toutes les agences
+        else {
+            searchType = "Toutes les agences";
+            agencesPage = agenceRepository.findAll(pageable);
+        }
+        
+        System.out.println("✅ [AgenceController] Type de recherche: " + searchType);
+        System.out.println("📊 [AgenceController] Résultats trouvés: " + agencesPage.getTotalElements());
         
         List<AgenceDTO> agenceDTOs = agencesPage.getContent().stream()
                 .map(AgenceDTO::fromEntity)
@@ -230,6 +264,7 @@ public class AgenceController {
         response.put("hasNext", agencesPage.hasNext());
         response.put("hasPrevious", agencesPage.hasPrevious());
         response.put("searchTerm", keyword);
+        response.put("regionFilter", region);
         
         return ResponseEntity.ok(response);
     }

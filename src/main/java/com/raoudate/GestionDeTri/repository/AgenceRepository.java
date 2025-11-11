@@ -16,6 +16,20 @@ public interface AgenceRepository extends JpaRepository<Agences, Integer> {
     // Méthodes de pagination et recherche
     Page<Agences> findByRegionContainingIgnoreCase(String region, Pageable pageable);
     
+    Page<Agences> findByLabelContainingIgnoreCase(String label, Pageable pageable);
+    
+    Page<Agences> findByCodeContainingIgnoreCase(String code, Pageable pageable);
+    
     Page<Agences> findByLabelContainingIgnoreCaseOrCodeContainingIgnoreCase(
             String label, String code, Pageable pageable);
+    
+    // Recherche combinée : région + (nom OU code)
+    Page<Agences> findByRegionContainingIgnoreCaseAndLabelContainingIgnoreCase(
+            String region, String label, Pageable pageable);
+    
+    Page<Agences> findByRegionContainingIgnoreCaseAndCodeContainingIgnoreCase(
+            String region, String code, Pageable pageable);
+    
+    Page<Agences> findByRegionContainingIgnoreCaseAndLabelContainingIgnoreCaseOrRegionContainingIgnoreCaseAndCodeContainingIgnoreCase(
+            String region1, String label, String region2, String code, Pageable pageable);
 }
