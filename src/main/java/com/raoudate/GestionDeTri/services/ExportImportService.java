@@ -341,7 +341,7 @@ public class ExportImportService {
     // ==================== EXPORT COLIS ====================
 
     public ByteArrayInputStream exportColisToExcel() {
-        List<Colis> colisList = colisRepository.findAll();
+        List<Colis> colisList = colisRepository.findAllActive();
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Colis");
@@ -398,7 +398,7 @@ public class ExportImportService {
     }
 
     public ByteArrayInputStream exportColisToCSV() {
-        List<Colis> colisList = colisRepository.findAll();
+        List<Colis> colisList = colisRepository.findAllActive();
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              OutputStreamWriter writer = new OutputStreamWriter(out);
@@ -586,8 +586,8 @@ public class ExportImportService {
                     String telDest = getCellValue(row.getCell(5));
                     String statutStr = getCellValue(row.getCell(8));
 
-                    // Vérifier si le code de suivi existe déjà
-                    if (colisRepository.findAll().stream().anyMatch(c -> codeSuivi.equals(c.getCodeSuivi()))) {
+                    // Vérifier si le code de suivi existe déjà (parmi les colis actifs uniquement)
+                    if (colisRepository.existsByCodeSuivi(codeSuivi)) {
                         errors.add("Ligne " + (row.getRowNum() + 1) + ": Code de suivi déjà existant - " + codeSuivi);
                         errorCount++;
                         continue;
@@ -660,8 +660,8 @@ public class ExportImportService {
                     String telDest = row.length > 5 ? row[5] : "";
                     String statutStr = row.length > 8 ? row[8] : "";
 
-                    // Vérifier si le code de suivi existe déjà
-                    if (colisRepository.findAll().stream().anyMatch(c -> codeSuivi.equals(c.getCodeSuivi()))) {
+                    // Vérifier si le code de suivi existe déjà (parmi les colis actifs uniquement)
+                    if (colisRepository.existsByCodeSuivi(codeSuivi)) {
                         errors.add("Ligne " + (i + 1) + ": Code de suivi déjà existant - " + codeSuivi);
                         errorCount++;
                         continue;

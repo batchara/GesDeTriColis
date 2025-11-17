@@ -27,6 +27,11 @@ public class ColisDTO {
     private StatutColis statut;
     private CentreDeTriDTO centreTri;
     private AgenceDTO agenceAffectee;
+    
+    // 🔒 Champs de soft delete
+    private Boolean deleted;
+    private Instant deletedAt;
+    private String deletedBy;
 
     public static ColisDTO fromEntity(Colis colis) {
         if (colis == null) {
@@ -47,6 +52,9 @@ public class ColisDTO {
                 .statut(colis.getStatut())
                 .centreTri(CentreDeTriDTO.fromEntity(colis.getCentreTri()))
                 .agenceAffectee(AgenceDTO.fromEntity(colis.getAgenceAffectee()))
+                .deleted(colis.getDeleted())
+                .deletedAt(colis.getDeletedAt())
+                .deletedBy(colis.getDeletedBy())
                 .build();
     }
 
@@ -69,6 +77,9 @@ public class ColisDTO {
         colis.setStatut(dto.getStatut());
         colis.setCentreTri(CentreDeTriDTO.toEntity(dto.getCentreTri()));
         colis.setAgenceAffectee(AgenceDTO.toEntity(dto.getAgenceAffectee()));
+        colis.setDeleted(dto.getDeleted());
+        colis.setDeletedAt(dto.getDeletedAt());
+        colis.setDeletedBy(dto.getDeletedBy());
         return colis;
     }
 }

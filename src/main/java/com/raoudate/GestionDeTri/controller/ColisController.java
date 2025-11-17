@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/colis")
+@RequestMapping("/colis")
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
@@ -44,14 +44,26 @@ public class ColisController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR', 'OPERATEUR')")
-    public ResponseEntity<ColisDTO> createColis(@RequestBody ColisDTO colisDTO) {
+    public ResponseEntity<?> createColis(@RequestBody ColisDTO colisDTO) {
         log.info("Création d'un nouveau colis pour destinataire: {}", colisDTO.getNomDest());
         try {
             ColisDTO savedColis = colisService.save(colisDTO);
+            log.info("✅ Colis créé avec succès: {}", savedColis.getCodeSuivi());
             return ResponseEntity.status(HttpStatus.CREATED).body(savedColis);
+        } catch (RuntimeException e) {
+            log.error("❌ Erreur métier lors de la création du colis: {}", e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Erreur de validation");
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", "BAD_REQUEST");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         } catch (Exception e) {
-            log.error("Erreur lors de la création du colis", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("❌ Erreur technique lors de la création du colis", e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Erreur serveur");
+            errorResponse.put("message", "Une erreur technique est survenue. Veuillez réessayer.");
+            errorResponse.put("status", "INTERNAL_SERVER_ERROR");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
@@ -76,10 +88,10 @@ public class ColisController {
 
     /**
      * Supprimer un colis
-     * Accessible uniquement par Admin
+     * Accessible par Admin et Superviseur
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
     public ResponseEntity<Void> deleteColis(@PathVariable Integer id) {
         log.info("Suppression du colis ID: {}", id);
         try {
@@ -88,6 +100,36 @@ public class ColisController {
         } catch (RuntimeException e) {
             log.error("Erreur lors de la suppression du colis", e);
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Supprimer plusieurs colis en masse (soft delete)
+     * Accessible par Admin et Superviseur
+     */
+    @DeleteMapping("/batch")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    public ResponseEntity<Map<String, Object>> deleteMultipleColis(@RequestBody List<Integer> ids) {
+        log.info("🗑️ Demande de suppression en masse de {} colis", ids.size());
+        try {
+            int deletedCount = colisService.deleteMultiple(ids);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("totalRequested", ids.size());
+            response.put("deletedCount", deletedCount);
+            response.put("errorCount", ids.size() - deletedCount);
+            response.put("message", deletedCount + " colis supprimé(s) avec succès");
+            
+            log.info("✅ Suppression en masse terminée: {} colis sur {} supprimés", deletedCount, ids.size());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("❌ Erreur lors de la suppression en masse", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erreur lors de la suppression en masse: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 

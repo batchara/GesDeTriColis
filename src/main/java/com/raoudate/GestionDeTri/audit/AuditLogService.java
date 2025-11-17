@@ -243,15 +243,26 @@ public class AuditLogService {
     private String getClientIpAddress() {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) 
-                RequestContextHolder.currentRequestAttributes();
+                RequestContextHolder.getRequestAttributes();
+            
+            if (attributes == null) {
+                return "UNKNOWN";
+            }
+            
             HttpServletRequest request = attributes.getRequest();
+            if (request == null) {
+                return "UNKNOWN";
+            }
             
             String xForwardedFor = request.getHeader("X-Forwarded-For");
             if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
                 return xForwardedFor.split(",")[0].trim();
             }
-            return request.getRemoteAddr();
+            
+            String remoteAddr = request.getRemoteAddr();
+            return remoteAddr != null ? remoteAddr : "UNKNOWN";
         } catch (Exception e) {
+            log.debug("Impossible de récupérer l'adresse IP: {}", e.getMessage());
             return "UNKNOWN";
         }
     }
@@ -259,10 +270,21 @@ public class AuditLogService {
     private String getUserAgent() {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) 
-                RequestContextHolder.currentRequestAttributes();
+                RequestContextHolder.getRequestAttributes();
+            
+            if (attributes == null) {
+                return "UNKNOWN";
+            }
+            
             HttpServletRequest request = attributes.getRequest();
-            return request.getHeader("User-Agent");
+            if (request == null) {
+                return "UNKNOWN";
+            }
+            
+            String userAgent = request.getHeader("User-Agent");
+            return userAgent != null ? userAgent : "UNKNOWN";
         } catch (Exception e) {
+            log.debug("Impossible de récupérer le User-Agent: {}", e.getMessage());
             return "UNKNOWN";
         }
     }

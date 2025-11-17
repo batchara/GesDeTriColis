@@ -5,16 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @EqualsAndHashCode(callSuper = true)
-
-
 @Table(name = "agences")
-
+@SQLRestriction("is_deleted = false")
 public class Agences extends AbstractEntity {
     
 
@@ -41,7 +40,5 @@ public class Agences extends AbstractEntity {
     
     @Column(length = 20)
     private String status = "ACTIVE";  // Valeurs possibles: ACTIVE, MAINTENANCE
-
-
 
 }

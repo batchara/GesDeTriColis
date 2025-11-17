@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 // audit fields are handled in AbstractEntity
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -20,6 +21,7 @@ import java.util.*;
 @Entity
 @Table(name = "utilisateurs")
 @EqualsAndHashCode(callSuper = true)
+@SQLRestriction("is_deleted = false")
 public class User extends AbstractEntity implements UserDetails, Principal {
 
     @Column(name = "nom")

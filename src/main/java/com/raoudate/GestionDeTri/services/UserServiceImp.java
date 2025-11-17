@@ -61,10 +61,10 @@ public class UserServiceImp implements UserService {
     }
 
     /**
-     * Récupérer tous les utilisateurs
+     * Récupérer tous les utilisateurs (non supprimés)
      */
     public List<User> getAllUsers() {
-        return repository.findAll();
+        return repository.findAllActive();
     }
 
     /**

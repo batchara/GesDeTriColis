@@ -157,14 +157,19 @@ public class AuditAspect {
             String message = String.format("%s %s - %s.%s() - Durée: %dms",
                     action, entityType, className, methodName, executionTime);
 
-            auditLogService.logAction(
-                    action,
-                    entityType,
-                    entityId,
-                    truncate(oldValue, 500),
-                    truncate(newValue, 500),
-                    message
-            );
+            try {
+                auditLogService.logAction(
+                        action,
+                        entityType,
+                        entityId,
+                        truncate(oldValue, 500),
+                        truncate(newValue, 500),
+                        message
+                );
+            } catch (Exception auditEx) {
+                log.error("❌ Erreur lors de l'enregistrement du log d'audit: {}", auditEx.getMessage());
+                // Ne pas interrompre le flux pour une erreur d'audit
+            }
 
             return result;
 
@@ -173,12 +178,17 @@ public class AuditAspect {
             String errorMessage = String.format("%s %s échoué - %s.%s()",
                     action, entityType, className, methodName);
 
-            auditLogService.logError(
-                    action,
-                    entityType,
-                    errorMessage,
-                    e.getMessage()
-            );
+            try {
+                auditLogService.logError(
+                        action,
+                        entityType,
+                        errorMessage,
+                        e.getMessage()
+                );
+            } catch (Exception auditEx) {
+                log.error("❌ Erreur lors de l'enregistrement du log d'erreur: {}", auditEx.getMessage());
+                // Ne pas interrompre le flux pour une erreur d'audit
+            }
 
             throw e;
         }

@@ -4,6 +4,7 @@ import com.raoudate.GestionDeTri.Dto.NotificationDTO;
 import com.raoudate.GestionDeTri.Enum.NotificationEntity;
 import com.raoudate.GestionDeTri.Enum.NotificationStatus;
 import com.raoudate.GestionDeTri.model.Agences;
+import com.raoudate.GestionDeTri.model.Colis;
 import com.raoudate.GestionDeTri.model.Notification;
 import com.raoudate.GestionDeTri.model.User;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
@@ -140,46 +141,44 @@ public class NotificationServiceImp implements NotificationService {
         // Effectuer la suppression selon le type d'entité
         switch (entityType) {
             case UTILISATEUR:
-                // ⚠️ Vérifier si l'utilisateur existe encore (peut avoir été supprimé entre-temps)
+                // ✅ SOFT DELETE: Désactiver l'utilisateur au lieu de le supprimer
                 if (userRepository.existsById(entityId)) {
                     User userToDelete = userRepository.findById(entityId).get();
-                    tokenRepository.deleteAllByUser(userToDelete);
-                    log.info("🗑️ Tokens de l'utilisateur {} supprimés", entityId);
-                    
-                    userRepository.deleteById(entityId);
-                    log.info("✅ Utilisateur {} supprimé", entityId);
+                    userToDelete.setDeleted(true);
+                    userToDelete.setDeletedAt(java.time.Instant.now());
+                    userToDelete.setDeletedBy(createdBy);
+                    userToDelete.setEnabled(false); // Désactiver le compte aussi
+                    userRepository.save(userToDelete);
+                    log.info("✅ Utilisateur {} désactivé (soft delete)", entityId);
                 } else {
                     log.warn("⚠️ Utilisateur {} déjà supprimé, notification marquée comme traitée", entityId);
                 }
                 break;
                 
             case AGENCE:
-                // ⚠️ Vérifier si l'agence existe encore
+                // ✅ SOFT DELETE: Désactiver l'agence au lieu de la supprimer
                 if (agenceRepository.existsById(entityId)) {
                     Agences agenceToDelete = agenceRepository.findById(entityId).get();
-                    
-                    // Désaffecter les colis de cette agence (les mettre à null)
-                    long colisCount = colisRepository.countByAgenceAffectee(agenceToDelete);
-                    if (colisCount > 0) {
-                        log.info("⚠️ Désaffectation de {} colis de l'agence {}", colisCount, entityId);
-                        colisRepository.findByAgenceAffectee(agenceToDelete)
-                            .forEach(colis -> {
-                                colis.setAgenceAffectee(null);
-                                colisRepository.save(colis);
-                            });
-                    }
-                    
-                    agenceRepository.deleteById(entityId);
-                    log.info("✅ Agence {} supprimée (avec {} colis désaffectés)", entityId, colisCount);
+                    agenceToDelete.setDeleted(true);
+                    agenceToDelete.setDeletedAt(java.time.Instant.now());
+                    agenceToDelete.setDeletedBy(createdBy);
+                    agenceToDelete.setStatus("DELETED"); // Marquer comme supprimée
+                    agenceRepository.save(agenceToDelete);
+                    log.info("✅ Agence {} désactivée (soft delete)", entityId);
                 } else {
                     log.warn("⚠️ Agence {} déjà supprimée, notification marquée comme traitée", entityId);
                 }
                 break;
                 
             case COLIS:
+                // ✅ SOFT DELETE: Désactiver le colis au lieu de le supprimer
                 if (colisRepository.existsById(entityId)) {
-                    colisRepository.deleteById(entityId);
-                    log.info("✅ Colis {} supprimé", entityId);
+                    Colis colisToDelete = colisRepository.findById(entityId).get();
+                    colisToDelete.setDeleted(true);
+                    colisToDelete.setDeletedAt(java.time.Instant.now());
+                    colisToDelete.setDeletedBy(createdBy);
+                    colisRepository.save(colisToDelete);
+                    log.info("✅ Colis {} désactivé (soft delete)", entityId);
                 } else {
                     log.warn("⚠️ Colis {} déjà supprimé, notification marquée comme traitée", entityId);
                 }

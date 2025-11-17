@@ -2,7 +2,9 @@ package com.raoudate.GestionDeTri.services;
 
 import com.raoudate.GestionDeTri.Dto.ColisDTO;
 import com.raoudate.GestionDeTri.Enum.StatutColis;
+import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.model.Colis;
+import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.services.api.ColisService;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +24,34 @@ import java.util.stream.Collectors;
 public class ColisServiceImp implements ColisService {
 
     private final ColisRepository colisRepository;
+    private final AgenceRepository agenceRepository;
 
     @Override
     public ColisDTO save(ColisDTO colisDTO) {
         log.info("Enregistrement d'un nouveau colis");
         
         Colis colis = ColisDTO.toEntity(colisDTO);
+        
+        // ✅ Vérifier si un colis avec ce code de suivi existe déjà
+        if (colis.getCodeSuivi() != null && !colis.getCodeSuivi().isEmpty()) {
+            boolean exists = colisRepository.existsByCodeSuivi(colis.getCodeSuivi());
+            if (exists) {
+                log.error("❌ Un colis avec le code de suivi {} existe déjà", colis.getCodeSuivi());
+                throw new RuntimeException("Un colis avec le code de suivi " + colis.getCodeSuivi() + " existe déjà dans le système");
+            }
+        }
+        
+        // ✅ Gérer la relation agenceAffectee : récupérer l'agence depuis la base de données
+        if (colisDTO.getAgenceAffectee() != null && colisDTO.getAgenceAffectee().getId() != null) {
+            Integer agenceId = colisDTO.getAgenceAffectee().getId();
+            log.info("Récupération de l'agence avec ID: {}", agenceId);
+            
+            Agences agence = agenceRepository.findById(agenceId)
+                    .orElseThrow(() -> new RuntimeException("Agence non trouvée avec l'ID: " + agenceId));
+            
+            colis.setAgenceAffectee(agence);
+            log.info("Agence affectée au colis: {} (code: {})", agence.getLabel(), agence.getCode());
+        }
         
         // Générer un code de suivi unique si non fourni
         if (colis.getCodeSuivi() == null || colis.getCodeSuivi().isEmpty()) {
@@ -45,7 +69,7 @@ public class ColisServiceImp implements ColisService {
         }
         
         Colis savedColis = colisRepository.save(colis);
-        log.info("Colis enregistré avec le code: {}", savedColis.getCodeSuivi());
+        log.info("✅ Colis enregistré avec succès - Code: {}", savedColis.getCodeSuivi());
         
         return ColisDTO.fromEntity(savedColis);
     }
@@ -53,9 +77,11 @@ public class ColisServiceImp implements ColisService {
     @Override
     @Transactional(readOnly = true)
     public List<ColisDTO> findAll() {
-        log.info("Récupération de tous les colis");
-        return colisRepository.findAll()
-                .stream()
+        log.info("📋 Récupération de tous les colis NON supprimés");
+        List<Colis> colisList = colisRepository.findAllActive();
+        log.info("✅ {} colis actifs trouvés", colisList.size());
+        
+        return colisList.stream()
                 .map(ColisDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -122,10 +148,15 @@ public class ColisServiceImp implements ColisService {
 
     @Override
     public void delete(Integer id) {
-        log.info("Suppression du colis avec l'ID: {}", id);
+        log.info("🗑️ Demande de suppression du colis avec l'ID: {}", id);
         
         Colis colis = colisRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Colis non trouvé avec l'ID: " + id));
+                .orElseThrow(() -> {
+                    log.error("❌ Colis non trouvé avec l'ID: {}", id);
+                    return new RuntimeException("Colis non trouvé avec l'ID: " + id);
+                });
+        
+        log.info("📦 Colis trouvé - Code: {}, Deleted: {}", colis.getCodeSuivi(), colis.getDeleted());
         
         // Soft delete : marquer le colis comme supprimé au lieu de le supprimer physiquement
         colis.setDeleted(true);
@@ -141,8 +172,77 @@ public class ColisServiceImp implements ColisService {
         }
         
         colisRepository.save(colis);
-        log.info("Colis marqué comme supprimé (soft delete): {} - Supprimé par: {} à {}", 
+        log.info("✅ Colis marqué comme supprimé (soft delete): {} - Supprimé par: {} à {}", 
                  colis.getCodeSuivi(), colis.getDeletedBy(), colis.getDeletedAt());
+        
+        // Vérification immédiate
+        Colis verif = colisRepository.findById(id).orElse(null);
+        if (verif != null) {
+            log.info("🔍 Vérification: deleted={}, deletedAt={}, deletedBy={}", 
+                     verif.getDeleted(), verif.getDeletedAt(), verif.getDeletedBy());
+        }
+    }
+    
+    @Override
+    public int deleteMultiple(List<Integer> ids) {
+        log.info("🗑️ Demande de suppression en masse de {} colis", ids.size());
+        
+        if (ids == null || ids.isEmpty()) {
+            log.warn("⚠️ Aucun ID fourni pour la suppression en masse");
+            return 0;
+        }
+        
+        int successCount = 0;
+        int errorCount = 0;
+        
+        // Récupérer l'utilisateur connecté une seule fois
+        String deletedBy;
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            deletedBy = authentication.getName();
+        } else {
+            deletedBy = "SYSTEM";
+        }
+        
+        Instant deletedAt = java.time.Instant.now();
+        
+        for (Integer id : ids) {
+            try {
+                Colis colis = colisRepository.findById(id).orElse(null);
+                
+                if (colis == null) {
+                    log.warn("⚠️ Colis avec ID {} non trouvé - ignoré", id);
+                    errorCount++;
+                    continue;
+                }
+                
+                if (colis.getDeleted() != null && colis.getDeleted()) {
+                    log.warn("⚠️ Colis {} (ID: {}) est déjà supprimé - ignoré", colis.getCodeSuivi(), id);
+                    errorCount++;
+                    continue;
+                }
+                
+                log.info("📦 Suppression du colis: {} (ID: {})", colis.getCodeSuivi(), id);
+                
+                // Soft delete
+                colis.setDeleted(true);
+                colis.setDeletedAt(deletedAt);
+                colis.setDeletedBy(deletedBy);
+                
+                colisRepository.save(colis);
+                successCount++;
+                
+            } catch (Exception e) {
+                log.error("❌ Erreur lors de la suppression du colis ID {}: {}", id, e.getMessage());
+                errorCount++;
+            }
+        }
+        
+        log.info("✅ Suppression en masse terminée: {} colis supprimés avec succès, {} erreurs", 
+                 successCount, errorCount);
+        
+        return successCount;
     }
     
     /**

@@ -14,4 +14,11 @@ public interface ColisService {
 	ColisDTO update(Integer id, ColisDTO colisDTO);
 
 	void delete(Integer id);
+	
+	/**
+	 * Supprimer plusieurs colis en une seule opération (soft delete)
+	 * @param ids Liste des IDs des colis à supprimer
+	 * @return Nombre de colis supprimés avec succès
+	 */
+	int deleteMultiple(List<Integer> ids);
 }

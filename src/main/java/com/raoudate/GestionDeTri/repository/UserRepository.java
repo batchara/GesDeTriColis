@@ -37,6 +37,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u WHERE u.id = :id AND u.isDeleted = false")
     Optional<User> findActiveById(@Param("id") Integer id);
     
+    // Compter les utilisateurs actifs
+    long countByEnabledTrue();
+    
+    // Compter les utilisateurs bloqués
+    long countByAccountLockedTrue();
+    
     /**
      * Récupère un utilisateur non supprimé par son email
      */

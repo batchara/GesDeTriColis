@@ -266,10 +266,16 @@ public class OcrService {
     }
 
     /**
-     * Scan complet d'un colis : OCR + Géocodage + Recherche d'agence
+     * Scan complet du bordereau d'un colis : OCR + Parsing IA + Géocodage + Recherche d'agence
+     * 
+     * Processus intelligent :
+     * 1. Extraction OCR (Tesseract) du texte du bordereau
+     * 2. Parsing IA (OpenAI) pour structurer les données (nom, adresse, téléphone, région)
+     * 3. Géocodage de l'adresse (Google Maps Geocoding API)
+     * 4. Recherche des agences les plus proches avec distances routières réelles (Google Distance Matrix API)
      */
     public ScanColisResponseDTO scannerColis(MultipartFile image, String adresseManuelle) {
-        log.info("📦 Début du scan de colis");
+        log.info("📦 Début du scan de bordereau");
 
         ScanColisResponseDTO.ScanColisResponseDTOBuilder response = ScanColisResponseDTO.builder();
 
@@ -372,8 +378,12 @@ public class OcrService {
                             .build();
                 }
                 
-                log.info("🗺️ Géocodage de l'adresse (pas de GPS dans le bordereau): {}", adresseFinale);
-                geocoding = geocodingService.geocodeAdresse(adresseFinale);
+                // 🎯 Récupérer la région AVANT le géocodage pour enrichir l'adresse
+                String regionDetectee = (donneesStructurees != null) ? donneesStructurees.getRegion() : null;
+                
+                log.info("🗺️ Géocodage de l'adresse (pas de GPS dans le bordereau): {} - Région détectée: {}", 
+                    adresseFinale, regionDetectee);
+                geocoding = geocodingService.geocodeAdresse(adresseFinale, regionDetectee);
             }
             
             response.geocodage(geocoding);

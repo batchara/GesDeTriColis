@@ -4,32 +4,59 @@ import com.raoudate.GestionDeTri.model.Agences;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AgenceRepository extends JpaRepository<Agences, Integer> {
 
-    Optional<Agences> findByLabel(String label);
+    // ========== Méthodes de base avec soft delete ==========
+    
+    @Query("SELECT a FROM Agences a WHERE a.label = :label AND a.isDeleted = false")
+    Optional<Agences> findByLabel(@Param("label") String label);
 
-    Optional<Agences> findByCode(String code);
+    @Query("SELECT a FROM Agences a WHERE a.code = :code AND a.isDeleted = false")
+    Optional<Agences> findByCode(@Param("code") String code);
     
-    // Méthodes de pagination et recherche
-    Page<Agences> findByRegionContainingIgnoreCase(String region, Pageable pageable);
+    /**
+     * Récupère toutes les agences non supprimées
+     */
+    @Query("SELECT a FROM Agences a WHERE a.isDeleted = false")
+    List<Agences> findAllActive();
     
-    Page<Agences> findByLabelContainingIgnoreCase(String label, Pageable pageable);
+    /**
+     * Récupère une agence non supprimée par son ID
+     */
+    @Query("SELECT a FROM Agences a WHERE a.id = :id AND a.isDeleted = false")
+    Optional<Agences> findActiveById(@Param("id") Integer id);
     
-    Page<Agences> findByCodeContainingIgnoreCase(String code, Pageable pageable);
+    // ========== Méthodes de pagination et recherche ==========
     
+    @Query("SELECT a FROM Agences a WHERE a.region LIKE %:region% AND a.isDeleted = false")
+    Page<Agences> findByRegionContainingIgnoreCase(@Param("region") String region, Pageable pageable);
+    
+    @Query("SELECT a FROM Agences a WHERE LOWER(a.label) LIKE LOWER(CONCAT('%', :label, '%')) AND a.isDeleted = false")
+    Page<Agences> findByLabelContainingIgnoreCase(@Param("label") String label, Pageable pageable);
+    
+    @Query("SELECT a FROM Agences a WHERE LOWER(a.code) LIKE LOWER(CONCAT('%', :code, '%')) AND a.isDeleted = false")
+    Page<Agences> findByCodeContainingIgnoreCase(@Param("code") String code, Pageable pageable);
+    
+    @Query("SELECT a FROM Agences a WHERE (LOWER(a.label) LIKE LOWER(CONCAT('%', :label, '%')) OR LOWER(a.code) LIKE LOWER(CONCAT('%', :code, '%'))) AND a.isDeleted = false")
     Page<Agences> findByLabelContainingIgnoreCaseOrCodeContainingIgnoreCase(
-            String label, String code, Pageable pageable);
+            @Param("label") String label, @Param("code") String code, Pageable pageable);
     
     // Recherche combinée : région + (nom OU code)
+    @Query("SELECT a FROM Agences a WHERE LOWER(a.region) LIKE LOWER(CONCAT('%', :region, '%')) AND LOWER(a.label) LIKE LOWER(CONCAT('%', :label, '%')) AND a.isDeleted = false")
     Page<Agences> findByRegionContainingIgnoreCaseAndLabelContainingIgnoreCase(
-            String region, String label, Pageable pageable);
+            @Param("region") String region, @Param("label") String label, Pageable pageable);
     
+    @Query("SELECT a FROM Agences a WHERE LOWER(a.region) LIKE LOWER(CONCAT('%', :region, '%')) AND LOWER(a.code) LIKE LOWER(CONCAT('%', :code, '%')) AND a.isDeleted = false")
     Page<Agences> findByRegionContainingIgnoreCaseAndCodeContainingIgnoreCase(
-            String region, String code, Pageable pageable);
+            @Param("region") String region, @Param("code") String code, Pageable pageable);
     
+    @Query("SELECT a FROM Agences a WHERE (LOWER(a.region) LIKE LOWER(CONCAT('%', :region1, '%')) AND LOWER(a.label) LIKE LOWER(CONCAT('%', :label, '%'))) OR (LOWER(a.region) LIKE LOWER(CONCAT('%', :region2, '%')) AND LOWER(a.code) LIKE LOWER(CONCAT('%', :code, '%'))) AND a.isDeleted = false")
     Page<Agences> findByRegionContainingIgnoreCaseAndLabelContainingIgnoreCaseOrRegionContainingIgnoreCaseAndCodeContainingIgnoreCase(
-            String region1, String label, String region2, String code, Pageable pageable);
+            @Param("region1") String region1, @Param("label") String label, @Param("region2") String region2, @Param("code") String code, Pageable pageable);
 }

@@ -1,10 +1,12 @@
 package com.raoudate.GestionDeTri.services;
 
 import com.google.maps.DistanceMatrixApi;
+import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
 import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.DistanceMatrixElement;
+import com.google.maps.model.DistanceMatrixElementStatus;
 import com.google.maps.model.DistanceMatrixRow;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -67,15 +70,41 @@ public class GeocodingService {
 
     /**
      * Géocode une adresse en coordonnées GPS
+     * 
+     * @param adresse Adresse à géocoder
+     * @param regionDetectee Région détectée (optionnel, pour enrichir l'adresse si trop vague)
      */
-    public GeocodingResultDTO geocodeAdresse(String adresse) {
+    public GeocodingResultDTO geocodeAdresse(String adresse, String regionDetectee) {
         try {
-            log.info("🔍 Géocodage de l'adresse: {}", adresse);
+            log.info("🔍 Géocodage de l'adresse: {} (région: {})", adresse, regionDetectee);
 
-            // Ajouter le pays si non présent
+            // 🎯 ENRICHISSEMENT: Ajouter la ville si l'adresse est trop vague
             String adresseComplete = adresse;
-            if (!adresse.toLowerCase().contains("togo") && !adresse.toLowerCase().contains("tog")) {
-                adresseComplete = adresse + ", Togo";
+            String adresseLower = adresse.toLowerCase();
+            
+            // Vérifier si l'adresse contient déjà une ville
+            boolean aDejaVille = adresseLower.contains("lomé") 
+                || adresseLower.contains("lome")
+                || adresseLower.contains("kara") 
+                || adresseLower.contains("sokodé")
+                || adresseLower.contains("sokode")
+                || adresseLower.contains("atakpamé")
+                || adresseLower.contains("kpalimé")
+                || adresseLower.contains("tsévié")
+                || adresseLower.contains("aného");
+            
+            // Si adresse courte (<25 chars) et sans ville, ajouter la ville principale de la région
+            if (!aDejaVille && adresse.length() < 25 && regionDetectee != null) {
+                String ville = determinerVillePrincipale(regionDetectee);
+                if (ville != null) {
+                    adresseComplete = adresse + ", " + ville;
+                    log.info("✨ Adresse enrichie: '{}' → '{}'", adresse, adresseComplete);
+                }
+            }
+            
+            // Ajouter le pays si non présent
+            if (!adresseComplete.toLowerCase().contains("togo") && !adresseComplete.toLowerCase().contains("tog")) {
+                adresseComplete = adresseComplete + ", Togo";
             }
 
             GeocodingResult[] results = GeocodingApi.newRequest(geoApiContext)
@@ -115,6 +144,32 @@ public class GeocodingService {
                     .messageErreur("Erreur de géocodage: " + e.getMessage())
                     .build();
         }
+    }
+    
+    /**
+     * Détermine la ville principale d'une région togolaise
+     */
+    private String determinerVillePrincipale(String region) {
+        if (region == null) {
+            return null;
+        }
+        
+        return switch (region.toUpperCase()) {
+            case "GOLFE" -> "Lomé";
+            case "MARITIME" -> "Lomé";  // La région Maritime entoure Lomé
+            case "PLATEAUX" -> "Atakpamé";
+            case "CENTRALE" -> "Sokodé";
+            case "KARA" -> "Kara";
+            case "SAVANES" -> "Dapaong";
+            default -> null;
+        };
+    }
+    
+    /**
+     * Géocode une adresse en coordonnées GPS (sans région)
+     */
+    public GeocodingResultDTO geocodeAdresse(String adresse) {
+        return geocodeAdresse(adresse, null);
     }
 
     /**
@@ -338,65 +393,151 @@ public class GeocodingService {
             agencesAAnalyser = toutesLesAgences;
         }
         
-        List<AgenceProche> agencesAvecDistance = new ArrayList<>();
-
-        for (Agences agence : agencesAAnalyser) {
-            if (agence.getLatitude() != null && agence.getLongitude() != null) {
-                
-                double distance;
-                String tempsEstime;
-                
-                // Essayer d'abord avec Distance Matrix API (distances routières réelles)
-                double[] distanceReelle = calculerDistanceReelle(
-                        latitude, longitude,
-                        agence.getLatitude(), agence.getLongitude()
+        long startTime = System.currentTimeMillis();
+        
+        // 🚀 OPTIMISATION 1: Pré-filtrer par distance Haversine pour réduire les agences à analyser
+        List<AgenceProche> agencesTrieesHaversine = agencesAAnalyser.stream()
+            .filter(a -> a.getLatitude() != null && a.getLongitude() != null)
+            .map(agence -> {
+                double distanceHaversine = calculerDistance(
+                    latitude, longitude,
+                    agence.getLatitude(), agence.getLongitude()
                 );
                 
-                if (distanceReelle != null) {
-                    // API réussie : utiliser distance et temps réels
-                    distance = distanceReelle[0]; // km
-                    tempsEstime = formaterDuree((long) distanceReelle[1]); // secondes -> "Xh Ymin"
-                } else {
-                    // Fallback : Haversine (distance à vol d'oiseau)
-                    distance = calculerDistance(
-                            latitude, longitude,
-                            agence.getLatitude(), agence.getLongitude()
-                    );
-                    tempsEstime = estimerTempsTrajet(distance);
-                }
+                return AgenceProche.builder()
+                    .agenceId(agence.getId())
+                    .code(agence.getCode())
+                    .nom(agence.getLabel())
+                    .region(agence.getRegion())
+                    .adresse(agence.getAdresseComplete())
+                    .coordonnees(new CoordinatesDTO(agence.getLatitude(), agence.getLongitude()))
+                    .distanceKm(distanceHaversine)
+                    .tempsEstime(estimerTempsTrajet(distanceHaversine))
+                    .build();
+            })
+            .sorted(Comparator.comparingDouble(AgenceProche::getDistanceKm))
+            .collect(Collectors.toList());
+        
+        // 🚀 OPTIMISATION 2: Ne calculer les distances réelles que pour les TOP 15 candidates
+        int nbCandidates = Math.min(15, agencesTrieesHaversine.size());
+        List<AgenceProche> topCandidates = agencesTrieesHaversine.subList(0, nbCandidates);
+        
+        log.info("⚡ Calcul des distances réelles pour les {} meilleures candidates (sur {} agences)", 
+            nbCandidates, agencesAAnalyser.size());
+        
+        // 🚀 OPTIMISATION 3: Batch processing - Appel Distance Matrix par groupe de 25 max
+        List<AgenceProche> agencesAvecDistanceReelle = calculerDistancesReallesBatch(
+            latitude, longitude, topCandidates
+        );
 
-                AgenceProche ap = AgenceProche.builder()
-                        .agenceId(agence.getId())
-                        .code(agence.getCode())
-                        .nom(agence.getLabel())
-                        .region(agence.getRegion())
-                        .adresse(agence.getAdresseComplete())
-                        .coordonnees(new CoordinatesDTO(agence.getLatitude(), agence.getLongitude()))
-                        .distanceKm(Math.round(distance * 100.0) / 100.0) // Arrondir à 2 décimales
-                        .tempsEstime(tempsEstime)
-                        .build();
-
-                agencesAvecDistance.add(ap);
-            }
-        }
-
-        // Trier par distance et prendre les N premières
-        List<AgenceProche> result = agencesAvecDistance.stream()
+        // Trier par distance réelle et prendre les N premières
+        List<AgenceProche> result = agencesAvecDistanceReelle.stream()
                 .sorted(Comparator.comparingDouble(AgenceProche::getDistanceKm))
                 .limit(nombre)
                 .collect(Collectors.toList());
 
+        long duration = System.currentTimeMillis() - startTime;
+
         if (!result.isEmpty()) {
-            log.info("✅ Agence la plus proche (région: {}): {} - {} ({} km)", 
+            log.info("✅ Agence la plus proche (région: {}): {} - {} ({} km) - Traitement en {} ms", 
                     result.get(0).getRegion(),
                     result.get(0).getNom(), 
                     result.get(0).getAdresse(),
-                    result.get(0).getDistanceKm());
+                    result.get(0).getDistanceKm(),
+                    duration);
         } else {
             log.warn("⚠️ Aucune agence trouvée");
         }
 
         return result;
+    }
+    
+    /**
+     * 🚀 NOUVEAU: Calcule les distances réelles par batch (jusqu'à 25 destinations à la fois)
+     * Réduit drastiquement le nombre d'appels API Distance Matrix
+     */
+    private List<AgenceProche> calculerDistancesReallesBatch(
+            double latitudeOrigine, 
+            double longitudeOrigine, 
+            List<AgenceProche> agences) {
+        
+        if (agences.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        final int BATCH_SIZE = 25; // Limite Google Distance Matrix API
+        List<AgenceProche> resultats = new ArrayList<>();
+        
+        try {
+            // Diviser en batchs de 25
+            for (int i = 0; i < agences.size(); i += BATCH_SIZE) {
+                int end = Math.min(i + BATCH_SIZE, agences.size());
+                List<AgenceProche> batch = agences.subList(i, end);
+                
+                // Construire les destinations
+                String[] destinations = batch.stream()
+                    .map(a -> a.getCoordonnees().getLatitude() + "," + a.getCoordonnees().getLongitude())
+                    .toArray(String[]::new);
+                
+                String origine = latitudeOrigine + "," + longitudeOrigine;
+                
+                log.info("📡 Appel Distance Matrix API - Batch {}/{} ({} destinations)", 
+                    (i / BATCH_SIZE) + 1, 
+                    (agences.size() + BATCH_SIZE - 1) / BATCH_SIZE,
+                    destinations.length);
+                
+                // Appel API avec toutes les destinations du batch
+                DistanceMatrixApiRequest request = DistanceMatrixApi.newRequest(geoApiContext)
+                    .origins(origine)
+                    .destinations(destinations)
+                    .mode(TravelMode.DRIVING)
+                    .trafficModel(TrafficModel.BEST_GUESS)
+                    .departureTime(Instant.now()); // Trafic en temps réel
+                
+                DistanceMatrix matrix = request.await();
+                
+                // Parser les résultats
+                if (matrix.rows != null && matrix.rows.length > 0) {
+                    DistanceMatrixRow row = matrix.rows[0];
+                    
+                    for (int j = 0; j < row.elements.length && j < batch.size(); j++) {
+                        DistanceMatrixElement element = row.elements[j];
+                        AgenceProche agence = batch.get(j);
+                        
+                        if (element.status == DistanceMatrixElementStatus.OK) {
+                            double distanceKm = element.distance.inMeters / 1000.0;
+                            long dureeSec = element.duration.inSeconds;
+                            String tempsEstime = formaterDuree(dureeSec);
+                            
+                            // Créer une nouvelle agence avec distance réelle
+                            resultats.add(AgenceProche.builder()
+                                .agenceId(agence.getAgenceId())
+                                .code(agence.getCode())
+                                .nom(agence.getNom())
+                                .region(agence.getRegion())
+                                .adresse(agence.getAdresse())
+                                .coordonnees(agence.getCoordonnees())
+                                .distanceKm(Math.round(distanceKm * 100.0) / 100.0)
+                                .tempsEstime(tempsEstime)
+                                .build());
+                        } else {
+                            // Garder la distance Haversine en fallback
+                            log.warn("⚠️ Distance Matrix API échec pour {} - Utilisation Haversine", agence.getNom());
+                            resultats.add(agence);
+                        }
+                    }
+                }
+            }
+            
+            log.info("✅ Distances réelles calculées pour {} agences en batch", resultats.size());
+            
+        } catch (Exception e) {
+            log.warn("⚠️ Erreur batch Distance Matrix API, utilisation Haversine: {}", e.getMessage());
+            // En cas d'erreur, retourner les agences avec distances Haversine
+            return agences;
+        }
+        
+        return resultats;
     }
 
     /**

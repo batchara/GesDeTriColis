@@ -14,10 +14,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DonneesStructureesDTO {
     
+    // ========== DESTINATAIRE (PRINCIPAL) ==========
+    
     /**
-     * Nom du destinataire ou de l'agence
+     * Nom du destinataire
      */
     private String nom;
+    
+    /**
+     * Prénom du destinataire (si disponible)
+     */
+    private String prenom;
     
     /**
      * Code de l'agence (si applicable)
@@ -25,32 +32,32 @@ public class DonneesStructureesDTO {
     private String code;
     
     /**
-     * Numéro de téléphone
+     * Numéro de téléphone du destinataire
      */
     private String telephone;
     
     /**
-     * Email (si présent)
+     * Email du destinataire (si présent)
      */
     private String email;
     
     /**
-     * Adresse complète formatée
+     * Adresse complète du destinataire formatée
      */
     private String adresse;
     
     /**
-     * Ville
+     * Ville du destinataire
      */
     private String ville;
     
     /**
-     * Quartier
+     * Quartier du destinataire
      */
     private String quartier;
     
     /**
-     * Région
+     * Région du destinataire
      */
     private String region;
     
@@ -58,6 +65,35 @@ public class DonneesStructureesDTO {
      * Pays (normalement "Togo")
      */
     private String pays;
+    
+    // ========== EXPÉDITEUR ==========
+    
+    /**
+     * Nom de l'expéditeur (entreprise ou personne)
+     */
+    private String nomExpediteur;
+    
+    /**
+     * Téléphone de l'expéditeur
+     */
+    private String telephoneExpediteur;
+    
+    /**
+     * Adresse de l'expéditeur
+     */
+    private String adresseExpediteur;
+    
+    // ========== AUTRES ==========
+    
+    /**
+     * Code de suivi du bordereau (ex: COL-TG-2025-001234)
+     */
+    private String codeSuivi;
+    
+    /**
+     * Poids du colis en kilogrammes (ex: 2.5)
+     */
+    private Double poids;
     
     /**
      * Informations additionnelles

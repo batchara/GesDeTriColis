@@ -34,13 +34,13 @@ public class ScanController {
     private final GeocodingService geocodingService;
 
     @PostMapping("/colis")
-    @Operation(summary = "Scanner un colis", 
-               description = "Extrait l'adresse via OCR, géocode et trouve l'agence la plus proche")
+    @Operation(summary = "Scanner le bordereau d'un colis", 
+               description = "Extrait les informations du bordereau via OCR (nom, adresse, téléphone, région), géocode l'adresse et trouve l'agence la plus proche avec distances routières réelles")
     public ResponseEntity<ScanColisResponseDTO> scannerColis(
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam(value = "adresse", required = false) String adresseManuelle) {
         
-        log.info("📦 Requête de scan de colis reçue");
+        log.info("📦 Requête de scan de bordereau reçue");
         
         ScanColisResponseDTO response = ocrService.scannerColis(image, adresseManuelle);
         
@@ -96,12 +96,12 @@ public class ScanController {
     }
 
     @PostMapping("/ocr")
-    @Operation(summary = "Extraire le texte d'une image (OCR)", 
-               description = "Utilise Tesseract pour extraire le texte d'une image")
+    @Operation(summary = "Extraire les informations d'un bordereau (OCR)", 
+               description = "Utilise Tesseract OCR + OpenAI pour extraire le texte et parser les informations du bordereau (nom, adresse, téléphone, région, code postal)")
     public ResponseEntity<?> extraireTexte(
             @RequestParam("image") MultipartFile image) {
         
-        log.info("📸 Requête d'extraction de texte");
+        log.info("📸 Requête d'extraction de bordereau");
         
         try {
             ScanColisResponseDTO response = ocrService.scannerColis(image, null);

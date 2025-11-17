@@ -28,10 +28,11 @@ public class AgenceController {
 
     /**
      * Récupère toutes les agences sans pagination (pour compatibilité)
+     * Filtre automatiquement les agences supprimées
      */
     @GetMapping("/all")
     public ResponseEntity<List<AgenceDTO>> getAllAgences() {
-        List<Agences> agences = agenceRepository.findAll();
+        List<Agences> agences = agenceRepository.findAllActive();
         List<AgenceDTO> agenceDTOs = agences.stream()
                 .map(AgenceDTO::fromEntity)
                 .collect(Collectors.toList());

@@ -3,6 +3,7 @@ package com.raoudate.GestionDeTri.model;
 import com.raoudate.GestionDeTri.Enum.StatutColis;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -14,6 +15,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@SQLRestriction("is_deleted = false")
 public class Colis extends AbstractEntity {
 
     @Column(name = "code_suivi", unique = true, nullable = false)
