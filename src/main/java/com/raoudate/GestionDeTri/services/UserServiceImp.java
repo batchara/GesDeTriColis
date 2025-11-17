@@ -26,6 +26,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -104,9 +105,19 @@ public class UserServiceImp implements UserService {
     public User createUser(CreateUserRequest request) {
         System.out.println("🔵 [createUser] Début création utilisateur: " + request.getEmail());
         
-        // Vérifier si l'email existe déjà
-        if (repository.findByEmail(request.getEmail()).isPresent()) {
+        // Vérifier si l'email existe déjà (actif)
+        if (repository.findActiveByEmail(request.getEmail()).isPresent()) {
             throw new BusinessException(BusinessErrorCode.USER_ALREADY_EXISTS);
+        }
+        
+        // Vérifier si un utilisateur supprimé existe avec cet email
+        Optional<User> deletedUser = repository.findDeletedByEmail(request.getEmail());
+        if (deletedUser.isPresent()) {
+            System.out.println("⚠️ [createUser] Un utilisateur supprimé existe avec cet email: " + request.getEmail());
+            throw new BusinessException(
+                BusinessErrorCode.DELETED_USER_EXISTS, 
+                "Un utilisateur supprimé existe avec cet email. Utilisez la fonction de restauration (ID: " + deletedUser.get().getId() + ")"
+            );
         }
 
         // Déterminer le nom du rôle
@@ -351,6 +362,50 @@ public class UserServiceImp implements UserService {
         
         System.out.println("✅ [deleteUser] Utilisateur marqué comme supprimé (soft delete): " + user.getEmail());
         System.out.println("📋 [deleteUser] Supprimé par: " + user.getDeletedBy() + " à " + user.getDeletedAt());
+    }
+
+    /**
+     * Restaurer un utilisateur supprimé (soft delete)
+     */
+    @Transactional
+    public User restoreUser(Integer id) {
+        System.out.println("♻️ [restoreUser] Début restauration - User ID: " + id);
+        
+        // Vérifier que l'utilisateur existe
+        User user = repository.findById(id)
+                .orElseThrow(() -> {
+                    System.out.println("❌ [restoreUser] Utilisateur introuvable - ID: " + id);
+                    return new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable");
+                });
+        
+        // Vérifier qu'il est bien supprimé
+        if (!user.isDeleted()) {
+            System.out.println("⚠️ [restoreUser] Utilisateur déjà actif - ID: " + id);
+            throw new IllegalStateException("L'utilisateur n'est pas supprimé");
+        }
+        
+        System.out.println("🔍 [restoreUser] Utilisateur trouvé: " + user.getEmail());
+        System.out.println("🔍 [restoreUser] Supprimé le: " + user.getDeletedAt() + " par: " + user.getDeletedBy());
+        
+        // Restaurer l'utilisateur
+        user.setDeleted(false);
+        user.setDeletedAt(null);
+        user.setDeletedBy(null);
+        user.setEnabled(true); // Réactiver le compte
+        
+        // Récupérer l'utilisateur connecté pour traçabilité
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String restoredBy = (authentication != null && authentication.isAuthenticated()) 
+                ? authentication.getName() 
+                : "SYSTEM";
+        
+        User savedUser = repository.save(user);
+        
+        System.out.println("✅ [restoreUser] Utilisateur restauré: " + savedUser.getEmail());
+        System.out.println("📋 [restoreUser] Restauré par: " + restoredBy);
+        
+        return savedUser;
     }
 
     /**

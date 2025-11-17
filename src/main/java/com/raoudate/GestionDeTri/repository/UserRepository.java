@@ -59,6 +59,15 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findAllDeleted();
     
     /**
+     * Récupère un utilisateur supprimé par son email (pour la restauration)
+     */
+    @Query("SELECT DISTINCT u FROM User u " +
+           "LEFT JOIN FETCH u.roles r " +
+           "LEFT JOIN FETCH r.permissions " +
+           "WHERE u.email = :email AND u.isDeleted = true")
+    Optional<User> findDeletedByEmail(@Param("email") String email);
+    
+    /**
      * Recherche des utilisateurs par nom, prénom ou email (non supprimés uniquement)
      * Résultats triés par pertinence : nom exact > prénom exact > email exact > contient
      */

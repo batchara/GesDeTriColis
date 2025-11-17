@@ -90,6 +90,16 @@ public class UserController {
     }
 
     /**
+     * Restaurer un utilisateur supprimé (soft delete) (accessible uniquement aux ADMIN)
+     */
+    @PostMapping("/{id}/restore")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<User> restoreUser(@PathVariable Integer id) {
+        User restoredUser = service.restoreUser(id);
+        return ResponseEntity.ok(restoredUser);
+    }
+
+    /**
      * Verrouiller un compte utilisateur (accessible aux ADMIN et SUPERVISEUR)
      */
     @PutMapping("/{id}/lock")

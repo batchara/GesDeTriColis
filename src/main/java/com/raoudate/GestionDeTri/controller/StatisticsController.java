@@ -142,6 +142,20 @@ public class StatisticsController {
         // Temps de traitement moyen (exemple simplifié)
         stats.put("tempsTraitementMoyen", 24.5); // TODO: Calculer réellement
         
+        // Statistiques par région pour le mois en cours
+        LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
+        LocalDate lastDayOfMonth = LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth());
+        Instant startOfMonth = firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfMonth = lastDayOfMonth.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        
+        List<Object[]> colisParRegionMois = colisRepository.findColisCountByRegionAndPeriod(startOfMonth, endOfMonth);
+        Map<String, Long> colisParRegionCeMois = colisParRegionMois.stream()
+            .collect(Collectors.toMap(
+                obj -> (String) obj[0] != null ? (String) obj[0] : "Non défini",
+                obj -> (Long) obj[1]
+            ));
+        stats.put("colisParRegionCeMois", colisParRegionCeMois);
+        
         log.info("✅ Statistiques récupérées avec succès");
         return ResponseEntity.ok(stats);
     }

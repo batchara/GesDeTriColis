@@ -156,7 +156,7 @@ public class ColisServiceImp implements ColisService {
                     return new RuntimeException("Colis non trouvé avec l'ID: " + id);
                 });
         
-        log.info("📦 Colis trouvé - Code: {}, Deleted: {}", colis.getCodeSuivi(), colis.getDeleted());
+        log.info("📦 Colis trouvé - Code: {}, Deleted: {}", colis.getCodeSuivi(), colis.isDeleted());
         
         // Soft delete : marquer le colis comme supprimé au lieu de le supprimer physiquement
         colis.setDeleted(true);
@@ -179,7 +179,7 @@ public class ColisServiceImp implements ColisService {
         Colis verif = colisRepository.findById(id).orElse(null);
         if (verif != null) {
             log.info("🔍 Vérification: deleted={}, deletedAt={}, deletedBy={}", 
-                     verif.getDeleted(), verif.getDeletedAt(), verif.getDeletedBy());
+                     verif.isDeleted(), verif.getDeletedAt(), verif.getDeletedBy());
         }
     }
     
@@ -217,7 +217,7 @@ public class ColisServiceImp implements ColisService {
                     continue;
                 }
                 
-                if (colis.getDeleted() != null && colis.getDeleted()) {
+                if (colis.isDeleted()) {
                     log.warn("⚠️ Colis {} (ID: {}) est déjà supprimé - ignoré", colis.getCodeSuivi(), id);
                     errorCount++;
                     continue;

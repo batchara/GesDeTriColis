@@ -33,7 +33,7 @@ public class User extends AbstractEntity implements UserDetails, Principal {
     @Column(name = "date_naissance")
     private LocalDate dateNaissance;
 
-    @Column(name = "email", unique = true, nullable = false)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "mot_de_passe", nullable = false)

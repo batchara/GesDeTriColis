@@ -52,7 +52,7 @@ public class ColisDTO {
                 .statut(colis.getStatut())
                 .centreTri(CentreDeTriDTO.fromEntity(colis.getCentreTri()))
                 .agenceAffectee(AgenceDTO.fromEntity(colis.getAgenceAffectee()))
-                .deleted(colis.getDeleted())
+                .deleted(colis.isDeleted())
                 .deletedAt(colis.getDeletedAt())
                 .deletedBy(colis.getDeletedBy())
                 .build();

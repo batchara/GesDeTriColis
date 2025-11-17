@@ -70,4 +70,8 @@ public interface ColisRepository extends JpaRepository<Colis, Integer> {
     @Query("SELECT a.region, COUNT(c) FROM Colis c JOIN c.agenceAffectee a WHERE a.region IS NOT NULL AND c.isDeleted = false GROUP BY a.region")
     List<Object[]> findColisCountByRegion();
 
+    // ✅ Statistiques par région pour une période - NON supprimés
+    @Query("SELECT a.region, COUNT(c) FROM Colis c JOIN c.agenceAffectee a WHERE a.region IS NOT NULL AND c.isDeleted = false AND c.dateEnvoi BETWEEN :start AND :end GROUP BY a.region")
+    List<Object[]> findColisCountByRegionAndPeriod(@Param("start") Instant start, @Param("end") Instant end);
+
 }

@@ -26,6 +26,7 @@ public enum  BusinessErrorCode {
     USER_NOT_FOUND(5000, NOT_FOUND, "User not found"),
     USER_INVALID(5001, BAD_REQUEST, "User data is invalid"),
     USER_ALREADY_EXISTS(5002, CONFLICT, "User already exists"),
+    DELETED_USER_EXISTS(5003, CONFLICT, "A deleted user exists with this email. Please restore instead of creating new"),
 
     // Agence
     AGENCE_NOT_FOUND(5100, NOT_FOUND, "Agence not found"),
@@ -49,6 +50,12 @@ public enum  BusinessErrorCode {
     // Roles / permissions
     ROLE_NOT_FOUND(5500, NOT_FOUND, "Role not found"),
     PERMISSION_NOT_FOUND(5501, NOT_FOUND, "Permission not found"),
+
+    // Boîte Postale
+    BOITE_POSTALE_NOT_FOUND(5600, NOT_FOUND, "Boîte postale not found"),
+    BOITE_POSTALE_INVALID(5601, BAD_REQUEST, "Boîte postale data is invalid"),
+    BOITE_POSTALE_ALREADY_EXISTS(5602, CONFLICT, "Boîte postale already exists"),
+    DUPLICATE_ENTRY(5603, CONFLICT, "Duplicate entry"),
 
     // Authorization / other
     ACCESS_DENIED(6000, FORBIDDEN, "Access denied"),
