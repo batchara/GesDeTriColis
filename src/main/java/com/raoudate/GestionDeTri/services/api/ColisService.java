@@ -1,6 +1,7 @@
 package com.raoudate.GestionDeTri.services.api;
 
 import com.raoudate.GestionDeTri.Dto.ColisDTO;
+import com.raoudate.GestionDeTri.model.Colis;
 import java.util.List;
 
 public interface ColisService {
@@ -10,6 +11,11 @@ public interface ColisService {
 	List<ColisDTO> findAll();
 
 	ColisDTO findById(Integer id);
+
+	/**
+	 * Récupérer l'entité Colis directement (pour usage interne)
+	 */
+	Colis findEntityById(Integer id);
 
 	ColisDTO update(Integer id, ColisDTO colisDTO);
 

@@ -52,7 +52,7 @@ public class ColisDTO {
                 .statut(colis.getStatut())
                 .centreTri(CentreDeTriDTO.fromEntity(colis.getCentreTri()))
                 .agenceAffectee(AgenceDTO.fromEntity(colis.getAgenceAffectee()))
-                .deleted(colis.isDeleted())
+                .deleted(colis.getDeleted())
                 .deletedAt(colis.getDeletedAt())
                 .deletedBy(colis.getDeletedBy())
                 .build();
@@ -77,7 +77,7 @@ public class ColisDTO {
         colis.setStatut(dto.getStatut());
         colis.setCentreTri(CentreDeTriDTO.toEntity(dto.getCentreTri()));
         colis.setAgenceAffectee(AgenceDTO.toEntity(dto.getAgenceAffectee()));
-        colis.setDeleted(dto.getDeleted());
+        colis.setDeleted(dto.getDeleted() != null ? dto.getDeleted() : false);
         colis.setDeletedAt(dto.getDeletedAt());
         colis.setDeletedBy(dto.getDeletedBy());
         return colis;

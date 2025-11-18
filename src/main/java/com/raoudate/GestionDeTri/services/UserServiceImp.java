@@ -379,7 +379,7 @@ public class UserServiceImp implements UserService {
                 });
         
         // Vérifier qu'il est bien supprimé
-        if (!user.isDeleted()) {
+        if (!user.getDeleted()) {
             System.out.println("⚠️ [restoreUser] Utilisateur déjà actif - ID: " + id);
             throw new IllegalStateException("L'utilisateur n'est pas supprimé");
         }

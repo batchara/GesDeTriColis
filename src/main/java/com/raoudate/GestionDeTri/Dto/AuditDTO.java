@@ -71,7 +71,7 @@ public class AuditDTO {
     /**
      * Indique si l'entité est supprimée
      */
-    private boolean isDeleted;
+    private boolean deleted;
     
     // ========== Informations additionnelles ==========
     

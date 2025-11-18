@@ -28,13 +28,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     /**
      * Récupère tous les utilisateurs non supprimés
      */
-    @Query("SELECT u FROM User u WHERE u.isDeleted = false")
+    @Query("SELECT u FROM User u WHERE u.deleted = false")
     List<User> findAllActive();
     
     /**
      * Récupère un utilisateur non supprimé par son ID
      */
-    @Query("SELECT u FROM User u WHERE u.id = :id AND u.isDeleted = false")
+    @Query("SELECT u FROM User u WHERE u.id = :id AND u.deleted = false")
     Optional<User> findActiveById(@Param("id") Integer id);
     
     // Compter les utilisateurs actifs
@@ -49,13 +49,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT DISTINCT u FROM User u " +
            "LEFT JOIN FETCH u.roles r " +
            "LEFT JOIN FETCH r.permissions " +
-           "WHERE u.email = :email AND u.isDeleted = false")
+           "WHERE u.email = :email AND u.deleted = false")
     Optional<User> findActiveByEmail(@Param("email") String email);
     
     /**
      * Récupère tous les utilisateurs supprimés (pour l'audit)
      */
-    @Query("SELECT u FROM User u WHERE u.isDeleted = true")
+    @Query("SELECT u FROM User u WHERE u.deleted = true")
     List<User> findAllDeleted();
     
     /**
@@ -64,7 +64,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT DISTINCT u FROM User u " +
            "LEFT JOIN FETCH u.roles r " +
            "LEFT JOIN FETCH r.permissions " +
-           "WHERE u.email = :email AND u.isDeleted = true")
+           "WHERE u.email = :email AND u.deleted = true")
     Optional<User> findDeletedByEmail(@Param("email") String email);
     
     /**
@@ -74,7 +74,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT DISTINCT u FROM User u " +
            "LEFT JOIN FETCH u.roles r " +
            "LEFT JOIN FETCH r.permissions " +
-           "WHERE u.isDeleted = false AND (" +
+           "WHERE u.deleted = false AND (" +
            "LOWER(u.nom) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(u.prenom) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +

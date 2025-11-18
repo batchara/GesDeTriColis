@@ -49,6 +49,6 @@ public class AbstractEntity implements Serializable {
     // ========== Soft Delete ==========
     
     @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted = false;
+    private Boolean deleted = false;
 
 }

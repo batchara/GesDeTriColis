@@ -96,6 +96,14 @@ public class ColisServiceImp implements ColisService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Colis findEntityById(Integer id) {
+        log.info("Récupération de l'entité Colis avec l'ID: {}", id);
+        return colisRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Colis non trouvé avec l'ID: " + id));
+    }
+
+    @Override
     public ColisDTO update(Integer id, ColisDTO colisDTO) {
         log.info("Mise à jour du colis avec l'ID: {}", id);
         
@@ -156,7 +164,7 @@ public class ColisServiceImp implements ColisService {
                     return new RuntimeException("Colis non trouvé avec l'ID: " + id);
                 });
         
-        log.info("📦 Colis trouvé - Code: {}, Deleted: {}", colis.getCodeSuivi(), colis.isDeleted());
+        log.info("📦 Colis trouvé - Code: {}, Deleted: {}", colis.getCodeSuivi(), colis.getDeleted());
         
         // Soft delete : marquer le colis comme supprimé au lieu de le supprimer physiquement
         colis.setDeleted(true);
@@ -179,7 +187,7 @@ public class ColisServiceImp implements ColisService {
         Colis verif = colisRepository.findById(id).orElse(null);
         if (verif != null) {
             log.info("🔍 Vérification: deleted={}, deletedAt={}, deletedBy={}", 
-                     verif.isDeleted(), verif.getDeletedAt(), verif.getDeletedBy());
+                     verif.getDeleted(), verif.getDeletedAt(), verif.getDeletedBy());
         }
     }
     
@@ -217,7 +225,7 @@ public class ColisServiceImp implements ColisService {
                     continue;
                 }
                 
-                if (colis.isDeleted()) {
+                if (colis.getDeleted()) {
                     log.warn("⚠️ Colis {} (ID: {}) est déjà supprimé - ignoré", colis.getCodeSuivi(), id);
                     errorCount++;
                     continue;

@@ -65,7 +65,7 @@ public class AuditService {
      * @return true si l'entité est supprimée, false sinon
      */
     public boolean isDeleted(AbstractEntity entity) {
-        return entity != null && entity.isDeleted();
+        return entity != null && entity.getDeleted();
     }
 
     /**

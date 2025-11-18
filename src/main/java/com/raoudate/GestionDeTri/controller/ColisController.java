@@ -164,8 +164,7 @@ public class ColisController {
     public ResponseEntity<Map<String, Object>> getJoursRestantsRetour(@PathVariable Integer id) {
         log.info("Calcul des jours restants avant retour pour le colis ID: {}", id);
         try {
-            ColisDTO colisDTO = colisService.findById(id);
-            Colis colis = ColisDTO.toEntity(colisDTO);
+            Colis colis = colisService.findEntityById(id);
             long joursRestants = colisRetourScheduler.getJoursRestantsAvantRetour(colis);
             
             Map<String, Object> response = new HashMap<>();
