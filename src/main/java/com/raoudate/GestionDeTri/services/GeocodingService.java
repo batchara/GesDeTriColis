@@ -306,7 +306,7 @@ public class GeocodingService {
                 // Essayer d'abord avec Distance Matrix API (distances routières réelles)
                 double[] distanceReelle = calculerDistanceReelle(
                         latitude, longitude,
-                        agence.getLatitude(), agence.getLongitude()
+                        agence.getLatitude().doubleValue(), agence.getLongitude().doubleValue()
                 );
                 
                 if (distanceReelle != null) {
@@ -317,7 +317,7 @@ public class GeocodingService {
                     // Fallback : Haversine (distance à vol d'oiseau)
                     distance = calculerDistance(
                             latitude, longitude,
-                            agence.getLatitude(), agence.getLongitude()
+                            agence.getLatitude().doubleValue(), agence.getLongitude().doubleValue()
                     );
                     tempsEstime = estimerTempsTrajet(distance);
                 }
@@ -328,7 +328,7 @@ public class GeocodingService {
                         .nom(agence.getLabel())
                         .region(agence.getRegion())
                         .adresse(agence.getAdresseComplete())
-                        .coordonnees(new CoordinatesDTO(agence.getLatitude(), agence.getLongitude()))
+                        .coordonnees(new CoordinatesDTO(agence.getLatitude().doubleValue(), agence.getLongitude().doubleValue()))
                         .distanceKm(Math.round(distance * 100.0) / 100.0) // Arrondir à 2 décimales
                         .tempsEstime(tempsEstime)
                         .build();
@@ -401,7 +401,7 @@ public class GeocodingService {
             .map(agence -> {
                 double distanceHaversine = calculerDistance(
                     latitude, longitude,
-                    agence.getLatitude(), agence.getLongitude()
+                    agence.getLatitude().doubleValue(), agence.getLongitude().doubleValue()
                 );
                 
                 return AgenceProche.builder()
@@ -410,7 +410,7 @@ public class GeocodingService {
                     .nom(agence.getLabel())
                     .region(agence.getRegion())
                     .adresse(agence.getAdresseComplete())
-                    .coordonnees(new CoordinatesDTO(agence.getLatitude(), agence.getLongitude()))
+                    .coordonnees(new CoordinatesDTO(agence.getLatitude().doubleValue(), agence.getLongitude().doubleValue()))
                     .distanceKm(distanceHaversine)
                     .tempsEstime(estimerTempsTrajet(distanceHaversine))
                     .build();

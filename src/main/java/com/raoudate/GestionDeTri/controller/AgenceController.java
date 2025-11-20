@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -134,6 +135,9 @@ public class AgenceController {
                     existingAgence.setLongitude(agenceDTO.getLongitude());
                     if (agenceDTO.getStatus() != null) {
                         existingAgence.setStatus(agenceDTO.getStatus());
+                    }
+                    if (agenceDTO.getCodeBureau() != null) {
+                        existingAgence.setCodeBureau(agenceDTO.getCodeBureau());
                     }
                     Agences updatedAgence = agenceRepository.save(existingAgence);
                     return ResponseEntity.ok(AgenceDTO.fromEntity(updatedAgence));
@@ -281,4 +285,51 @@ public class AgenceController {
         boolean exists = agenceRepository.findByLabel(name).isPresent();
         return ResponseEntity.ok(exists);
     }
+
+    /**
+     * Récupère une agence par son Code_Bureau
+     * Stratégie de recherche :
+     * 1. Cherche par code_bureau exact
+     * 2. Extrait les chiffres avant "BP" (ex: "01" de "01BP470")
+     * 3. Cherche une agence dont le code commence par ces chiffres
+     */
+    @GetMapping("/by-code-bureau/{codeBureau}")
+    public ResponseEntity<AgenceDTO> getAgenceByCodeBureau(@PathVariable String codeBureau) {
+        String normalizedCode = codeBureau.trim().toUpperCase();
+        
+        // 1️⃣ Essayer une correspondance exacte d'abord
+        Optional<Agences> result = agenceRepository.findByCodeBureau(normalizedCode);
+        
+        // 2️⃣ Si pas trouvé, extraire les chiffres avant "BP" et chercher par pattern
+        if (result.isEmpty()) {
+            // Extraire les chiffres avant "BP" (ex: "01" de "01BP470")
+            String[] parts = normalizedCode.split("BP");
+            if (parts.length > 0 && !parts[0].isEmpty()) {
+                String codePrefix = parts[0]; // Ex: "01"
+                
+                // Chercher toutes les agences
+                List<Agences> allAgencies = agenceRepository.findAllActive();
+                
+                // Chercher une agence dont le code commence par ce préfixe
+                result = allAgencies.stream()
+                    .filter(a -> a.getCode() != null && a.getCode().startsWith(codePrefix))
+                    .findFirst();
+                
+                // Si toujours pas trouvé, chercher par les 2 premiers chiffres du code
+                if (result.isEmpty()) {
+                    result = allAgencies.stream()
+                        .filter(a -> a.getCodeBureau() != null && 
+                               (a.getCodeBureau().contains(codePrefix) ||
+                                a.getCodeBureau().startsWith(codePrefix)))
+                        .findFirst();
+                }
+            }
+        }
+        
+        return result
+                .map(AgenceDTO::fromEntity)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
+

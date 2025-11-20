@@ -87,32 +87,61 @@ public class OcrService {
         }
 
         tesseract.setLanguage(language);
-        tesseract.setPageSegMode(1); // Automatic page segmentation with OSD
+        // 🚀 Optimisations pour vitesse (moins de 5 secondes)
+        tesseract.setPageSegMode(3); // PSM_AUTO = 3 (plus rapide que 1)
         tesseract.setOcrEngineMode(1); // Neural nets LSTM engine only
+        // Configurations pour accélérer
+        tesseract.setTessVariable("tessedit_char_blacklist", "");
+        tesseract.setTessVariable("debug_file", "/dev/null");
         
-        log.info("✅ Tesseract OCR initialisé");
+        log.info("✅ Tesseract OCR initialisé (mode optimisé pour vitesse)");
     }
 
     /**
-     * Extrait le texte d'une image
+     * Extrait le texte d'une image (optimisé pour moins de 5 secondes)
      */
     public String extraireTexte(MultipartFile imageFile) throws Exception {
         log.info("📸 Extraction de texte depuis l'image: {}", imageFile.getOriginalFilename());
+        long debut = System.currentTimeMillis();
 
         // Convertir MultipartFile en File temporaire
         File tempFile = File.createTempFile("ocr-", ".tmp");
         try {
             imageFile.transferTo(tempFile);
             
-            // Lire l'image
+            // Lire et compresser l'image pour accélérer l'OCR
             BufferedImage image = ImageIO.read(tempFile);
             if (image == null) {
                 throw new IOException("Impossible de lire l'image");
             }
+            
+            // 🚀 Redimensionner l'image si elle est trop grande (max 1024x1024)
+            int maxDimension = 1024;
+            if (image.getWidth() > maxDimension || image.getHeight() > maxDimension) {
+                float scale = Math.min(
+                    (float) maxDimension / image.getWidth(),
+                    (float) maxDimension / image.getHeight()
+                );
+                int newWidth = (int) (image.getWidth() * scale);
+                int newHeight = (int) (image.getHeight() * scale);
+                
+                BufferedImage resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+                resized.getGraphics().drawImage(image, 0, 0, newWidth, newHeight, null);
+                image = resized;
+                log.info("📦 Image redimensionnée: {}x{} -> {}x{}", 
+                    imageFile.getOriginalFilename(), image.getWidth(), image.getHeight(), newWidth, newHeight);
+            }
 
-            // Extraire le texte
+            // Extraire le texte (optimisé en mode rapide)
             String texte = tesseract.doOCR(image);
-            log.info("✅ Texte extrait ({} caractères)", texte.length());
+            long duree = System.currentTimeMillis() - debut;
+            
+            log.info("✅ Texte extrait ({} caractères en {}ms)", texte.length(), duree);
+            if (duree > 5000) {
+                log.warn("⚠️ OCR dépasse 5 secondes ({}ms)", duree);
+            } else {
+                log.info("🚀 OCR rapide (<5s): {}ms", duree);
+            }
             log.debug("📝 Texte: {}", texte);
 
             return texte;

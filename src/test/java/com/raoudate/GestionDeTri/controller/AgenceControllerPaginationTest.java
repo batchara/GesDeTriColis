@@ -51,8 +51,8 @@ public class AgenceControllerPaginationTest {
             agence.setTel("0522" + String.format("%06d", i));
             agence.setRegion(i % 2 == 0 ? "Casablanca-Settat" : "Rabat-Salé-Kénitra");
             agence.setAdresseComplete("Adresse " + i);
-            agence.setLatitude(33.5731 + i * 0.01);
-            agence.setLongitude(-7.5898 + i * 0.01);
+            agence.setLatitude(new java.math.BigDecimal("33.5731").add(new java.math.BigDecimal(i).multiply(new java.math.BigDecimal("0.01"))));
+            agence.setLongitude(new java.math.BigDecimal("-7.5898").add(new java.math.BigDecimal(i).multiply(new java.math.BigDecimal("0.01"))));
             agence.setStatus("ACTIVE");
             agenceRepository.save(agence);
         }

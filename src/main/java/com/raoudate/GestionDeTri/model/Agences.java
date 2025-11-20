@@ -1,44 +1,79 @@
 package com.raoudate.GestionDeTri.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+import java.math.BigDecimal;
+
 @Entity
-@EqualsAndHashCode(callSuper = true)
 @Table(name = "agences")
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @SQLRestriction("is_deleted = false")
 public class Agences extends AbstractEntity {
-    
 
-    @Column(name = "code", unique = true, nullable = false)
+    @Column(name = "code", nullable = false, unique = true)
     private String code;
+
+    @Column(name = "label", nullable = false)
+    private String label;
+
+    @Column(name = "tel", length = 15)
+    private String tel;
+
+    @Column(name = "adresse_complete")
+    private String adresseComplete;
+
+    @Column(name = "code_bureau")
+    private String codeBureau;
+
+    @Column(name = "latitude")
+    private BigDecimal latitude;
+
+    @Column(name = "longitude")
+    private BigDecimal longitude;
+
+    @Column(name = "region")
+    private String region;
+
+    @Column(name = "responsable")
+    private String responsable;
 
     @Column(name = "email")
     private String email;
 
-    @Column(name = "num_tel")
-    private String tel;
+    @Column(name = "status")
+    private String status;
 
-     @Column(length = 100)
-    private String region;
+    @Column(name = "is_active")
+    private Boolean isActive;
 
-     @Column(length = 100, unique = true, nullable = false)
-    private String label;
+    // Getter et Setter pour les anciens noms de colonnes (pour compatibilité)
+    public String getNom() {
+        return label;
+    }
 
-    private Double latitude;
-    private Double longitude;
-    
-    @Column(length = 300, nullable = false)
-    private String adresseComplete;
-    
-    @Column(length = 20)
-    private String status = "ACTIVE";  // Valeurs possibles: ACTIVE, MAINTENANCE
+    public void setNom(String nom) {
+        this.label = nom;
+    }
 
+    public String getAdresse() {
+        return adresseComplete;
+    }
+
+    public void setAdresse(String adresse) {
+        this.adresseComplete = adresse;
+    }
+
+    public String getTelephone() {
+        return tel;
+    }
+
+    public void setTelephone(String telephone) {
+        this.tel = telephone;
+    }
 }

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,9 +22,10 @@ public class AgenceDTO {
     private String numTel; // Alias pour tel
     private String region;
     private String adresseComplete;
-    private Double latitude;
-    private Double longitude;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private String status; // ACTIVE, INACTIVE
+    private String codeBureau;
 
     public static AgenceDTO fromEntity(Agences agences) {
         if (agences == null) {
@@ -40,6 +43,7 @@ public class AgenceDTO {
                 .latitude(agences.getLatitude())
                 .longitude(agences.getLongitude())
                 .status(agences.getStatus() != null ? agences.getStatus() : "ACTIVE")
+                .codeBureau(agences.getCodeBureau())
                 .build();
     }
 
@@ -57,6 +61,7 @@ public class AgenceDTO {
         agences.setLatitude(dto.getLatitude());
         agences.setLongitude(dto.getLongitude());
         agences.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
+        agences.setCodeBureau(dto.getCodeBureau());
         return agences;
     }
 }
