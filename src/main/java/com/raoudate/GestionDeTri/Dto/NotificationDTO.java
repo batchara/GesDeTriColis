@@ -26,6 +26,7 @@ public class NotificationDTO {
     private Boolean actionRequired;
     private String reason;
     private String createdBy;
+    private String initiatedBy;  // Email du superviseur qui a initié la demande
     private String targetUserId;
     private String details;
     private Instant createdAt;
@@ -49,6 +50,7 @@ public class NotificationDTO {
                 .actionRequired(notification.getActionRequired())
                 .reason(notification.getReason())
                 .createdBy(notification.getCreatedBy())
+                .initiatedBy(notification.getInitiatedBy())
                 .targetUserId(notification.getTargetUserId())
                 .details(notification.getDetails())
                 .createdAt(notification.getDateCreation())
@@ -80,6 +82,7 @@ public class NotificationDTO {
                 .actionRequired(dto.getActionRequired())
                 .reason(dto.getReason())
                 .createdBy(dto.getCreatedBy())
+                .initiatedBy(dto.getInitiatedBy())
                 .targetUserId(dto.getTargetUserId())
                 .details(dto.getDetails())
                 .build();

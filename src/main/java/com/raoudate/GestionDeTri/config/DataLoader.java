@@ -23,7 +23,6 @@ public class DataLoader implements CommandLineRunner {
     private final AgenceRepository agenceRepository;
     private final RoleRepository roleRepository;
     private final ColisRepository colisRepository;
-    private final BoitePostaleRepository boitePostaleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override

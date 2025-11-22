@@ -79,21 +79,29 @@ public class SecurityConfig {
 
                                 .requestMatchers("/home/**").permitAll()
                                 // Permettre la lecture des agences sans authentification (pour tests)
-                                .requestMatchers(GET, "/agences/**").permitAll()
+                                .requestMatchers(GET, "/api/v1/agences/**").permitAll()
                                 // Permettre l'accès à l'OCR sans authentification (pour tests)
                                 .requestMatchers("/scan/**").permitAll()
                                 // Les autres opérations sur les agences nécessitent une authentification
-                                .requestMatchers("/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
-                                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers("/audit/**").hasAuthority("ROLE_ADMIN")
-                                // Permettre à tous les utilisateurs authentifiés d'accéder à leur propre profil
-                                .requestMatchers(GET, "/users/me").authenticated()
-                                .requestMatchers(PUT, "/users/me").authenticated()
+                                .requestMatchers(POST, "/api/v1/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
+                                .requestMatchers(PUT, "/api/v1/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
+                                .requestMatchers(DELETE, "/api/v1/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
+                                
+                                // Colis - Tous les utilisateurs authentifiés peuvent accéder
+                                .requestMatchers("/api/v1/colis/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
+                                
+                                // Audit - Réservé aux admins (ROLE_ADMIN ou permission ADMIN_READ)
+                                .requestMatchers("/api/v1/audit/**").hasAnyAuthority("ROLE_ADMIN", "ADMIN_READ")
+                                
+                                // Profil utilisateur - Permettre à tous les utilisateurs authentifiés d'accéder à leur propre profil
+                                .requestMatchers(GET, "/api/v1/users/me").authenticated()
+                                .requestMatchers(PUT, "/api/v1/users/me").authenticated()
                                 // Les autres endpoints /users nécessitent ADMIN ou SUPERVISEUR
-                                .requestMatchers("/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
-                                .requestMatchers("/api/colis/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
+                                .requestMatchers("/api/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
+                                
+                                // OCR endpoints
                                 .requestMatchers("/api/v1/ocr/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OPERATEUR")
-                                .requestMatchers("/ocr/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OPERATEUR")
+                                
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

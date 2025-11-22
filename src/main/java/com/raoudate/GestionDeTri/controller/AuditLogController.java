@@ -1,5 +1,7 @@
-package com.raoudate.GestionDeTri.audit;
+package com.raoudate.GestionDeTri.controller;
 
+import com.raoudate.GestionDeTri.audit.AuditLog;
+import com.raoudate.GestionDeTri.audit.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/audit")
+@RequestMapping("/audit")
 @RequiredArgsConstructor
 public class AuditLogController {
 
@@ -31,7 +33,22 @@ public class AuditLogController {
     @GetMapping("/logs")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN_READ')")
     public ResponseEntity<List<AuditLog>> getAllLogs() {
-        return ResponseEntity.ok(auditLogService.getAllLogs());
+        log.info("🔍 Récupération de tous les logs d'audit");
+        
+        // Logger cette action
+        auditLogService.logAction(
+            "VIEW_AUDIT_LOGS",
+            "AUDIT_LOG",
+            null,
+            null,
+            null,
+            "Consultation des logs d'audit"
+        );
+        
+        List<AuditLog> logs = auditLogService.getAllLogs();
+        log.info("📊 Nombre de logs récupérés: {}", logs.size());
+        
+        return ResponseEntity.ok(logs);
     }
 
     /**

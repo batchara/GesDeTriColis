@@ -1,11 +1,19 @@
 package com.raoudate.GestionDeTri.services;
 
 import com.raoudate.GestionDeTri.Dto.ColisDTO;
+import com.raoudate.GestionDeTri.Dto.NotificationDTO;
+import com.raoudate.GestionDeTri.Enum.NotificationEntity;
+import com.raoudate.GestionDeTri.Enum.NotificationStatus;
+import com.raoudate.GestionDeTri.Enum.NotificationType;
 import com.raoudate.GestionDeTri.Enum.StatutColis;
 import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.model.Colis;
+import com.raoudate.GestionDeTri.model.Notification;
+import com.raoudate.GestionDeTri.model.User;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
+import com.raoudate.GestionDeTri.repository.NotificationRepository;
+import com.raoudate.GestionDeTri.repository.UserRepository;
 import com.raoudate.GestionDeTri.services.api.ColisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +33,8 @@ public class ColisServiceImp implements ColisService {
 
     private final ColisRepository colisRepository;
     private final AgenceRepository agenceRepository;
+    private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
     @Override
     public ColisDTO save(ColisDTO colisDTO) {
@@ -251,6 +261,61 @@ public class ColisServiceImp implements ColisService {
                  successCount, errorCount);
         
         return successCount;
+    }
+    
+    @Override
+    @Transactional
+    public NotificationDTO requestDeletion(Integer colisId) {
+        log.info("📝 Demande de suppression du colis avec l'ID: {}", colisId);
+        
+        Colis colis = colisRepository.findById(colisId)
+                .orElseThrow(() -> {
+                    log.error("❌ Colis non trouvé avec l'ID: {}", colisId);
+                    return new RuntimeException("Colis non trouvé avec l'ID: " + colisId);
+                });
+        
+        // Récupérer l'utilisateur connecté
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String requestedBy = authentication != null && authentication.isAuthenticated() 
+            ? authentication.getName() 
+            : "SYSTEM";
+        
+        log.info("👤 Demande créée par: {}", requestedBy);
+        
+        // Créer la notification pour l'admin
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setType(NotificationType.SUPPRESSION_DEMANDE);
+        notificationDTO.setEntityType(NotificationEntity.COLIS);
+        notificationDTO.setEntityId(colis.getId());
+        notificationDTO.setEntityName(colis.getCodeSuivi());
+        notificationDTO.setMessage(String.format(
+            "📝 Demande de suppression du colis '%s' (Expéditeur: %s, Destinataire: %s) par %s",
+            colis.getCodeSuivi(),
+            colis.getNomExp() != null ? colis.getNomExp() : "N/A",
+            colis.getNomDest() != null ? colis.getNomDest() : "N/A",
+            requestedBy
+        ));
+        notificationDTO.setStatus(NotificationStatus.EN_ATTENTE_VALIDATION);
+        notificationDTO.setInitiatedBy(requestedBy);  // Enregistrer qui a initié la demande
+        notificationDTO.setActionRequired(true);
+        notificationDTO.setTargetUserId(null); // Sera assignée à l'admin automatiquement
+        
+        // Convertir en entité Notification
+        Notification notification = NotificationDTO.toEntity(notificationDTO);
+        
+        // Assigner à l'admin
+        User admin = userRepository.findFirstByRolesName("ROLE_ADMIN")
+            .orElseThrow(() -> new RuntimeException("Aucun administrateur trouvé"));
+        
+        notification.setTargetUserId(admin.getEmail());
+        
+        Notification savedNotification = notificationRepository.save(notification);
+        
+        log.info("✅ Notification créée avec succès: ID {} pour l'admin {}", 
+                 savedNotification.getId(), admin.getEmail());
+        
+        return NotificationDTO.fromEntity(savedNotification);
     }
     
     /**

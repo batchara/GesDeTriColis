@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/export-import")
+@RequestMapping("/export-import")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Export/Import", description = "Endpoints pour l'export et l'import de données en Excel et CSV")

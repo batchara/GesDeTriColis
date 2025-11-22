@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/statistics")
+@RequestMapping("/statistics")
 @RequiredArgsConstructor
 @Slf4j
 public class StatisticsController {

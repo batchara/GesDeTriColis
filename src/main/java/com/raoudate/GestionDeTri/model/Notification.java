@@ -50,6 +50,9 @@ public class Notification extends AbstractEntity {
     @Column(nullable = false)
     private String createdBy;
 
+    @Column(nullable = true)
+    private String initiatedBy;  // Email du superviseur qui a initié la demande (pour les notifications de réponse)
+
     @Column(nullable = false)
     private String targetUserId;
 

@@ -104,6 +104,30 @@ public class ColisController {
     }
 
     /**
+     * Demander la suppression d'un colis (crée une notification pour l'admin)
+     * Accessible par Superviseur et Admin
+     */
+    @PostMapping("/{id}/request-deletion")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    public ResponseEntity<?> requestDeleteColis(@PathVariable Integer id) {
+        log.info("📝 Demande de suppression du colis ID: {}", id);
+        try {
+            com.raoudate.GestionDeTri.Dto.NotificationDTO notification = colisService.requestDeletion(id);
+            return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
+                put("success", true);
+                put("message", "Demande de suppression créée avec succès");
+                put("notification", notification);
+            }});
+        } catch (RuntimeException e) {
+            log.error("Erreur lors de la création de la demande de suppression", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new java.util.HashMap<String, Object>() {{
+                put("success", false);
+                put("message", e.getMessage());
+            }});
+        }
+    }
+
+    /**
      * Supprimer plusieurs colis en masse (soft delete)
      * Accessible par Admin et Superviseur
      */

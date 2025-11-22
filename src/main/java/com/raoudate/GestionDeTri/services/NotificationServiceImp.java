@@ -135,7 +135,7 @@ public class NotificationServiceImp implements NotificationService {
         }
         
         // Sauvegarder les infos pour la notification de retour
-        String createdBy = notification.getCreatedBy();
+        String initiatedBy = notification.getInitiatedBy();  // Email du superviseur qui a initié
         String entityName = notification.getEntityName();
         
         // Effectuer la suppression selon le type d'entité
@@ -146,7 +146,7 @@ public class NotificationServiceImp implements NotificationService {
                     User userToDelete = userRepository.findById(entityId).get();
                     userToDelete.setDeleted(true);
                     userToDelete.setDeletedAt(java.time.Instant.now());
-                    userToDelete.setDeletedBy(createdBy);
+                    userToDelete.setDeletedBy(initiatedBy);
                     userToDelete.setEnabled(false); // Désactiver le compte aussi
                     userRepository.save(userToDelete);
                     log.info("✅ Utilisateur {} désactivé (soft delete)", entityId);
@@ -161,7 +161,7 @@ public class NotificationServiceImp implements NotificationService {
                     Agences agenceToDelete = agenceRepository.findById(entityId).get();
                     agenceToDelete.setDeleted(true);
                     agenceToDelete.setDeletedAt(java.time.Instant.now());
-                    agenceToDelete.setDeletedBy(createdBy);
+                    agenceToDelete.setDeletedBy(initiatedBy);
                     agenceToDelete.setStatus("DELETED"); // Marquer comme supprimée
                     agenceRepository.save(agenceToDelete);
                     log.info("✅ Agence {} désactivée (soft delete)", entityId);
@@ -176,7 +176,7 @@ public class NotificationServiceImp implements NotificationService {
                     Colis colisToDelete = colisRepository.findById(entityId).get();
                     colisToDelete.setDeleted(true);
                     colisToDelete.setDeletedAt(java.time.Instant.now());
-                    colisToDelete.setDeletedBy(createdBy);
+                    colisToDelete.setDeletedBy(initiatedBy);
                     colisRepository.save(colisToDelete);
                     log.info("✅ Colis {} désactivé (soft delete)", entityId);
                 } else {
@@ -201,8 +201,8 @@ public class NotificationServiceImp implements NotificationService {
                 .type(notification.getType()) // Même type (SUPPRESSION_DEMANDE)
                 .message(String.format("✅ Votre demande de suppression de %s '%s' a été APPROUVÉE par l'administrateur. La suppression a été effectuée avec succès.", 
                         entityType.name().toLowerCase(), entityName))
-                .targetUserId(createdBy) // Envoyer au superviseur qui a créé la demande
-                .createdBy("ADMIN") // Créée par l'admin
+                .targetUserId(initiatedBy) // Envoyer au superviseur qui a créé la demande
+                .initiatedBy(initiatedBy) // Garder l'info du superviseur
                 .status(NotificationStatus.NON_LUE)
                 .actionRequired(false) // Pas d'action requise, juste une info
                 .entityType(entityType)
@@ -211,7 +211,7 @@ public class NotificationServiceImp implements NotificationService {
                 .build();
         
         notificationRepository.save(responseNotification);
-        log.info("Notification de réponse (approbation) envoyée au superviseur: {}", createdBy);
+        log.info("Notification de réponse (approbation) envoyée au superviseur: {}", initiatedBy);
         
         log.info("Suppression approuvée et effectuée avec succès");
     }
@@ -229,7 +229,7 @@ public class NotificationServiceImp implements NotificationService {
         }
         
         // Sauvegarder les infos pour la notification de retour
-        String createdBy = notification.getCreatedBy();
+        String initiatedBy = notification.getInitiatedBy();
         String entityName = notification.getEntityName();
         NotificationEntity entityType = notification.getEntityType();
         Integer entityId = notification.getEntityId();
@@ -247,8 +247,8 @@ public class NotificationServiceImp implements NotificationService {
                 .message(String.format("❌ Votre demande de suppression de %s '%s' a été REJETÉE par l'administrateur. Raison: %s", 
                         entityType.name().toLowerCase(), entityName, 
                         reason != null ? reason : "Non spécifiée"))
-                .targetUserId(createdBy) // Envoyer au superviseur qui a créé la demande
-                .createdBy("ADMIN") // Créée par l'admin
+                .targetUserId(initiatedBy) // Envoyer au superviseur qui a créé la demande
+                .initiatedBy(initiatedBy) // Garder l'info du superviseur
                 .status(NotificationStatus.NON_LUE)
                 .actionRequired(false) // Pas d'action requise, juste une info
                 .entityType(entityType)
@@ -257,7 +257,7 @@ public class NotificationServiceImp implements NotificationService {
                 .build();
         
         notificationRepository.save(responseNotification);
-        log.info("Notification de réponse (rejet) envoyée au superviseur: {}", createdBy);
+        log.info("Notification de réponse (rejet) envoyée au superviseur: {}", initiatedBy);
         
         log.info("Demande de suppression rejetée");
     }

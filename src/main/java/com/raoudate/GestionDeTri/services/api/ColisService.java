@@ -27,4 +27,11 @@ public interface ColisService {
 	 * @return Nombre de colis supprimés avec succès
 	 */
 	int deleteMultiple(List<Integer> ids);
+	
+	/**
+	 * Créer une demande de suppression (génère une notification pour l'admin)
+	 * @param id ID du colis à supprimer
+	 * @return La notification créée
+	 */
+	com.raoudate.GestionDeTri.Dto.NotificationDTO requestDeletion(Integer id);
 }

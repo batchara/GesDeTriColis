@@ -297,33 +297,82 @@ public class AgenceController {
     public ResponseEntity<AgenceDTO> getAgenceByCodeBureau(@PathVariable String codeBureau) {
         String normalizedCode = codeBureau.trim().toUpperCase();
         
-        // 1️⃣ Essayer une correspondance exacte d'abord
-        Optional<Agences> result = agenceRepository.findByCodeBureau(normalizedCode);
+        // 🔧 Correction OCR: remplacer les caractères mal reconnus
+        // ✅ IMPORTANT: Ne remplacer que O/l/I (lett lettres), pas le chiffre 1
+        normalizedCode = normalizedCode.replaceAll("^[Ol](?=\\d)", "0"); // l/O au début -> 0 si suivi de chiffre (pas "1"!)
+        normalizedCode = normalizedCode.replaceAll("^I(?=[BP])", "1"); // I au début -> 1 si suivi de B ou P
+        normalizedCode = normalizedCode.replaceAll("([BP])l$", "$10"); // l à la fin -> 0
         
-        // 2️⃣ Si pas trouvé, extraire les chiffres avant "BP" et chercher par pattern
-        if (result.isEmpty()) {
-            // Extraire les chiffres avant "BP" (ex: "01" de "01BP470")
+        System.out.println("🔍 Recherche agence par codeBureau: " + normalizedCode + " (original: " + codeBureau + ")");
+        
+        // 1️⃣ Essayer une correspondance exacte du codeBureau d'abord
+        Optional<Agences> result = agenceRepository.findByCodeBureau(normalizedCode);
+        System.out.println("✓ Recherche exacte: " + (result.isPresent() ? result.get().getNom() : "non trouvée"));
+        
+        // 2️⃣ Si pas trouvé et le format est valide (ex: 01BP479), extraire le préfixe et chercher exactement
+        if (result.isEmpty() && normalizedCode.contains("BP")) {
             String[] parts = normalizedCode.split("BP");
             if (parts.length > 0 && !parts[0].isEmpty()) {
-                String codePrefix = parts[0]; // Ex: "01"
+                String codePrefixRaw = parts[0]; // Ex: "01" de "01BP479"
                 
-                // Chercher toutes les agences
-                List<Agences> allAgencies = agenceRepository.findAllActive();
-                
-                // Chercher une agence dont le code commence par ce préfixe
-                result = allAgencies.stream()
-                    .filter(a -> a.getCode() != null && a.getCode().startsWith(codePrefix))
-                    .findFirst();
-                
-                // Si toujours pas trouvé, chercher par les 2 premiers chiffres du code
-                if (result.isEmpty()) {
+                // ✅ SÉCURITÉ: Rejeter les préfixes trop courts (moins de 2 chiffres)
+                // Si le préfixe est "1", c'est probablement une erreur OCR (devrait être "01")
+                if (codePrefixRaw.length() < 2) {
+                    System.out.println("⚠️  Préfixe trop court (" + codePrefixRaw + "), probablement une erreur OCR. Correction en cours...");
+                    if (codePrefixRaw.equals("1")) {
+                        // Essayer avec le préfixe "01" au lieu de "1"
+                        final String codePrefix = "01";
+                        System.out.println("📌 Correction appliquée: 01 (au lieu de " + codePrefixRaw + ")");
+                        
+                        List<Agences> allAgencies = agenceRepository.findAllActive();
+                        System.out.println("📊 Total agences actives: " + allAgencies.size());
+                        
+                        // Chercher UNE agence avec codeBureau EXACTEMENT égal au préfixe "01"
+                        result = allAgencies.stream()
+                            .filter(a -> a.getCodeBureau() != null && 
+                                   a.getCodeBureau().toUpperCase().equals(codePrefix))
+                            .peek(a -> System.out.println("✅ Trouvée (étape 2 - exact): " + a.getNom() + " - codeBureau: " + a.getCodeBureau()))
+                            .findFirst();
+                        
+                        // Fallback: chercher par code d'agence
+                        if (result.isEmpty()) {
+                            result = allAgencies.stream()
+                                .filter(a -> a.getCode() != null && a.getCode().equals(codePrefix))
+                                .peek(a -> System.out.println("✅ Trouvée (étape 3 - code): " + a.getNom() + " - code: " + a.getCode()))
+                                .findFirst();
+                        }
+                    }
+                } else {
+                    // Préfixe normal, utiliser la recherche standard
+                    final String codePrefix = codePrefixRaw;
+                    System.out.println("📌 Extraction du préfixe: " + codePrefix);
+                    
+                    List<Agences> allAgencies = agenceRepository.findAllActive();
+                    System.out.println("📊 Total agences actives: " + allAgencies.size());
+                    
+                    // Chercher UNE agence avec codeBureau EXACTEMENT égal au préfixe (ex: codeBureau = "01")
                     result = allAgencies.stream()
                         .filter(a -> a.getCodeBureau() != null && 
-                               (a.getCodeBureau().contains(codePrefix) ||
-                                a.getCodeBureau().startsWith(codePrefix)))
+                               a.getCodeBureau().toUpperCase().equals(codePrefix))
+                        .peek(a -> System.out.println("✅ Trouvée (étape 2 - exact): " + a.getNom() + " - codeBureau: " + a.getCodeBureau()))
                         .findFirst();
+                    
+                    // 3️⃣ Si toujours pas trouvé, chercher par le code d'agence (pas startsWith sur codeBureau!)
+                    if (result.isEmpty()) {
+                        System.out.println("❌ Étape 2 échouée, essai étape 3 (match par code d'agence)");
+                        result = allAgencies.stream()
+                            .filter(a -> a.getCode() != null && a.getCode().equals(codePrefix))
+                            .peek(a -> System.out.println("✅ Trouvée (étape 3 - code): " + a.getNom() + " - code: " + a.getCode()))
+                            .findFirst();
+                    }
                 }
             }
+        }
+        
+        if (result.isEmpty()) {
+            System.out.println("❌ AUCUNE AGENCE TROUVÉE pour: " + normalizedCode);
+        } else {
+            System.out.println("✅ AGENCE TROUVÉE: " + result.get().getNom());
         }
         
         return result

@@ -22,7 +22,7 @@ public class Agences extends AbstractEntity {
     @Column(name = "label", nullable = false)
     private String label;
 
-    @Column(name = "tel", length = 15)
+    @Column(name = "num_tel", length = 20)
     private String tel;
 
     @Column(name = "adresse_complete")
