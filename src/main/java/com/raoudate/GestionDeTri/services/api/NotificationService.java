@@ -40,22 +40,22 @@ public interface NotificationService {
     /**
      * Approuver une demande de suppression
      */
-    void approveDeleteRequest(Integer notificationId, NotificationEntity entityType, Integer entityId);
+    void approveDeleteRequest(Integer notificationId, NotificationEntity entityType, Integer entityId, String adminEmail);
     
     /**
      * Rejeter une demande de suppression
      */
-    void rejectDeleteRequest(Integer notificationId, String reason);
+    void rejectDeleteRequest(Integer notificationId, String reason, String adminEmail);
     
     /**
      * Approuver une demande de modification
      */
-    void approveModificationRequest(Integer notificationId, NotificationEntity entityType, Integer entityId, String modificationsJson);
+    void approveModificationRequest(Integer notificationId, NotificationEntity entityType, Integer entityId, String modificationsJson, String adminEmail);
     
     /**
      * Rejeter une demande de modification
      */
-    void rejectModificationRequest(Integer notificationId, String reason);
+    void rejectModificationRequest(Integer notificationId, String reason, String adminEmail);
     
     /**
      * Supprimer une notification

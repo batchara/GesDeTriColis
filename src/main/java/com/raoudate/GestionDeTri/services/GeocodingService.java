@@ -191,8 +191,8 @@ public class GeocodingService {
             DistanceMatrix matrix = DistanceMatrixApi.newRequest(geoApiContext)
                     .origins(origin)
                     .destinations(destination)
-                    .mode(TravelMode.DRIVING)        // 🚗 Mode voiture/moto (routes)
-                    .language("fr")                   // 🇫🇷 Langue française
+                    .mode(TravelMode.DRIVING)        //  Mode voiture/moto (routes)
+                    .language("fr")                   // 🇫Langue française
                     .await();
             
             if (matrix.rows != null && matrix.rows.length > 0) {
@@ -370,7 +370,7 @@ public class GeocodingService {
             int nombre, 
             String regionPrioritaire) {
         
-        log.info("🔍 Recherche des {} agences les plus proches de ({}, {}) - Région prioritaire: {}", 
+        log.info(" Recherche des {} agences les plus proches de ({}, {}) - Région prioritaire: {}", 
                 nombre, latitude, longitude, regionPrioritaire);
 
         List<Agences> toutesLesAgences = agenceRepository.findAll();
@@ -389,7 +389,7 @@ public class GeocodingService {
         
         // Si aucune agence dans la région spécifiée, fallback sur toutes les agences
         if (agencesAAnalyser.isEmpty() && regionPrioritaire != null) {
-            log.warn("⚠️ Aucune agence trouvée dans la région '{}', recherche dans toutes les régions", regionPrioritaire);
+            log.warn(" Aucune agence trouvée dans la région '{}', recherche dans toutes les régions", regionPrioritaire);
             agencesAAnalyser = toutesLesAgences;
         }
         

@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f6fa;
+            background-color: #004aad;
             color: #333;
             margin: 0;
             padding: 0;
@@ -66,14 +66,16 @@
         .btn-login {
             display: inline-block;
             background-color: #007bff;
-            color: white;
+            color: white !important;
             padding: 12px 30px;
             text-decoration: none;
             border-radius: 5px;
             margin: 20px 0;
+            font-weight: bold;
         }
         .btn-login:hover {
             background-color: #0056b3;
+            color: white !important;
         }
         .instructions {
             background-color: #e7f3ff;
@@ -92,7 +94,6 @@
 </head>
 <body>
 <div class="container">
-    <div class="success-icon">✅</div>
     <h1>Compte Activé avec Succès !</h1>
     
     <p th:text="'Bonjour ' + ${username} + ','"></p>

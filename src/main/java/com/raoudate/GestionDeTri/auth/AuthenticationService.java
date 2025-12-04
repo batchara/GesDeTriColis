@@ -84,7 +84,7 @@ public class AuthenticationService {
         // Si l'envoi d'email échoue, la transaction sera annulée automatiquement
         // grâce à @Transactional et l'utilisateur ne sera pas créé dans la base de données
         try {
-            return sendValidationEmail(user, null);
+            return sendValidationEmailWithPassword(user, null, request.getPassword());
         } catch (MessagingException e) {
             // Log l'erreur pour debugging
             System.err.println("❌ Échec de l'envoi de l'email d'activation à : " + user.getEmail());
@@ -95,12 +95,41 @@ public class AuthenticationService {
 
     }
         @Transactional(propagation = Propagation.REQUIRES_NEW)
+        String sendValidationEmailWithPassword(User user, Token oldToken, String rawPassword) throws MessagingException {
+
+                if (oldToken != null) {
+                        tokenRepository.delete(oldToken);
+                }
+                
+                var newToken = generateAndeSaveActivationToken(user, rawPassword) ;
+
+                emailsService.sendEmail(
+                                user.getEmail(),
+                                user.nomComplet(),
+                                EmailTemplateName.ACTIVATE_ACCOUNT,
+                                activationUrl,
+                                newToken,
+                                "Account activation"
+
+                );
+
+                return newToken;
+
+        }
+        
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         String sendValidationEmail(User user , Token oldToken) throws MessagingException {
 
                 if (oldToken != null) {
                         tokenRepository.delete(oldToken);
                 }
-                var newToken = generateAndeSaveActivationToken(user) ;
+                
+                // Récupérer le mot de passe temporaire du token existant ou utiliser celui de l'utilisateur
+                String temporaryPassword = (oldToken != null && oldToken.getTemporaryPassword() != null) 
+                    ? oldToken.getTemporaryPassword() 
+                    : null;
+                
+                var newToken = generateAndeSaveActivationToken(user, temporaryPassword) ;
 
                 emailsService.sendEmail(
                                 user.getEmail(),
@@ -116,13 +145,14 @@ public class AuthenticationService {
 
         }
 
-    private String generateAndeSaveActivationToken(User user) {
+    private String generateAndeSaveActivationToken(User user, String temporaryPassword) {
         //generation de Token
         String generateToken = generateActivationToken(6);
         var token = Token.builder()
                 .token(generateToken)
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .temporaryPassword(temporaryPassword)
                 .user(user)
                 .build();
         tokenRepository.save(token);

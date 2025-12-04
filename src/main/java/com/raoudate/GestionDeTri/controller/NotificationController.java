@@ -105,15 +105,17 @@ public class NotificationController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> approveDeleteRequest(
             @PathVariable Integer id,
-            @RequestBody Map<String, Object> payload) {
+            @RequestBody Map<String, Object> payload,
+            Authentication authentication) {
         
         NotificationEntity entityType = NotificationEntity.valueOf((String) payload.get("entityType"));
         Integer entityId = (Integer) payload.get("entityId");
+        String adminEmail = authentication.getName();
         
-        log.info("Approbation de la suppression: notification={}, entité={}, entityId={}", 
-                id, entityType, entityId);
+        log.info("Approbation de la suppression: notification={}, entité={}, entityId={}, admin={}", 
+                id, entityType, entityId, adminEmail);
         
-        notificationService.approveDeleteRequest(id, entityType, entityId);
+        notificationService.approveDeleteRequest(id, entityType, entityId, adminEmail);
         return ResponseEntity.ok().build();
     }
 
@@ -124,12 +126,14 @@ public class NotificationController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> rejectDeleteRequest(
             @PathVariable Integer id,
-            @RequestBody Map<String, String> payload) {
+            @RequestBody Map<String, String> payload,
+            Authentication authentication) {
         
         String reason = payload.get("reason");
-        log.info("Rejet de la suppression: notification={}, raison={}", id, reason);
+        String adminEmail = authentication.getName();
+        log.info("Rejet de la suppression: notification={}, raison={}, admin={}", id, reason, adminEmail);
         
-        notificationService.rejectDeleteRequest(id, reason);
+        notificationService.rejectDeleteRequest(id, reason, adminEmail);
         return ResponseEntity.ok().build();
     }
 
@@ -140,16 +144,18 @@ public class NotificationController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> approveModificationRequest(
             @PathVariable Integer id,
-            @RequestBody Map<String, Object> payload) {
+            @RequestBody Map<String, Object> payload,
+            Authentication authentication) {
         
         NotificationEntity entityType = NotificationEntity.valueOf((String) payload.get("entityType"));
         Integer entityId = (Integer) payload.get("entityId");
         String modifications = (String) payload.get("modifications");
+        String adminEmail = authentication.getName();
         
-        log.info("Approbation de la modification: notification={}, entité={}, entityId={}", 
-                id, entityType, entityId);
+        log.info("Approbation de la modification: notification={}, entité={}, entityId={}, admin={}", 
+                id, entityType, entityId, adminEmail);
         
-        notificationService.approveModificationRequest(id, entityType, entityId, modifications);
+        notificationService.approveModificationRequest(id, entityType, entityId, modifications, adminEmail);
         return ResponseEntity.ok().build();
     }
 
@@ -160,12 +166,14 @@ public class NotificationController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> rejectModificationRequest(
             @PathVariable Integer id,
-            @RequestBody Map<String, String> payload) {
+            @RequestBody Map<String, String> payload,
+            Authentication authentication) {
         
         String reason = payload.get("reason");
-        log.info("Rejet de la modification: notification={}, raison={}", id, reason);
+        String adminEmail = authentication.getName();
+        log.info("Rejet de la modification: notification={}, raison={}, admin={}", id, reason, adminEmail);
         
-        notificationService.rejectModificationRequest(id, reason);
+        notificationService.rejectModificationRequest(id, reason, adminEmail);
         return ResponseEntity.ok().build();
     }
 
