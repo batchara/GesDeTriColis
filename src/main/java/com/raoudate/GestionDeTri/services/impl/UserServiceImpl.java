@@ -1,4 +1,4 @@
-package com.raoudate.GestionDeTri.services;
+package com.raoudate.GestionDeTri.services.impl;
 import com.raoudate.GestionDeTri.dto.request.CreateUserRequest;
 import com.raoudate.GestionDeTri.dto.response.UserDTO;
 import com.raoudate.GestionDeTri.exception.BusinessErrorCode;
@@ -12,7 +12,7 @@ import com.raoudate.GestionDeTri.model.User;
 import com.raoudate.GestionDeTri.repository.RoleRepository;
 import com.raoudate.GestionDeTri.repository.TokenRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
-import com.raoudate.GestionDeTri.services.impl.UserService;
+import com.raoudate.GestionDeTri.services.UserService;
 
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImp implements UserService {
+public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository repository;

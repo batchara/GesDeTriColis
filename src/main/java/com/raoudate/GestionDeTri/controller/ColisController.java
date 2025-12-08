@@ -3,7 +3,7 @@ package com.raoudate.GestionDeTri.controller;
 import com.raoudate.GestionDeTri.dto.response.ColisDTO;
 import com.raoudate.GestionDeTri.model.Colis;
 import com.raoudate.GestionDeTri.scheduler.ColisRetourScheduler;
-import com.raoudate.GestionDeTri.services.impl.ColisService;
+import com.raoudate.GestionDeTri.services.ColisService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

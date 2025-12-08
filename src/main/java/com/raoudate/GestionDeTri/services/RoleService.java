@@ -1,4 +1,4 @@
-package com.raoudate.GestionDeTri.services.impl;
+package com.raoudate.GestionDeTri.services;
 
 public interface RoleService {
     void initializeRolePermissions();

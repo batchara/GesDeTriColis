@@ -1,11 +1,11 @@
-package com.raoudate.GestionDeTri.services;
+package com.raoudate.GestionDeTri.services.impl;
 
 import com.raoudate.GestionDeTri.dto.response.AgenceDTO;
-import com.raoudate.GestionDeTri.services.impl.AgenceService;
+import com.raoudate.GestionDeTri.services.AgenceService;
 
 import java.util.List;
 
-public class AgenceServiceImp implements AgenceService {
+public class AgenceServiceImpl implements AgenceService {
 
     @Override
     public AgenceDTO save(AgenceDTO dto) {

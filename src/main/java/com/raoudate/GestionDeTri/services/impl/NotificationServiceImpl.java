@@ -1,4 +1,4 @@
-package com.raoudate.GestionDeTri.services;
+package com.raoudate.GestionDeTri.services.impl;
 
 import com.raoudate.GestionDeTri.dto.response.NotificationDTO;
 import com.raoudate.GestionDeTri.enums.NotificationEntity;
@@ -12,7 +12,7 @@ import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.repository.NotificationRepository;
 import com.raoudate.GestionDeTri.repository.TokenRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
-import com.raoudate.GestionDeTri.services.impl.NotificationService;
+import com.raoudate.GestionDeTri.services.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class NotificationServiceImp implements NotificationService {
+public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;

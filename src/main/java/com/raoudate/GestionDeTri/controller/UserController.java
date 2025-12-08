@@ -2,7 +2,7 @@ package com.raoudate.GestionDeTri.controller;
 import com.raoudate.GestionDeTri.auth.ChangePasswordRequest;
 import com.raoudate.GestionDeTri.dto.request.CreateUserRequest;
 import com.raoudate.GestionDeTri.model.User;
-import com.raoudate.GestionDeTri.services.UserServiceImp;
+import com.raoudate.GestionDeTri.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserServiceImp service;
+    private final UserService service;
 
     /**
      * Récupérer tous les utilisateurs (accessible aux ADMIN et SUPERVISEUR)

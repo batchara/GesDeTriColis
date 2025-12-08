@@ -1,4 +1,4 @@
-package com.raoudate.GestionDeTri.services;
+package com.raoudate.GestionDeTri.services.impl;
 
 import com.raoudate.GestionDeTri.enums.Permission;
 import com.raoudate.GestionDeTri.enums.RoleType;
@@ -6,7 +6,7 @@ import com.raoudate.GestionDeTri.model.Permissions;
 import com.raoudate.GestionDeTri.model.Role;
 import com.raoudate.GestionDeTri.repository.PermissionRepository;
 import com.raoudate.GestionDeTri.repository.RoleRepository;
-import com.raoudate.GestionDeTri.services.impl.RoleService;
+import com.raoudate.GestionDeTri.services.RoleService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RoleServiceImp implements RoleService {
+public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;

@@ -2,7 +2,7 @@ package com.raoudate.GestionDeTri.controller;
 
 import com.raoudate.GestionDeTri.dto.response.NotificationDTO;
 import com.raoudate.GestionDeTri.enums.NotificationEntity;
-import com.raoudate.GestionDeTri.services.NotificationServiceImp;
+import com.raoudate.GestionDeTri.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ import java.util.Map;
 // Pas besoin de @CrossOrigin ici car déjà configuré globalement dans SecurityConfig
 public class NotificationController {
 
-    private final NotificationServiceImp notificationService;
+    private final NotificationService notificationService;
 
     /**
      * Créer une nouvelle notification

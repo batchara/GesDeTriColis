@@ -1,4 +1,4 @@
-package com.raoudate.GestionDeTri.services.impl;
+package com.raoudate.GestionDeTri.services;
 
 import com.raoudate.GestionDeTri.dto.response.CentreDeTriDTO;
 import java.util.List;

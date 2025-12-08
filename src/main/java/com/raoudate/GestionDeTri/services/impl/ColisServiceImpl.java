@@ -1,4 +1,4 @@
-package com.raoudate.GestionDeTri.services;
+package com.raoudate.GestionDeTri.services.impl;
 
 import com.raoudate.GestionDeTri.dto.response.ColisDTO;
 import com.raoudate.GestionDeTri.dto.response.NotificationDTO;
@@ -14,7 +14,7 @@ import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.repository.NotificationRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
-import com.raoudate.GestionDeTri.services.impl.ColisService;
+import com.raoudate.GestionDeTri.services.ColisService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class ColisServiceImp implements ColisService {
+public class ColisServiceImpl implements ColisService {
 
     private final ColisRepository colisRepository;
     private final AgenceRepository agenceRepository;

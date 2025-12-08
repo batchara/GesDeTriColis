@@ -36,7 +36,7 @@ public class GestionDeTriApplication {
 			AuthenticationService service,  
 			RoleRepository roleRepository, 
 			com.raoudate.GestionDeTri.repository.UserRepository userRepository,
-			com.raoudate.GestionDeTri.services.impl.RoleService roleService) {
+			com.raoudate.GestionDeTri.services.RoleService roleService) {
 	return args -> {
 
 		// create roles with 'ROLE_' prefix because AuthenticationService expects 'ROLE_ADMIN', etc.

@@ -1,4 +1,4 @@
-package com.raoudate.GestionDeTri.services;
+package com.raoudate.GestionDeTri.services.impl;
 
 import com.raoudate.GestionDeTri.model.Token;
 import com.raoudate.GestionDeTri.repository.TokenRepository;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class logoutServiceImp implements LogoutHandler {
+public class LogoutServiceImpl implements LogoutHandler {
 
 	private final TokenRepository tokenRepository;
 
