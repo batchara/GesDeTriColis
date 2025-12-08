@@ -1,7 +1,7 @@
 package com.raoudate.GestionDeTri.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.raoudate.GestionDeTri.Dto.DonneesStructureesDTO;
+import com.raoudate.GestionDeTri.dto.response.DonneesStructureesDTO;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
@@ -42,13 +42,13 @@ public class OpenAiParsingService {
         log.info("🤖 Début du parsing intelligent du texte OCR");
 
         if (texteOcr == null || texteOcr.trim().isEmpty()) {
-            log.warn("⚠️ Texte OCR vide");
+            log.warn(" Texte OCR vide");
             return null;
         }
 
         // Vérifier que la clé API est configurée
         if (apiKey == null || apiKey.trim().isEmpty()) {
-            log.error("❌ Clé API OpenAI non configurée");
+            log.error(" Clé API OpenAI non configurée");
             return creerParsingParDefaut(texteOcr);
         }
 
@@ -61,17 +61,17 @@ public class OpenAiParsingService {
                 Tu es un expert en extraction de données de bordereaux de colis postaux au Togo.
                 Ton rôle est d'analyser le texte OCR brut et d'en extraire SÉPARÉMENT les informations de l'EXPÉDITEUR et du DESTINATAIRE.
                 
-                🎯 STRUCTURE TYPIQUE D'UN BORDEREAU :
+                 STRUCTURE TYPIQUE D'UN BORDEREAU :
                 
                 1. Section INFORMATIONS DU COLIS (Date, Poids, Type) → À IGNORER COMPLÈTEMENT
                 2. Section EXPÉDITEUR (celui qui ENVOIE le colis)
                 3. Section DESTINATAIRE (celui qui REÇOIT le colis) → C'EST LA PRIORITÉ ABSOLUE
                 
-                ⚠️ CRITÈRE PRINCIPAL DE DISTINCTION :
+                 CRITÈRE PRINCIPAL DE DISTINCTION :
                 - EXPÉDITEUR : Marqué par "EXPÉDITEUR", "Expediteur", "De:", "From:", "Sender", "Envoyeur"
                 - DESTINATAIRE : Marqué par "DESTINATAIRE", "Destinataire", "À:", "To:", "Receiver", "Livraison à", "Pour:", "Recipient"
                 
-                ⚠️⚠️⚠️ RÈGLES ABSOLUES - NE JAMAIS ENFREINDRE ⚠️⚠️⚠️
+                 RÈGLES ABSOLUES - NE JAMAIS ENFREINDRE 
                 
                 1. Les champs nom, prenom, telephone, adresse, ville, quartier, region, pays DOIVENT TOUJOURS venir de la section DESTINATAIRE
                 2. Ces champs ne doivent JAMAIS contenir les données de l'EXPÉDITEUR
@@ -83,7 +83,7 @@ public class OpenAiParsingService {
                 
                 CHAMPS À EXTRAIRE :
                 
-                📦 DESTINATAIRE (PRIORITÉ ABSOLUE - C'EST LUI QUI REÇOIT LE COLIS) :
+                 DESTINATAIRE (PRIORITÉ ABSOLUE - C'EST LUI QUI REÇOIT LE COLIS) :
                 - nom: Nom de famille du DESTINATAIRE uniquement (ex: "ASSIROU")
                 - prenom: Prénom du DESTINATAIRE uniquement (ex: "Ach")
                 - telephone: Téléphone du DESTINATAIRE formaté avec +228 (ex: "+228 72 09 78 90")
@@ -93,12 +93,12 @@ public class OpenAiParsingService {
                 - region: Région du DESTINATAIRE normalisée (GOLFE, MARITIME, PLATEAUX, CENTRALE, KARA, SAVANES)
                 - pays: Toujours "Togo"
                 
-                📤 EXPÉDITEUR (SECONDAIRE - C'EST LUI QUI ENVOIE) :
+                 EXPÉDITEUR (SECONDAIRE - C'EST LUI QUI ENVOIE) :
                 - nomExpediteur: Nom de l'EXPÉDITEUR (ex: "Service Commercial", "Société ABC")
                 - telephoneExpediteur: Téléphone de l'EXPÉDITEUR avec +228
                 - adresseExpediteur: Adresse de l'EXPÉDITEUR (ex: "Lomé Centre, Togo")
                 
-                📋 AUTRES (INFORMATIONS DU COLIS EN HAUT DU BORDEREAU) :
+                 AUTRES (INFORMATIONS DU COLIS EN HAUT DU BORDEREAU) :
                 - codeSuivi: Code de suivi du bordereau (ex: "COL-TG-2025-001234") - IMPORTANT: Utilise EXACTEMENT le code tel qu'il apparaît
                 - poids: Poids du colis en kilogrammes (ex: 2.5) - Cherche "Poids estimé", "Poids", "Weight"
                 - code: Code agence si présent (2-4 chiffres)
@@ -128,7 +128,7 @@ public class OpenAiParsingService {
                   "confidence": 1.0
                 }
                 
-                ❌ JSON INCORRECT (NE JAMAIS FAIRE):
+                 JSON INCORRECT (NE JAMAIS FAIRE):
                 {
                   "nom": "Service Commercial",  ← ERREUR! C'est l'expéditeur, pas le destinataire!
                   "telephone": "+228 70 12 34 56",  ← ERREUR! C'est le téléphone de l'expéditeur!
@@ -154,7 +154,7 @@ public class OpenAiParsingService {
                   "confidence": 0.9
                 }
                 
-                ⚠️⚠️⚠️ RÈGLE D'OR ABSOLUE ⚠️⚠️⚠️
+                 RÈGLE D'OR ABSOLUE 
                 - Si tu vois "EXPÉDITEUR" puis "DESTINATAIRE" → ce sont DEUX personnes DIFFÉRENTES
                 - Les champs nom, prenom, telephone, adresse, region = TOUJOURS le DESTINATAIRE (celui qui REÇOIT)
                 - Les champs nomExpediteur, telephoneExpediteur, adresseExpediteur = l'EXPÉDITEUR (celui qui ENVOIE)
@@ -182,11 +182,11 @@ public class OpenAiParsingService {
                 .build();
 
             // Appeler l'API
-            log.info("📡 Appel à OpenAI API (modèle: {})", model);
+            log.info(" Appel à OpenAI API (modèle: {})", model);
             var completion = service.createChatCompletion(request);
 
             String jsonResponse = completion.getChoices().get(0).getMessage().getContent();
-            log.info("✅ Réponse OpenAI reçue: {}", jsonResponse);
+            log.info(" Réponse OpenAI reçue: {}", jsonResponse);
 
             // Parser la réponse JSON
             DonneesStructureesDTO donnees = objectMapper.readValue(jsonResponse, DonneesStructureesDTO.class);
@@ -194,7 +194,7 @@ public class OpenAiParsingService {
             // Nettoyer et valider les données
             nettoyer(donnees);
             
-            log.info("✅ Parsing intelligent réussi: nom={}, adresse={}", 
+            log.info(" Parsing intelligent réussi: nom={}, adresse={}", 
                 donnees.getNom(), donnees.getAdresse());
 
             // Fermer le service
@@ -203,7 +203,7 @@ public class OpenAiParsingService {
             return donnees;
 
         } catch (Exception e) {
-            log.error("❌ Erreur lors du parsing intelligent avec OpenAI", e);
+            log.error(" Erreur lors du parsing intelligent avec OpenAI", e);
             // Fallback sur le parsing par défaut
             return creerParsingParDefaut(texteOcr);
         }
@@ -241,26 +241,26 @@ public class OpenAiParsingService {
 
     /**
      * Crée un parsing basique si OpenAI n'est pas disponible
-     * ⚠️ IMPORTANT : On extrait UNIQUEMENT les données du DESTINATAIRE (celui qui reçoit)
+     *  IMPORTANT : On extrait UNIQUEMENT les données du DESTINATAIRE (celui qui reçoit)
      */
     private DonneesStructureesDTO creerParsingParDefaut(String texteOcr) {
-        log.info("⚠️ Utilisation du parsing par défaut (sans IA)");
+        log.info(" Utilisation du parsing par défaut (sans IA)");
 
         DonneesStructureesDTO donnees = new DonneesStructureesDTO();
         
-        // 🎯 EXTRAIRE LES DONNÉES DU DESTINATAIRE
+        // EXTRAIRE LES DONNÉES DU DESTINATAIRE
         // On cherche d'abord la section DESTINATAIRE dans le texte
         String sectionDestinataire = extraireSectionDestinataire(texteOcr);
         String texteDestinataire = (sectionDestinataire != null) ? sectionDestinataire : texteOcr;
         
-        log.info("📋 Texte DESTINATAIRE utilisé: {}", 
+        log.info(" Texte DESTINATAIRE utilisé: {}", 
                  (sectionDestinataire != null) ? "Section DESTINATAIRE isolée" : "Texte complet (pas de section DESTINATAIRE détectée)");
         
-        // 🎯 EXTRAIRE LES DONNÉES DE L'EXPÉDITEUR
+        // EXTRAIRE LES DONNÉES DE L'EXPÉDITEUR
         String sectionExpediteur = extraireSectionExpediteur(texteOcr);
         String texteExpediteur = (sectionExpediteur != null) ? sectionExpediteur : texteOcr;
         
-        log.info("📋 Texte EXPÉDITEUR utilisé: {}", 
+        log.info(" Texte EXPÉDITEUR utilisé: {}", 
                  (sectionExpediteur != null) ? "Section EXPÉDITEUR isolée" : "Texte complet (pas de section EXPÉDITEUR détectée)");
         
         // ========== DESTINATAIRE ==========
@@ -295,9 +295,9 @@ public class OpenAiParsingService {
         String nomExpediteur = extraireNom(texteExpediteur);
         if (nomExpediteur != null && !nomExpediteur.equals(nom)) {  // Ne pas dupliquer si c'est le même que le destinataire
             donnees.setNomExpediteur(nomExpediteur);
-            log.info("✅ Nom expéditeur extrait (fallback): {}", nomExpediteur);
+            log.info(" Nom expéditeur extrait (fallback): {}", nomExpediteur);
         } else {
-            log.warn("⚠️ Nom expéditeur: non extrait ou identique au destinataire");
+            log.warn(" Nom expéditeur: non extrait ou identique au destinataire");
         }
         
         // ========== AUTRES CHAMPS (du texte complet) ==========
@@ -333,17 +333,17 @@ public class OpenAiParsingService {
         double confidence = infosExtracted / 5.0;
         donnees.setConfidence(confidence);
         
-        log.info("✅ Parsing par défaut terminé (confidence: {}): nom={}, adresse={}, region={}", 
+        log.info(" Parsing par défaut terminé (confidence: {}): nom={}, adresse={}, region={}", 
                  confidence, nom, adresse, region);
         
         return donnees;
     }
     
     /**
-     * 🎯 EXTRAIT LA SECTION DESTINATAIRE du bordereau
+     *  EXTRAIT LA SECTION DESTINATAIRE du bordereau
      * Cette méthode isole la section du destinataire pour éviter de mélanger avec l'expéditeur
      * 
-     * ⚠️ IMPORTANT : Gère les variations comme "1%: DESTINATAIRE", "a DESTINATAIRE", "2) DESTINATAIRE"
+     *  IMPORTANT : Gère les variations comme "1%: DESTINATAIRE", "a DESTINATAIRE", "2) DESTINATAIRE"
      */
     private String extraireSectionDestinataire(String texte) {
         String[] lignes = texte.split("\\n");
@@ -363,7 +363,7 @@ public class OpenAiParsingService {
                                         .trim()
                                         .toLowerCase();
             
-            // ✅ DETECTER DEBUT DE SECTION DESTINATAIRE (avec variations)
+            // DETECTER DEBUT DE SECTION DESTINATAIRE (avec variations)
             if (ligneNettoyee.contains("destinataire") 
                 || ligneNettoyee.startsWith("destinataire")
                 || ligneNettoyee.equals("destinataire")
@@ -375,11 +375,11 @@ public class OpenAiParsingService {
                 || ligneLower.contains("livrer à")) {
                 dansDestinataire = true;
                 ligneDebut = i;
-                log.info("📍 Section DESTINATAIRE détectée à la ligne {} : '{}'", i, ligne);
+                log.info(" Section DESTINATAIRE détectée à la ligne {} : '{}'", i, ligne);
                 continue;
             }
             
-            // ❌ DETECTER FIN DE SECTION DESTINATAIRE (ne pas inclure ces lignes)
+            // DETECTER FIN DE SECTION DESTINATAIRE (ne pas inclure ces lignes)
             if (dansDestinataire) {
                 // Détecter section suivante (notes, signature, etc.)
                 if (ligneLower.contains("notes") 
@@ -391,12 +391,12 @@ public class OpenAiParsingService {
                     || ligneLower.matches(".*-{5,}.*")  // Ligne de séparation (-----)
                     || ligneLower.matches(".*={5,}.*")) { // Ligne de séparation (=====)
                     ligneFin = i;
-                    log.info("📍 Fin de section DESTINATAIRE détectée à la ligne {} : '{}'", i, ligne);
+                    log.info(" Fin de section DESTINATAIRE détectée à la ligne {} : '{}'", i, ligne);
                     break;
                 }
             }
             
-            // 📝 COLLECTER LES LIGNES DE LA SECTION DESTINATAIRE
+            // COLLECTER LES LIGNES DE LA SECTION DESTINATAIRE
             if (dansDestinataire && !ligne.isEmpty()) {
                 sectionDestinataire.append(ligne).append("\n");
             }
@@ -405,24 +405,24 @@ public class OpenAiParsingService {
         // Si aucune fin détectée, prendre jusqu'à la fin du document
         if (dansDestinataire && ligneFin == -1) {
             ligneFin = lignes.length;
-            log.info("📍 Section DESTINATAIRE va jusqu'à la fin du document (ligne {})", ligneFin);
+            log.info(" Section DESTINATAIRE va jusqu'à la fin du document (ligne {})", ligneFin);
         }
         
         String resultat = sectionDestinataire.toString().trim();
         
         if (!resultat.isEmpty()) {
-            log.info("✅ Section DESTINATAIRE extraite avec succès ({} lignes) :\n{}", 
+            log.info(" Section DESTINATAIRE extraite avec succès ({} lignes) :\n{}", 
                      ligneFin - ligneDebut, 
                      resultat.length() > 200 ? resultat.substring(0, 200) + "..." : resultat);
             return resultat;
         }
         
-        log.warn("⚠️ Aucune section DESTINATAIRE explicite trouvée, utilisation du texte complet");
+        log.warn(" Aucune section DESTINATAIRE explicite trouvée, utilisation du texte complet");
         return null;
     }
     
     /**
-     * 🎯 EXTRAIT LA SECTION EXPÉDITEUR du bordereau
+     *  EXTRAIT LA SECTION EXPÉDITEUR du bordereau
      * Cette méthode isole la section de l'expéditeur pour éviter de mélanger avec le destinataire
      */
     private String extraireSectionExpediteur(String texte) {
@@ -443,7 +443,7 @@ public class OpenAiParsingService {
                                         .trim()
                                         .toLowerCase();
             
-            // ✅ DETECTER DEBUT DE SECTION EXPÉDITEUR
+            // DETECTER DEBUT DE SECTION EXPÉDITEUR
             if (ligneNettoyee.contains("expéditeur") 
                 || ligneNettoyee.contains("expediteur")
                 || ligneNettoyee.startsWith("expéditeur")
@@ -454,11 +454,11 @@ public class OpenAiParsingService {
                 || ligneLower.contains("envoyeur")) {
                 dansExpediteur = true;
                 ligneDebut = i;
-                log.info("📍 Section EXPÉDITEUR détectée à la ligne {} : '{}'", i, ligne);
+                log.info(" Section EXPÉDITEUR détectée à la ligne {} : '{}'", i, ligne);
                 continue;
             }
             
-            // ❌ DETECTER FIN DE SECTION EXPÉDITEUR
+            // DETECTER FIN DE SECTION EXPÉDITEUR
             if (dansExpediteur) {
                 // Si on rencontre la section DESTINATAIRE, on arrête
                 if (ligneLower.contains("destinataire") 
@@ -468,12 +468,12 @@ public class OpenAiParsingService {
                     || ligneLower.contains("livraison")
                     || ligneLower.contains("receiver")) {
                     ligneFin = i;
-                    log.info("📍 Fin de section EXPÉDITEUR détectée à la ligne {} (début DESTINATAIRE): '{}'", i, ligne);
+                    log.info(" Fin de section EXPÉDITEUR détectée à la ligne {} (début DESTINATAIRE): '{}'", i, ligne);
                     break;
                 }
             }
             
-            // 📝 COLLECTER LES LIGNES DE LA SECTION EXPÉDITEUR
+            // COLLECTER LES LIGNES DE LA SECTION EXPÉDITEUR
             if (dansExpediteur && !ligne.isEmpty()) {
                 sectionExpediteur.append(ligne).append("\n");
             }
@@ -482,19 +482,19 @@ public class OpenAiParsingService {
         // Si aucune fin détectée, prendre jusqu'à la fin du document ou jusqu'au destinataire
         if (dansExpediteur && ligneFin == -1) {
             ligneFin = lignes.length;
-            log.info("📍 Section EXPÉDITEUR va jusqu'à la ligne {}", ligneFin);
+            log.info(" Section EXPÉDITEUR va jusqu'à la ligne {}", ligneFin);
         }
         
         String resultat = sectionExpediteur.toString().trim();
         
         if (!resultat.isEmpty()) {
-            log.info("✅ Section EXPÉDITEUR extraite avec succès ({} lignes) :\n{}", 
+            log.info(" Section EXPÉDITEUR extraite avec succès ({} lignes) :\n{}", 
                      ligneFin - ligneDebut, 
                      resultat.length() > 200 ? resultat.substring(0, 200) + "..." : resultat);
             return resultat;
         }
         
-        log.warn("⚠️ Aucune section EXPÉDITEUR explicite trouvée");
+        log.warn(" Aucune section EXPÉDITEUR explicite trouvée");
         return null;
     }
     
@@ -561,7 +561,7 @@ public class OpenAiParsingService {
             java.util.regex.Matcher m = p.matcher(ligne);
             if (m.find()) {
                 String code = m.group(1);
-                log.info("✅ Code de suivi trouvé: {}", code);
+                log.info(" Code de suivi trouvé: {}", code);
                 return code;
             }
         }
@@ -576,14 +576,14 @@ public class OpenAiParsingService {
                     String code = parts[1].trim();
                     // Vérifier que c'est bien un code (pas juste des espaces)
                     if (code.length() > 5 && code.matches(".*[A-Z0-9-]+.*")) {
-                        log.info("✅ Code de suivi trouvé (label explicite): {}", code);
+                        log.info(" Code de suivi trouvé (label explicite): {}", code);
                         return code;
                     }
                 }
             }
         }
         
-        log.warn("⚠️ Aucun code de suivi trouvé dans le texte OCR");
+        log.warn(" Aucun code de suivi trouvé dans le texte OCR");
         return null;
     }
     
@@ -648,7 +648,7 @@ public class OpenAiParsingService {
     }
 
     /**
-     * 🎯 EXTRACTION INTELLIGENTE D'ADRESSE - Stratégie multi-niveaux
+     *  EXTRACTION INTELLIGENTE D'ADRESSE - Stratégie multi-niveaux
      * 
      * Cette méthode utilise 4 stratégies en cascade pour extraire l'adresse du destinataire :
      * 1. PRIORITE MAX : Chercher "Adresse :" dans section DESTINATAIRE
@@ -659,35 +659,35 @@ public class OpenAiParsingService {
     private String extraireAdresse(String texte) {
         String[] lignes = texte.split("\\n");
         
-        // 🔍 STRATEGIE 1 : Chercher explicitement "Adresse :" (PRIORITE MAXIMALE)
+        // STRATEGIE 1 : Chercher explicitement "Adresse :" (PRIORITE MAXIMALE)
         String adresseExplicite = chercherAdresseExplicite(lignes);
         if (adresseExplicite != null) {
-            log.info("✅ Adresse extraite (stratégie 1 - explicite): {}", adresseExplicite);
+            log.info(" Adresse extraite (stratégie 1 - explicite): {}", adresseExplicite);
             return adresseExplicite;
         }
         
-        // 🔍 STRATEGIE 2 : Patterns typiques d'adresses (Pharmacie, Gare, Marché, etc.)
+        // STRATEGIE 2 : Patterns typiques d'adresses (Pharmacie, Gare, Marché, etc.)
         String adressePattern = chercherAdresseParPattern(lignes);
         if (adressePattern != null) {
-            log.info("✅ Adresse extraite (stratégie 2 - pattern): {}", adressePattern);
+            log.info(" Adresse extraite (stratégie 2 - pattern): {}", adressePattern);
             return adressePattern;
         }
         
-        // 🔍 STRATEGIE 3 : Quartiers/Villes connus du Togo
+        // STRATEGIE 3 : Quartiers/Villes connus du Togo
         String adresseVille = chercherAdresseParVille(lignes);
         if (adresseVille != null) {
-            log.info("✅ Adresse extraite (stratégie 3 - ville): {}", adresseVille);
+            log.info(" Adresse extraite (stratégie 3 - ville): {}", adresseVille);
             return adresseVille;
         }
         
-        // 🔍 STRATEGIE 4 : Analyse contextuelle (section DESTINATAIRE)
+        // STRATEGIE 4 : Analyse contextuelle (section DESTINATAIRE)
         String adresseContextuelle = chercherAdresseContextuelle(lignes);
         if (adresseContextuelle != null) {
-            log.info("✅ Adresse extraite (stratégie 4 - contextuelle): {}", adresseContextuelle);
+            log.info(" Adresse extraite (stratégie 4 - contextuelle): {}", adresseContextuelle);
             return adresseContextuelle;
         }
         
-        log.warn("⚠️ Aucune adresse trouvée avec les 4 stratégies");
+        log.warn(" Aucune adresse trouvée avec les 4 stratégies");
         return null;
     }
     
@@ -865,16 +865,16 @@ public class OpenAiParsingService {
         // Longueur minimale
         if (texte.length() < 4) return false;
         
-        // 🛑 Rejeter symboles parasites
+        //  Rejeter symboles parasites
         if (texte.matches(".*[©@&={}\\[\\]].*")) return false;
         
-        // 🛑 Rejeter coordonnées GPS pures
+        //  Rejeter coordonnées GPS pures
         if (texte.matches("^[0-9.\\s]+$")) return false;
         
-        // 🛑 Rejeter labels
+        //  Rejeter labels
         if (texteLower.matches("^(nom|prénom|prenom|téléphone|telephone|email|region|pays|code)\\s*:?$")) return false;
         
-        // 🛑 Rejeter informations de colis
+        //  Rejeter informations de colis
         String[] motsInterdits = {
             "date d'expédition", "date expedition", "poids estimé", "poids estime",
             "type :", "standard", "express", "novembre", "décembre", "janvier",
@@ -888,7 +888,7 @@ public class OpenAiParsingService {
             }
         }
         
-        // 🛑 Rejeter si c'est UNIQUEMENT un nom de région
+        //  Rejeter si c'est UNIQUEMENT un nom de région
         String[] regionsSeules = {"golfe", "maritime", "plateaux", "centrale", "kara", "savanes", "togo"};
         for (String region : regionsSeules) {
             if (texteLower.trim().equals(region)) {
@@ -896,7 +896,7 @@ public class OpenAiParsingService {
             }
         }
         
-        // ✅ Accepter si contient au moins quelques lettres
+        // Accepter si contient au moins quelques lettres
         return texte.matches(".*[a-zA-ZÀ-ÿ]{3,}.*");
     }
 
@@ -951,10 +951,10 @@ public class OpenAiParsingService {
         if (matcher1.find()) {
             try {
                 double poids = Double.parseDouble(matcher1.group(2));
-                log.info("✅ Poids extrait (pattern 1): {} kg", poids);
+                log.info(" Poids extrait (pattern 1): {} kg", poids);
                 return poids;
             } catch (NumberFormatException e) {
-                log.warn("⚠️ Erreur de parsing du poids: {}", matcher1.group(2));
+                log.warn(" Erreur de parsing du poids: {}", matcher1.group(2));
             }
         }
         
@@ -967,10 +967,10 @@ public class OpenAiParsingService {
         if (matcher2.find()) {
             try {
                 double poids = Double.parseDouble(matcher2.group(2));
-                log.info("✅ Poids extrait (pattern 2): {} kg", poids);
+                log.info(" Poids extrait (pattern 2): {} kg", poids);
                 return poids;
             } catch (NumberFormatException e) {
-                log.warn("⚠️ Erreur de parsing du poids: {}", matcher2.group(2));
+                log.warn(" Erreur de parsing du poids: {}", matcher2.group(2));
             }
         }
         
@@ -985,15 +985,15 @@ public class OpenAiParsingService {
             if (matcher3.find()) {
                 try {
                     double poids = Double.parseDouble(matcher3.group(1));
-                    log.info("✅ Poids extrait (pattern 3): {} kg", poids);
+                    log.info(" Poids extrait (pattern 3): {} kg", poids);
                     return poids;
                 } catch (NumberFormatException e) {
-                    log.warn("⚠️ Erreur de parsing du poids: {}", matcher3.group(1));
+                    log.warn(" Erreur de parsing du poids: {}", matcher3.group(1));
                 }
             }
         }
         
-        log.warn("⚠️ Aucun poids trouvé dans le texte OCR");
+        log.warn(" Aucun poids trouvé dans le texte OCR");
         return null;
     }
 }

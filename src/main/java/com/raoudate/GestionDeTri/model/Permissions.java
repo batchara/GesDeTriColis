@@ -1,7 +1,7 @@
 package com.raoudate.GestionDeTri.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.raoudate.GestionDeTri.Enum.Permission;
+import com.raoudate.GestionDeTri.enums.Permission;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -1,8 +1,8 @@
 package com.raoudate.GestionDeTri.model;
 
-import com.raoudate.GestionDeTri.Enum.NotificationEntity;
-import com.raoudate.GestionDeTri.Enum.NotificationStatus;
-import com.raoudate.GestionDeTri.Enum.NotificationType;
+import com.raoudate.GestionDeTri.enums.NotificationEntity;
+import com.raoudate.GestionDeTri.enums.NotificationStatus;
+import com.raoudate.GestionDeTri.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 

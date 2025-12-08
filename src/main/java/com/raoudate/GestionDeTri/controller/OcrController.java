@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.controller;
 
-import com.raoudate.GestionDeTri.Dto.OcrResultDTO;
+import com.raoudate.GestionDeTri.dto.response.OcrResultDTO;
 import com.raoudate.GestionDeTri.services.OcrService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,13 +38,13 @@ public class OcrController {
             @RequestParam("image") MultipartFile image) {
         
         try {
-            log.info("📸 Requête d'extraction OCR reçue - Fichier: {}, Taille: {} bytes", 
+            log.info(" Requête d'extraction OCR reçue - Fichier: {}, Taille: {} bytes", 
                     image.getOriginalFilename(), image.getSize());
             
             // Extraire le texte via Tesseract
             String texteExtrait = ocrService.extraireTexte(image);
             
-            log.info("✅ Texte extrait avec succès - {} caractères", texteExtrait.length());
+            log.info(" Texte extrait avec succès - {} caractères", texteExtrait.length());
             
             // Retourner le résultat
             OcrResultDTO result = OcrResultDTO.builder()
@@ -56,7 +56,7 @@ public class OcrController {
             return ResponseEntity.ok(result);
             
         } catch (Exception e) {
-            log.error("❌ Erreur lors de l'extraction OCR: {}", e.getMessage(), e);
+            log.error(" Erreur lors de l'extraction OCR: {}", e.getMessage(), e);
             
             OcrResultDTO result = OcrResultDTO.builder()
                     .succes(false)

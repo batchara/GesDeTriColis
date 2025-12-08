@@ -12,9 +12,9 @@ import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 import com.google.maps.model.TrafficModel;
 import com.google.maps.model.TravelMode;
-import com.raoudate.GestionDeTri.Dto.AgenceProche;
-import com.raoudate.GestionDeTri.Dto.CoordinatesDTO;
-import com.raoudate.GestionDeTri.Dto.GeocodingResultDTO;
+import com.raoudate.GestionDeTri.dto.response.AgenceProche;
+import com.raoudate.GestionDeTri.dto.response.CoordinatesDTO;
+import com.raoudate.GestionDeTri.dto.response.GeocodingResultDTO;
 import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,8 +52,8 @@ public class GeocodingService {
 
     @PostConstruct
     public void init() {
-        log.info("🗺️ Initialisation du service de géocodage Google Maps");
-        log.info("📍 Région: {}, Langue: {}", region, language);
+        log.info(" Initialisation du service de géocodage Google Maps");
+        log.info(" Région: {}, Langue: {}", region, language);
         
         geoApiContext = new GeoApiContext.Builder()
                 .apiKey(apiKey)
@@ -64,7 +64,7 @@ public class GeocodingService {
     public void cleanup() {
         if (geoApiContext != null) {
             geoApiContext.shutdown();
-            log.info("🔒 Arrêt du service de géocodage");
+            log.info(" Arrêt du service de géocodage");
         }
     }
 
@@ -76,9 +76,9 @@ public class GeocodingService {
      */
     public GeocodingResultDTO geocodeAdresse(String adresse, String regionDetectee) {
         try {
-            log.info("🔍 Géocodage de l'adresse: {} (région: {})", adresse, regionDetectee);
+            log.info(" Géocodage de l'adresse: {} (région: {})", adresse, regionDetectee);
 
-            // 🎯 ENRICHISSEMENT: Ajouter la ville si l'adresse est trop vague
+            // ENRICHISSEMENT: Ajouter la ville si l'adresse est trop vague
             String adresseComplete = adresse;
             String adresseLower = adresse.toLowerCase();
             
@@ -98,7 +98,7 @@ public class GeocodingService {
                 String ville = determinerVillePrincipale(regionDetectee);
                 if (ville != null) {
                     adresseComplete = adresse + ", " + ville;
-                    log.info("✨ Adresse enrichie: '{}' → '{}'", adresse, adresseComplete);
+                    log.info(" Adresse enrichie: '{}' → '{}'", adresse, adresseComplete);
                 }
             }
             
@@ -119,7 +119,7 @@ public class GeocodingService {
 
                 CoordinatesDTO coords = new CoordinatesDTO(location.lat, location.lng);
 
-                log.info("✅ Géocodage réussi: {} → ({}, {})", 
+                log.info(" Géocodage réussi: {} → ({}, {})", 
                     result.formattedAddress, location.lat, location.lng);
 
                 return GeocodingResultDTO.builder()
@@ -129,7 +129,7 @@ public class GeocodingService {
                         .succes(true)
                         .build();
             } else {
-                log.warn("⚠️ Aucun résultat pour l'adresse: {}", adresse);
+                log.warn(" Aucun résultat pour l'adresse: {}", adresse);
                 return GeocodingResultDTO.builder()
                         .adresseOriginale(adresse)
                         .succes(false)
@@ -137,7 +137,7 @@ public class GeocodingService {
                         .build();
             }
         } catch (Exception e) {
-            log.error("❌ Erreur lors du géocodage de l'adresse: {}", adresse, e);
+            log.error(" Erreur lors du géocodage de l'adresse: {}", adresse, e);
             return GeocodingResultDTO.builder()
                     .adresseOriginale(adresse)
                     .succes(false)
@@ -191,8 +191,8 @@ public class GeocodingService {
             DistanceMatrix matrix = DistanceMatrixApi.newRequest(geoApiContext)
                     .origins(origin)
                     .destinations(destination)
-                    .mode(TravelMode.DRIVING)        //  Mode voiture/moto (routes)
-                    .language("fr")                   // 🇫Langue française
+                    .mode(TravelMode.DRIVING)        // Mode voiture/moto (routes)
+                    .language("fr")                   // Langue française
                     .await();
             
             if (matrix.rows != null && matrix.rows.length > 0) {
@@ -211,7 +211,7 @@ public class GeocodingService {
                 }
             }
         } catch (Exception e) {
-            log.warn("⚠️ Erreur Distance Matrix API, fallback sur Haversine: {}", e.getMessage());
+            log.warn(" Erreur Distance Matrix API, fallback sur Haversine: {}", e.getMessage());
         }
         
         return null; // Retourner null pour indiquer qu'il faut utiliser le fallback
@@ -290,7 +290,7 @@ public class GeocodingService {
      * Utilise Distance Matrix API pour distances routières réelles
      */
     public List<AgenceProche> trouverAgencesProches(double latitude, double longitude, int nombre) {
-        log.info("🔍 Recherche des {} agences les plus proches de ({}, {}) avec distances routières réelles", 
+        log.info(" Recherche des {} agences les plus proches de ({}, {}) avec distances routières réelles", 
                 nombre, latitude, longitude);
 
         List<Agences> toutesLesAgences = agenceRepository.findAll();
@@ -344,7 +344,7 @@ public class GeocodingService {
                 .collect(Collectors.toList());
 
         if (!result.isEmpty()) {
-            log.info("✅ Agence la plus proche: {} - {} ({} km, {})", 
+            log.info(" Agence la plus proche: {} - {} ({} km, {})", 
                 result.get(0).getNom(), 
                 result.get(0).getAdresse(),
                 result.get(0).getDistanceKm(),
@@ -384,7 +384,7 @@ public class GeocodingService {
                                 a.getRegion().trim().toUpperCase().contains(regionNormalisee))
                     .collect(Collectors.toList());
             
-            log.info("📊 {} agences trouvées dans la région '{}'", agencesAAnalyser.size(), regionPrioritaire);
+            log.info(" {} agences trouvées dans la région '{}'", agencesAAnalyser.size(), regionPrioritaire);
         }
         
         // Si aucune agence dans la région spécifiée, fallback sur toutes les agences
@@ -395,7 +395,7 @@ public class GeocodingService {
         
         long startTime = System.currentTimeMillis();
         
-        // 🚀 OPTIMISATION 1: Pré-filtrer par distance Haversine pour réduire les agences à analyser
+        // OPTIMISATION 1: Pré-filtrer par distance Haversine pour réduire les agences à analyser
         List<AgenceProche> agencesTrieesHaversine = agencesAAnalyser.stream()
             .filter(a -> a.getLatitude() != null && a.getLongitude() != null)
             .map(agence -> {
@@ -418,14 +418,14 @@ public class GeocodingService {
             .sorted(Comparator.comparingDouble(AgenceProche::getDistanceKm))
             .collect(Collectors.toList());
         
-        // 🚀 OPTIMISATION 2: Ne calculer les distances réelles que pour les TOP 15 candidates
+        // OPTIMISATION 2: Ne calculer les distances réelles que pour les TOP 15 candidates
         int nbCandidates = Math.min(15, agencesTrieesHaversine.size());
         List<AgenceProche> topCandidates = agencesTrieesHaversine.subList(0, nbCandidates);
         
-        log.info("⚡ Calcul des distances réelles pour les {} meilleures candidates (sur {} agences)", 
+        log.info(" Calcul des distances réelles pour les {} meilleures candidates (sur {} agences)", 
             nbCandidates, agencesAAnalyser.size());
         
-        // 🚀 OPTIMISATION 3: Batch processing - Appel Distance Matrix par groupe de 25 max
+        // OPTIMISATION 3: Batch processing - Appel Distance Matrix par groupe de 25 max
         List<AgenceProche> agencesAvecDistanceReelle = calculerDistancesReallesBatch(
             latitude, longitude, topCandidates
         );
@@ -439,21 +439,21 @@ public class GeocodingService {
         long duration = System.currentTimeMillis() - startTime;
 
         if (!result.isEmpty()) {
-            log.info("✅ Agence la plus proche (région: {}): {} - {} ({} km) - Traitement en {} ms", 
+            log.info(" Agence la plus proche (région: {}): {} - {} ({} km) - Traitement en {} ms", 
                     result.get(0).getRegion(),
                     result.get(0).getNom(), 
                     result.get(0).getAdresse(),
                     result.get(0).getDistanceKm(),
                     duration);
         } else {
-            log.warn("⚠️ Aucune agence trouvée");
+            log.warn(" Aucune agence trouvée");
         }
 
         return result;
     }
     
     /**
-     * 🚀 NOUVEAU: Calcule les distances réelles par batch (jusqu'à 25 destinations à la fois)
+     *  NOUVEAU: Calcule les distances réelles par batch (jusqu'à 25 destinations à la fois)
      * Réduit drastiquement le nombre d'appels API Distance Matrix
      */
     private List<AgenceProche> calculerDistancesReallesBatch(
@@ -481,7 +481,7 @@ public class GeocodingService {
                 
                 String origine = latitudeOrigine + "," + longitudeOrigine;
                 
-                log.info("📡 Appel Distance Matrix API - Batch {}/{} ({} destinations)", 
+                log.info(" Appel Distance Matrix API - Batch {}/{} ({} destinations)", 
                     (i / BATCH_SIZE) + 1, 
                     (agences.size() + BATCH_SIZE - 1) / BATCH_SIZE,
                     destinations.length);
@@ -522,17 +522,17 @@ public class GeocodingService {
                                 .build());
                         } else {
                             // Garder la distance Haversine en fallback
-                            log.warn("⚠️ Distance Matrix API échec pour {} - Utilisation Haversine", agence.getNom());
+                            log.warn(" Distance Matrix API échec pour {} - Utilisation Haversine", agence.getNom());
                             resultats.add(agence);
                         }
                     }
                 }
             }
             
-            log.info("✅ Distances réelles calculées pour {} agences en batch", resultats.size());
+            log.info(" Distances réelles calculées pour {} agences en batch", resultats.size());
             
         } catch (Exception e) {
-            log.warn("⚠️ Erreur batch Distance Matrix API, utilisation Haversine: {}", e.getMessage());
+            log.warn(" Erreur batch Distance Matrix API, utilisation Haversine: {}", e.getMessage());
             // En cas d'erreur, retourner les agences avec distances Haversine
             return agences;
         }

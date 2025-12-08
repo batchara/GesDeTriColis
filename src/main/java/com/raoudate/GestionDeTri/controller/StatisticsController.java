@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.controller;
 
-import com.raoudate.GestionDeTri.Enum.StatutColis;
+import com.raoudate.GestionDeTri.enums.StatutColis;
 import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
@@ -34,7 +34,7 @@ public class StatisticsController {
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
-        log.info("📊 Récupération des statistiques du dashboard");
+        log.info(" Récupération des statistiques du dashboard");
         
         Map<String, Object> stats = new HashMap<>();
         
@@ -156,7 +156,7 @@ public class StatisticsController {
             ));
         stats.put("colisParRegionCeMois", colisParRegionCeMois);
         
-        log.info("✅ Statistiques récupérées avec succès");
+        log.info(" Statistiques récupérées avec succès");
         return ResponseEntity.ok(stats);
     }
 

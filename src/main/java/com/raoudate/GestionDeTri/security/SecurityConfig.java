@@ -19,9 +19,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-import static com.raoudate.GestionDeTri.Enum.Permission.*;
-import static com.raoudate.GestionDeTri.Enum.RoleType.ADMIN;
-import static com.raoudate.GestionDeTri.Enum.RoleType.SUPERVISEUR;
+import static com.raoudate.GestionDeTri.enums.Permission.*;
+import static com.raoudate.GestionDeTri.enums.RoleType.ADMIN;
+import static com.raoudate.GestionDeTri.enums.RoleType.SUPERVISEUR;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.Customizer.withDefaults;
 

@@ -33,9 +33,9 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody @Valid AuthenticationRequest request
     ) {
-        log.info("🔐 Tentative de connexion pour: {}", request.getEmail());
+        log.info(" Tentative de connexion pour: {}", request.getEmail());
         AuthenticationResponse response = authenticationService.authenticate(request);
-        log.info("✅ Connexion réussie pour: {}", request.getEmail());
+        log.info(" Connexion réussie pour: {}", request.getEmail());
         return ResponseEntity.ok(response);
     }
 

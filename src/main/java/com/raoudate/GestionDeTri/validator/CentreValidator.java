@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.validator;
 
-import com.raoudate.GestionDeTri.Dto.CentreDeTriDTO;
+import com.raoudate.GestionDeTri.dto.response.CentreDeTriDTO;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;

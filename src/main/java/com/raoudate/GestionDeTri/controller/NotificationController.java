@@ -1,7 +1,7 @@
 package com.raoudate.GestionDeTri.controller;
 
-import com.raoudate.GestionDeTri.Dto.NotificationDTO;
-import com.raoudate.GestionDeTri.Enum.NotificationEntity;
+import com.raoudate.GestionDeTri.dto.response.NotificationDTO;
+import com.raoudate.GestionDeTri.enums.NotificationEntity;
 import com.raoudate.GestionDeTri.services.NotificationServiceImp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

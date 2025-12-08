@@ -1,4 +1,4 @@
-package com.raoudate.GestionDeTri.Exception;
+package com.raoudate.GestionDeTri.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

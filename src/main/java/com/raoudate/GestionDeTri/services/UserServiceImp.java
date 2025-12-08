@@ -1,8 +1,8 @@
 package com.raoudate.GestionDeTri.services;
-import com.raoudate.GestionDeTri.Dto.CreateUserRequest;
-import com.raoudate.GestionDeTri.Dto.UserDTO;
-import com.raoudate.GestionDeTri.Exception.BusinessErrorCode;
-import com.raoudate.GestionDeTri.Exception.BusinessException;
+import com.raoudate.GestionDeTri.dto.request.CreateUserRequest;
+import com.raoudate.GestionDeTri.dto.response.UserDTO;
+import com.raoudate.GestionDeTri.exception.BusinessErrorCode;
+import com.raoudate.GestionDeTri.exception.BusinessException;
 import com.raoudate.GestionDeTri.auth.ChangePasswordRequest;
 import com.raoudate.GestionDeTri.email.EmailTemplateName;
 import com.raoudate.GestionDeTri.email.EmailsService;
@@ -12,7 +12,8 @@ import com.raoudate.GestionDeTri.model.User;
 import com.raoudate.GestionDeTri.repository.RoleRepository;
 import com.raoudate.GestionDeTri.repository.TokenRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
-import com.raoudate.GestionDeTri.services.api.UserService;
+import com.raoudate.GestionDeTri.services.impl.UserService;
+
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -103,7 +104,7 @@ public class UserServiceImp implements UserService {
      */
     @Transactional
     public User createUser(CreateUserRequest request) {
-        System.out.println("🔵 [createUser] Début création utilisateur: " + request.getEmail());
+        System.out.println(" [createUser] Début création utilisateur: " + request.getEmail());
         
         // Vérifier si l'email existe déjà (actif)
         if (repository.findActiveByEmail(request.getEmail()).isPresent()) {
@@ -113,7 +114,7 @@ public class UserServiceImp implements UserService {
         // Vérifier si un utilisateur supprimé existe avec cet email
         Optional<User> deletedUser = repository.findDeletedByEmail(request.getEmail());
         if (deletedUser.isPresent()) {
-            System.out.println("⚠️ [createUser] Un utilisateur supprimé existe avec cet email: " + request.getEmail());
+            System.out.println(" [createUser] Un utilisateur supprimé existe avec cet email: " + request.getEmail());
             throw new BusinessException(
                 BusinessErrorCode.DELETED_USER_EXISTS, 
                 "Un utilisateur supprimé existe avec cet email. Utilisez la fonction de restauration (ID: " + deletedUser.get().getId() + ")"
@@ -124,20 +125,20 @@ public class UserServiceImp implements UserService {
         String roleNameTemp = request.getRole() != null ? request.getRole().toUpperCase() : "OPERATEUR";
         final String roleName = roleNameTemp.startsWith("ROLE_") ? roleNameTemp : "ROLE_" + roleNameTemp;
         
-        System.out.println("🔵 [createUser] Recherche du rôle: " + roleName);
+        System.out.println(" [createUser] Recherche du rôle: " + roleName);
 
         // Récupérer le rôle depuis la base de données
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new IllegalStateException("Rôle " + roleName + " introuvable"));
         
-        System.out.println("✅ [createUser] Rôle trouvé: " + role.getName() + " (ID: " + role.getId() + ")");
+        System.out.println(" [createUser] Rôle trouvé: " + role.getName() + " (ID: " + role.getId() + ")");
 
         // Utiliser le mot de passe fourni par l'admin (temporaire)
         // Si aucun mot de passe n'est fourni, en générer un automatiquement
         String temporaryPassword = (request.getPassword() != null && !request.getPassword().isEmpty()) 
                 ? request.getPassword() 
                 : generateTemporaryPassword();
-        System.out.println("🔵 [createUser] Mot de passe temporaire : " + (request.getPassword() != null ? "fourni par l'admin" : "généré automatiquement"));
+        System.out.println(" [createUser] Mot de passe temporaire : " + (request.getPassword() != null ? "fourni par l'admin" : "généré automatiquement"));
 
         // Créer le nouvel utilisateur (compte désactivé par défaut)
         User user = User.builder()
@@ -156,20 +157,20 @@ public class UserServiceImp implements UserService {
         // Ajouter le rôle à l'utilisateur
         user.getRoles().add(role);
         
-        System.out.println("🔵 [createUser] Rôles assignés avant sauvegarde: " + user.getRoles().size());
+        System.out.println(" [createUser] Rôles assignés avant sauvegarde: " + user.getRoles().size());
 
         // Sauvegarder l'utilisateur
         User savedUser = repository.save(user);
         
-        System.out.println("✅ [createUser] Utilisateur créé avec ID: " + savedUser.getId());
-        System.out.println("✅ [createUser] Rôles après sauvegarde: " + savedUser.getRoles().size());
+        System.out.println(" [createUser] Utilisateur créé avec ID: " + savedUser.getId());
+        System.out.println(" [createUser] Rôles après sauvegarde: " + savedUser.getRoles().size());
         
         // Envoyer l'email d'activation avec le code
         try {
             sendActivationEmail(savedUser, temporaryPassword);
-            System.out.println("✅ [createUser] Email d'activation envoyé à: " + savedUser.getEmail());
+            System.out.println(" [createUser] Email d'activation envoyé à: " + savedUser.getEmail());
         } catch (MessagingException e) {
-            System.err.println("❌ [createUser] Échec envoi email: " + e.getMessage());
+            System.err.println(" [createUser] Échec envoi email: " + e.getMessage());
             // Supprimer l'utilisateur si l'email ne peut pas être envoyé
             repository.delete(savedUser);
             throw new BusinessException(BusinessErrorCode.EMAIL_SENDING_FAILED);
@@ -236,8 +237,8 @@ public class UserServiceImp implements UserService {
                 "Activation de votre compte - Société des Postes du Togo"
         );
         
-        System.out.println("📧 Email d'activation envoyé avec le code: " + activationCode);
-        System.out.println("🔐 Mot de passe temporaire stocké dans le token");
+        System.out.println(" Email d'activation envoyé avec le code: " + activationCode);
+        System.out.println(" Mot de passe temporaire stocké dans le token");
     }
     
     /**
@@ -290,7 +291,7 @@ public class UserServiceImp implements UserService {
         }
 
         User updatedUser = repository.save(user);
-        System.out.println("✅ Utilisateur mis à jour avec succès: " + updatedUser.getEmail());
+        System.out.println(" Utilisateur mis à jour avec succès: " + updatedUser.getEmail());
         return updatedUser;
     }
 
@@ -298,7 +299,7 @@ public class UserServiceImp implements UserService {
      * Mettre à jour uniquement les rôles d'un utilisateur
      */
     public User updateUserRoles(Integer id, List<String> roleNames) {
-        System.out.println("🔄 [updateUserRoles] Début - User ID: " + id + ", Rôles demandés: " + roleNames);
+        System.out.println(" [updateUserRoles] Début - User ID: " + id + ", Rôles demandés: " + roleNames);
         
         User user = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
@@ -309,20 +310,20 @@ public class UserServiceImp implements UserService {
             String tempRoleName = roleName.toUpperCase();
             final String normalizedRoleName = tempRoleName.startsWith("ROLE_") ? tempRoleName : "ROLE_" + tempRoleName;
             
-            System.out.println("🔍 [updateUserRoles] Recherche du rôle: " + normalizedRoleName);
+            System.out.println(" [updateUserRoles] Recherche du rôle: " + normalizedRoleName);
             Role role = roleRepository.findByName(normalizedRoleName)
                     .orElseThrow(() -> new IllegalStateException("Rôle " + normalizedRoleName + " introuvable"));
             
             newRoles.add(role);
-            System.out.println("✅ [updateUserRoles] Rôle trouvé: " + role.getName());
+            System.out.println(" [updateUserRoles] Rôle trouvé: " + role.getName());
         }
 
         // Remplacer les rôles existants
         user.setRoles(newRoles);
         User savedUser = repository.save(user);
         
-        System.out.println("✅ [updateUserRoles] Rôles mis à jour avec succès pour: " + savedUser.getEmail());
-        System.out.println("✅ [updateUserRoles] Nouveaux rôles: " + savedUser.getRoles().stream()
+        System.out.println(" [updateUserRoles] Rôles mis à jour avec succès pour: " + savedUser.getEmail());
+        System.out.println(" [updateUserRoles] Nouveaux rôles: " + savedUser.getRoles().stream()
                 .map(Role::getName)
                 .collect(java.util.stream.Collectors.joining(", ")));
         
@@ -333,17 +334,17 @@ public class UserServiceImp implements UserService {
      * Supprimer un utilisateur par son ID
      */
     public void deleteUser(Integer id) {
-        System.out.println("🗑️ [deleteUser] Début - User ID: " + id);
+        System.out.println(" [deleteUser] Début - User ID: " + id);
         
         // Vérifier que l'utilisateur existe
         User user = repository.findById(id)
                 .orElseThrow(() -> {
-                    System.out.println("❌ [deleteUser] Utilisateur introuvable - ID: " + id);
+                    System.out.println(" [deleteUser] Utilisateur introuvable - ID: " + id);
                     return new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable");
                 });
         
-        System.out.println("🔍 [deleteUser] Utilisateur trouvé: " + user.getEmail());
-        System.out.println("🔍 [deleteUser] Nom: " + user.getPrenom() + " " + user.getNom());
+        System.out.println(" [deleteUser] Utilisateur trouvé: " + user.getEmail());
+        System.out.println(" [deleteUser] Nom: " + user.getPrenom() + " " + user.getNom());
         
         // Soft delete : marquer l'utilisateur comme supprimé au lieu de le supprimer physiquement
         user.setDeleted(true);
@@ -360,8 +361,8 @@ public class UserServiceImp implements UserService {
         
         repository.save(user);
         
-        System.out.println("✅ [deleteUser] Utilisateur marqué comme supprimé (soft delete): " + user.getEmail());
-        System.out.println("📋 [deleteUser] Supprimé par: " + user.getDeletedBy() + " à " + user.getDeletedAt());
+        System.out.println(" [deleteUser] Utilisateur marqué comme supprimé (soft delete): " + user.getEmail());
+        System.out.println(" [deleteUser] Supprimé par: " + user.getDeletedBy() + " à " + user.getDeletedAt());
     }
 
     /**
@@ -369,23 +370,23 @@ public class UserServiceImp implements UserService {
      */
     @Transactional
     public User restoreUser(Integer id) {
-        System.out.println("♻️ [restoreUser] Début restauration - User ID: " + id);
+        System.out.println(" [restoreUser] Début restauration - User ID: " + id);
         
         // Vérifier que l'utilisateur existe
         User user = repository.findById(id)
                 .orElseThrow(() -> {
-                    System.out.println("❌ [restoreUser] Utilisateur introuvable - ID: " + id);
+                    System.out.println(" [restoreUser] Utilisateur introuvable - ID: " + id);
                     return new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable");
                 });
         
         // Vérifier qu'il est bien supprimé
         if (!user.getDeleted()) {
-            System.out.println("⚠️ [restoreUser] Utilisateur déjà actif - ID: " + id);
+            System.out.println(" [restoreUser] Utilisateur déjà actif - ID: " + id);
             throw new IllegalStateException("L'utilisateur n'est pas supprimé");
         }
         
-        System.out.println("🔍 [restoreUser] Utilisateur trouvé: " + user.getEmail());
-        System.out.println("🔍 [restoreUser] Supprimé le: " + user.getDeletedAt() + " par: " + user.getDeletedBy());
+        System.out.println(" [restoreUser] Utilisateur trouvé: " + user.getEmail());
+        System.out.println(" [restoreUser] Supprimé le: " + user.getDeletedAt() + " par: " + user.getDeletedBy());
         
         // Restaurer l'utilisateur
         user.setDeleted(false);
@@ -402,8 +403,8 @@ public class UserServiceImp implements UserService {
         
         User savedUser = repository.save(user);
         
-        System.out.println("✅ [restoreUser] Utilisateur restauré: " + savedUser.getEmail());
-        System.out.println("📋 [restoreUser] Restauré par: " + restoredBy);
+        System.out.println(" [restoreUser] Utilisateur restauré: " + savedUser.getEmail());
+        System.out.println(" [restoreUser] Restauré par: " + restoredBy);
         
         return savedUser;
     }
@@ -417,7 +418,7 @@ public class UserServiceImp implements UserService {
         
         user.setEnabled(true);
         repository.save(user);
-        System.out.println("✅ [enableUser] Utilisateur activé: " + user.getEmail());
+        System.out.println(" [enableUser] Utilisateur activé: " + user.getEmail());
     }
 
     /**
@@ -429,7 +430,7 @@ public class UserServiceImp implements UserService {
         
         user.setEnabled(false);
         repository.save(user);
-        System.out.println("❌ [disableUser] Utilisateur désactivé: " + user.getEmail());
+        System.out.println(" [disableUser] Utilisateur désactivé: " + user.getEmail());
     }
 
     /**
@@ -441,11 +442,11 @@ public class UserServiceImp implements UserService {
         
         user.setAccountLocked(true);
         repository.save(user);
-        System.out.println("🔒 [lockUser] Utilisateur verrouillé: " + user.getEmail());
+        System.out.println(" [lockUser] Utilisateur verrouillé: " + user.getEmail());
     }
 
     /**
-     * 🔓 Déverrouiller un utilisateur et réinitialiser le compteur de tentatives
+     *  Déverrouiller un utilisateur et réinitialiser le compteur de tentatives
      */
     public void unlockUser(Integer id) {
         User user = repository.findById(id)
@@ -456,7 +457,7 @@ public class UserServiceImp implements UserService {
         user.setLockTime(null);
         user.setLastFailedLogin(null);
         repository.save(user);
-        System.out.println("🔓 [unlockUser] Utilisateur déverrouillé et compteur réinitialisé: " + user.getEmail());
+        System.out.println(" [unlockUser] Utilisateur déverrouillé et compteur réinitialisé: " + user.getEmail());
     }
 
     @Override
@@ -536,7 +537,7 @@ public class UserServiceImp implements UserService {
         // - le statut enabled/locked
 
         User updatedUser = repository.save(user);
-        System.out.println("✅ Informations personnelles mises à jour pour: " + updatedUser.getEmail());
+        System.out.println(" Informations personnelles mises à jour pour: " + updatedUser.getEmail());
         return updatedUser;
     }
 }

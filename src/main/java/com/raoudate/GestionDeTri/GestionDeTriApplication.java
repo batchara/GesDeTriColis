@@ -13,9 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.CommandLineRunner;
-import static com.raoudate.GestionDeTri.Enum.RoleType.ADMIN;
-import static com.raoudate.GestionDeTri.Enum.RoleType.SUPERVISEUR;
-import static com.raoudate.GestionDeTri.Enum.RoleType.OPERATEUR;
+import static com.raoudate.GestionDeTri.enums.RoleType.ADMIN;
+import static com.raoudate.GestionDeTri.enums.RoleType.SUPERVISEUR;
+import static com.raoudate.GestionDeTri.enums.RoleType.OPERATEUR;
 
 // use RegistrationRequest.builder() directly
 
@@ -36,7 +36,7 @@ public class GestionDeTriApplication {
 			AuthenticationService service,  
 			RoleRepository roleRepository, 
 			com.raoudate.GestionDeTri.repository.UserRepository userRepository,
-			com.raoudate.GestionDeTri.services.api.RoleService roleService) {
+			com.raoudate.GestionDeTri.services.impl.RoleService roleService) {
 	return args -> {
 
 		// create roles with 'ROLE_' prefix because AuthenticationService expects 'ROLE_ADMIN', etc.
@@ -67,9 +67,9 @@ public class GestionDeTriApplication {
 		// Initialiser les permissions des rôles au démarrage
 		try {
 			roleService.initializeRolePermissions();
-			log.info("✅ Permissions des rôles initialisées avec succès");
+			log.info(" Permissions des rôles initialisées avec succès");
 		} catch (Exception e) {
-			log.error("❌ Erreur lors de l'initialisation des permissions: {}", e.getMessage());
+			log.error(" Erreur lors de l'initialisation des permissions: {}", e.getMessage());
 		}
 		
 		var admin = RegistrationRequest.builder()

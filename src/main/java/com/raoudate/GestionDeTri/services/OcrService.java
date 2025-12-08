@@ -1,10 +1,10 @@
 package com.raoudate.GestionDeTri.services;
 
-import com.raoudate.GestionDeTri.Dto.AgenceProche;
-import com.raoudate.GestionDeTri.Dto.CoordinatesDTO;
-import com.raoudate.GestionDeTri.Dto.DonneesStructureesDTO;
-import com.raoudate.GestionDeTri.Dto.GeocodingResultDTO;
-import com.raoudate.GestionDeTri.Dto.ScanColisResponseDTO;
+import com.raoudate.GestionDeTri.dto.response.AgenceProche;
+import com.raoudate.GestionDeTri.dto.response.CoordinatesDTO;
+import com.raoudate.GestionDeTri.dto.response.DonneesStructureesDTO;
+import com.raoudate.GestionDeTri.dto.response.GeocodingResultDTO;
+import com.raoudate.GestionDeTri.dto.response.ScanColisResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITesseract;
@@ -45,15 +45,15 @@ public class OcrService {
 
     @PostConstruct
     public void init() {
-        log.info("🔧 Initialisation de Tesseract OCR");
-        log.info("📁 Chemin tessdata: {}", tessdataPath);
-        log.info("🌍 Langue: {}", language);
+        log.info(" Initialisation de Tesseract OCR");
+        log.info(" Chemin tessdata: {}", tessdataPath);
+        log.info(" Langue: {}", language);
 
-        // 🔧 Configurer le chemin des bibliothèques natives Tesseract (macOS Homebrew)
+        //  Configurer le chemin des bibliothèques natives Tesseract (macOS Homebrew)
         String libPath = "/opt/homebrew/lib";
         if (Files.exists(Path.of(libPath))) {
             System.setProperty("jna.library.path", libPath);
-            log.info("📚 Chemin bibliothèques natives configuré: {}", libPath);
+            log.info(" Chemin bibliothèques natives configuré: {}", libPath);
         }
 
         tesseract = new Tesseract();
@@ -61,7 +61,7 @@ public class OcrService {
         // Vérifier et configurer le chemin des données
         if (Files.exists(Path.of(tessdataPath))) {
             tesseract.setDatapath(tessdataPath);
-            log.info("✅ Tessdata trouvé à: {}", tessdataPath);
+            log.info(" Tessdata trouvé à: {}", tessdataPath);
         } else {
             // Essayer des chemins alternatifs
             String[] alternatePaths = {
@@ -75,33 +75,33 @@ public class OcrService {
             for (String path : alternatePaths) {
                 if (Files.exists(Path.of(path))) {
                     tesseract.setDatapath(path);
-                    log.info("✅ Tessdata trouvé à: {}", path);
+                    log.info(" Tessdata trouvé à: {}", path);
                     found = true;
                     break;
                 }
             }
             
             if (!found) {
-                log.warn("⚠️ Tessdata non trouvé. OCR pourrait ne pas fonctionner correctement.");
+                log.warn(" Tessdata non trouvé. OCR pourrait ne pas fonctionner correctement.");
             }
         }
 
         tesseract.setLanguage(language);
-        // 🚀 Optimisations pour vitesse (moins de 5 secondes)
+        // Optimisations pour vitesse (moins de 5 secondes)
         tesseract.setPageSegMode(3); // PSM_AUTO = 3 (plus rapide que 1)
         tesseract.setOcrEngineMode(1); // Neural nets LSTM engine only
         // Configurations pour accélérer
         tesseract.setTessVariable("tessedit_char_blacklist", "");
         tesseract.setTessVariable("debug_file", "/dev/null");
         
-        log.info("✅ Tesseract OCR initialisé (mode optimisé pour vitesse)");
+        log.info(" Tesseract OCR initialisé (mode optimisé pour vitesse)");
     }
 
     /**
      * Extrait le texte d'une image (optimisé pour moins de 5 secondes)
      */
     public String extraireTexte(MultipartFile imageFile) throws Exception {
-        log.info("📸 Extraction de texte depuis l'image: {}", imageFile.getOriginalFilename());
+        log.info(" Extraction de texte depuis l'image: {}", imageFile.getOriginalFilename());
         long debut = System.currentTimeMillis();
 
         // Convertir MultipartFile en File temporaire
@@ -115,7 +115,7 @@ public class OcrService {
                 throw new IOException("Impossible de lire l'image");
             }
             
-            // 🚀 Redimensionner l'image si elle est trop grande (max 1024x1024)
+            // Redimensionner l'image si elle est trop grande (max 1024x1024)
             int maxDimension = 1024;
             if (image.getWidth() > maxDimension || image.getHeight() > maxDimension) {
                 float scale = Math.min(
@@ -128,7 +128,7 @@ public class OcrService {
                 BufferedImage resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
                 resized.getGraphics().drawImage(image, 0, 0, newWidth, newHeight, null);
                 image = resized;
-                log.info("📦 Image redimensionnée: {}x{} -> {}x{}", 
+                log.info(" Image redimensionnée: {}x{} -> {}x{}", 
                     imageFile.getOriginalFilename(), image.getWidth(), image.getHeight(), newWidth, newHeight);
             }
 
@@ -136,13 +136,13 @@ public class OcrService {
             String texte = tesseract.doOCR(image);
             long duree = System.currentTimeMillis() - debut;
             
-            log.info("✅ Texte extrait ({} caractères en {}ms)", texte.length(), duree);
+            log.info(" Texte extrait ({} caractères en {}ms)", texte.length(), duree);
             if (duree > 5000) {
-                log.warn("⚠️ OCR dépasse 5 secondes ({}ms)", duree);
+                log.warn(" OCR dépasse 5 secondes ({}ms)", duree);
             } else {
-                log.info("🚀 OCR rapide (<5s): {}ms", duree);
+                log.info(" OCR rapide (<5s): {}ms", duree);
             }
-            log.debug("📝 Texte: {}", texte);
+            log.debug(" Texte: {}", texte);
 
             return texte;
         } finally {
@@ -180,11 +180,11 @@ public class OcrService {
                 // Valider que ce sont des coordonnées du Togo
                 // Togo: Latitude 6° - 11° N, Longitude 0° - 2° E
                 if (latitude >= 6.0 && latitude <= 11.0 && longitude >= 0.0 && longitude <= 2.0) {
-                    log.info("✅ Coordonnées GPS extraites du texte: ({}, {})", latitude, longitude);
+                    log.info(" Coordonnées GPS extraites du texte: ({}, {})", latitude, longitude);
                     return new double[]{latitude, longitude};
                 }
             } catch (NumberFormatException e) {
-                log.warn("⚠️ Erreur lors du parsing des coordonnées: {}", e.getMessage());
+                log.warn(" Erreur lors du parsing des coordonnées: {}", e.getMessage());
             }
         }
         
@@ -199,10 +199,10 @@ public class OcrService {
                 
                 // Tester si c'est lat/lon ou lon/lat
                 if (val1 >= 6.0 && val1 <= 11.0 && val2 >= 0.0 && val2 <= 2.0) {
-                    log.info("✅ Coordonnées GPS extraites (pattern simple): ({}, {})", val1, val2);
+                    log.info(" Coordonnées GPS extraites (pattern simple): ({}, {})", val1, val2);
                     return new double[]{val1, val2};
                 } else if (val2 >= 6.0 && val2 <= 11.0 && val1 >= 0.0 && val1 <= 2.0) {
-                    log.info("✅ Coordonnées GPS extraites (pattern simple inversé): ({}, {})", val2, val1);
+                    log.info(" Coordonnées GPS extraites (pattern simple inversé): ({}, {})", val2, val1);
                     return new double[]{val2, val1};
                 }
             } catch (NumberFormatException e) {
@@ -210,7 +210,7 @@ public class OcrService {
             }
         }
         
-        log.info("ℹ️ Aucune coordonnée GPS trouvée dans le texte");
+        log.info("ℹ Aucune coordonnée GPS trouvée dans le texte");
         return null;
     }
 
@@ -219,7 +219,7 @@ public class OcrService {
      * Recherche des patterns typiques d'adresses au Togo
      */
     public String detecterAdresse(String texte) {
-        log.info("🔍 Détection d'adresse dans le texte");
+        log.info(" Détection d'adresse dans le texte");
 
         if (texte == null || texte.trim().isEmpty()) {
             return null;
@@ -256,7 +256,7 @@ public class OcrService {
                 
                 // Vérifier que ce n'est pas un symbole parasite et que c'est assez long
                 if (!adresse.matches(".*[©@&=QILO{}].*") && adresse.length() > 2) {
-                    log.info("✅ Adresse détectée: {}", adresse);
+                    log.info(" Adresse détectée: {}", adresse);
                     return adresse;
                 }
             }
@@ -286,11 +286,11 @@ public class OcrService {
 
         String result = adresse.toString();
         if (!result.isEmpty()) {
-            log.info("✅ Adresse approximative détectée: {}", result);
+            log.info(" Adresse approximative détectée: {}", result);
             return result;
         }
 
-        log.warn("⚠️ Aucune adresse détectée dans le texte");
+        log.warn(" Aucune adresse détectée dans le texte");
         return null;
     }
 
@@ -304,7 +304,7 @@ public class OcrService {
      * 4. Recherche des agences les plus proches avec distances routières réelles (Google Distance Matrix API)
      */
     public ScanColisResponseDTO scannerColis(MultipartFile image, String adresseManuelle) {
-        log.info("📦 Début du scan de bordereau");
+        log.info(" Début du scan de bordereau");
 
         ScanColisResponseDTO.ScanColisResponseDTOBuilder response = ScanColisResponseDTO.builder();
 
@@ -313,7 +313,7 @@ public class OcrService {
             String texteExtrait = null;
             boolean ocrSucces = false;
             DonneesStructureesDTO donneesStructurees = null;
-            double[] coordonneesGPS = null; // 🎯 GPS extraites du texte OCR
+            double[] coordonneesGPS = null; // GPS extraites du texte OCR
 
             // Si pas d'adresse manuelle, utiliser l'OCR
             if (adresseManuelle == null || adresseManuelle.trim().isEmpty()) {
@@ -326,12 +326,12 @@ public class OcrService {
 
                 try {
                     texteExtrait = extraireTexte(image);
-                    log.info("📄 Texte extrait: {}", texteExtrait);
+                    log.info(" Texte extrait: {}", texteExtrait);
                     
-                    // 🎯 PRIORITE 1: Extraire les coordonnées GPS si présentes
+                    // PRIORITE 1: Extraire les coordonnées GPS si présentes
                     coordonneesGPS = extraireCoordonnees(texteExtrait);
                     if (coordonneesGPS != null) {
-                        log.info("🎯 Coordonnées GPS extraites du bordereau: ({}, {})", 
+                        log.info(" Coordonnées GPS extraites du bordereau: ({}, {})", 
                             coordonneesGPS[0], coordonneesGPS[1]);
                     }
                     
@@ -340,7 +340,7 @@ public class OcrService {
                     donneesStructurees = openAiParsingService != null ? openAiParsingService.parserTexteOcr(texteExtrait) : null;
                     
                     if (donneesStructurees != null) {
-                        log.info("✅ Données structurées: nom={}, code={}, region={}, adresse={}", 
+                        log.info(" Données structurées: nom={}, code={}, region={}, adresse={}", 
                             donneesStructurees.getNom(),
                             donneesStructurees.getCode(),
                             donneesStructurees.getRegion(),
@@ -354,7 +354,7 @@ public class OcrService {
                         && !donneesStructurees.getAdresse().contains("@")) {
                         
                         adresseFinale = donneesStructurees.getAdresse();
-                        log.info("✅ Adresse structurée par IA: {}", adresseFinale);
+                        log.info(" Adresse structurée par IA: {}", adresseFinale);
                         
                         // Améliorer l'adresse avec le nom de l'agence si disponible
                         if (donneesStructurees.getNom() != null && !donneesStructurees.getNom().trim().isEmpty()) {
@@ -364,12 +364,12 @@ public class OcrService {
                     } else {
                         // Fallback sur la détection basique
                         adresseFinale = detecterAdresse(texteExtrait);
-                        log.info("📍 Adresse détectée (fallback): {}", adresseFinale);
+                        log.info(" Adresse détectée (fallback): {}", adresseFinale);
                     }
                     
                     ocrSucces = true;
                 } catch (Exception e) {
-                    log.error("❌ Erreur lors de l'OCR", e);
+                    log.error(" Erreur lors de l'OCR", e);
                     return response
                             .succes(false)
                             .ocrSucces(false)
@@ -383,12 +383,12 @@ public class OcrService {
                     .donneesStructurees(donneesStructurees)
                     .ocrSucces(ocrSucces);
 
-            // ✨ NOUVELLE LOGIQUE: Si coordonnées GPS extraites, utiliser directement
+            // NOUVELLE LOGIQUE: Si coordonnées GPS extraites, utiliser directement
             GeocodingResultDTO geocoding;
             
             if (coordonneesGPS != null) {
-                // 🎯 Utiliser les coordonnées GPS du bordereau directement
-                log.info("🎯 Utilisation des coordonnées GPS extraites: ({}, {})", 
+                // Utiliser les coordonnées GPS du bordereau directement
+                log.info(" Utilisation des coordonnées GPS extraites: ({}, {})", 
                     coordonneesGPS[0], coordonneesGPS[1]);
                 
                 geocoding = GeocodingResultDTO.builder()
@@ -399,7 +399,7 @@ public class OcrService {
                     .build();
                     
             } else {
-                // 🗺️ Fallback sur le géocodage si pas de GPS
+                // Fallback sur le géocodage si pas de GPS
                 if (adresseFinale == null || adresseFinale.trim().isEmpty()) {
                     return response
                             .succes(false)
@@ -407,10 +407,10 @@ public class OcrService {
                             .build();
                 }
                 
-                // 🎯 Récupérer la région AVANT le géocodage pour enrichir l'adresse
+                // Récupérer la région AVANT le géocodage pour enrichir l'adresse
                 String regionDetectee = (donneesStructurees != null) ? donneesStructurees.getRegion() : null;
                 
-                log.info("🗺️ Géocodage de l'adresse (pas de GPS dans le bordereau): {} - Région détectée: {}", 
+                log.info(" Géocodage de l'adresse (pas de GPS dans le bordereau): {} - Région détectée: {}", 
                     adresseFinale, regionDetectee);
                 geocoding = geocodingService.geocodeAdresse(adresseFinale, regionDetectee);
             }
@@ -426,10 +426,10 @@ public class OcrService {
             }
 
             // Recherche de l'agence la plus proche
-            // ⭐ IMPORTANT: Filtrer d'abord par région si détectée
+            //  IMPORTANT: Filtrer d'abord par région si détectée
             String regionDetectee = (donneesStructurees != null) ? donneesStructurees.getRegion() : null;
             
-            log.info("🏢 Recherche de l'agence la plus proche - Région détectée: {}", regionDetectee);
+            log.info(" Recherche de l'agence la plus proche - Région détectée: {}", regionDetectee);
             
             List<AgenceProche> agencesProches = geocodingService.trouverAgencesProchesParRegion(
                     geocoding.getCoordonnees().getLatitude(),
@@ -447,10 +447,10 @@ public class OcrService {
 
             AgenceProche agenceLaPlusProche = agencesProches.get(0);
             
-            // 🔍 VERIFICATION: Si l'agence la plus proche est > 15 km ET qu'une région était détectée,
+            // VERIFICATION: Si l'agence la plus proche est > 15 km ET qu'une région était détectée,
             // chercher dans TOUTES les régions pour voir s'il y a une agence plus proche ailleurs
             if (regionDetectee != null && agenceLaPlusProche.getDistanceKm() > 15.0) {
-                log.warn("⚠️ Agence la plus proche à {} km (région {}), recherche dans toutes les régions...", 
+                log.warn(" Agence la plus proche à {} km (région {}), recherche dans toutes les régions...", 
                     agenceLaPlusProche.getDistanceKm(), regionDetectee);
                 
                 List<AgenceProche> agencesToutesRegions = geocodingService.trouverAgencesProchesParRegion(
@@ -464,7 +464,7 @@ public class OcrService {
                     agencesToutesRegions.get(0).getDistanceKm() < agenceLaPlusProche.getDistanceKm()) {
                     
                     AgenceProche agencePlusProche = agencesToutesRegions.get(0);
-                    log.info("✅ Agence plus proche trouvée dans région {} : {} ({} km au lieu de {} km)", 
+                    log.info(" Agence plus proche trouvée dans région {} : {} ({} km au lieu de {} km)", 
                         agencePlusProche.getRegion(), 
                         agencePlusProche.getNom(),
                         agencePlusProche.getDistanceKm(),
@@ -489,7 +489,7 @@ public class OcrService {
                     .build();
 
         } catch (Exception e) {
-            log.error("❌ Erreur lors du scan du colis", e);
+            log.error(" Erreur lors du scan du colis", e);
             return response
                     .succes(false)
                     .messageErreur("Erreur interne: " + e.getMessage())

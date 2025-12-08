@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.auth;
 
-import com.raoudate.GestionDeTri.Enum.RoleType;
+import com.raoudate.GestionDeTri.enums.RoleType;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;

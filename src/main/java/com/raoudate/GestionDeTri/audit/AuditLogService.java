@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -255,10 +254,6 @@ public class AuditLogService {
             }
             
             HttpServletRequest request = attributes.getRequest();
-            if (request == null) {
-                return "UNKNOWN";
-            }
-            
             String xForwardedFor = request.getHeader("X-Forwarded-For");
             if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
                 return xForwardedFor.split(",")[0].trim();
@@ -282,10 +277,6 @@ public class AuditLogService {
             }
             
             HttpServletRequest request = attributes.getRequest();
-            if (request == null) {
-                return "UNKNOWN";
-            }
-            
             String userAgent = request.getHeader("User-Agent");
             return userAgent != null ? userAgent : "UNKNOWN";
         } catch (Exception e) {

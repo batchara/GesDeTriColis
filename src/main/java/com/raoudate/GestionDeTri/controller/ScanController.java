@@ -1,8 +1,8 @@
 package com.raoudate.GestionDeTri.controller;
 
-import com.raoudate.GestionDeTri.Dto.AgenceProche;
-import com.raoudate.GestionDeTri.Dto.GeocodingResultDTO;
-import com.raoudate.GestionDeTri.Dto.ScanColisResponseDTO;
+import com.raoudate.GestionDeTri.dto.response.AgenceProche;
+import com.raoudate.GestionDeTri.dto.response.GeocodingResultDTO;
+import com.raoudate.GestionDeTri.dto.response.ScanColisResponseDTO;
 import com.raoudate.GestionDeTri.services.GeocodingService;
 import com.raoudate.GestionDeTri.services.OcrService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +40,7 @@ public class ScanController {
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam(value = "adresse", required = false) String adresseManuelle) {
         
-        log.info("📦 Requête de scan de bordereau reçue");
+        log.info(" Requête de scan de bordereau reçue");
         
         ScanColisResponseDTO response = ocrService.scannerColis(image, adresseManuelle);
         
@@ -54,7 +54,7 @@ public class ScanController {
     public ResponseEntity<GeocodingResultDTO> geocoderAdresse(
             @RequestParam("adresse") String adresse) {
         
-        log.info("🗺️ Requête de géocodage: {}", adresse);
+        log.info(" Requête de géocodage: {}", adresse);
         
         GeocodingResultDTO result = geocodingService.geocodeAdresse(adresse);
         
@@ -69,7 +69,7 @@ public class ScanController {
             @RequestParam("latitude") double latitude,
             @RequestParam("longitude") double longitude) {
         
-        log.info("🏢 Recherche agence proche de ({}, {})", latitude, longitude);
+        log.info(" Recherche agence proche de ({}, {})", latitude, longitude);
         
         AgenceProche agence = geocodingService.trouverAgenceLaPlusProche(latitude, longitude);
         
@@ -88,7 +88,7 @@ public class ScanController {
             @RequestParam("longitude") double longitude,
             @RequestParam(value = "nombre", defaultValue = "5") int nombre) {
         
-        log.info("🏢 Recherche des {} agences proches de ({}, {})", nombre, latitude, longitude);
+        log.info(" Recherche des {} agences proches de ({}, {})", nombre, latitude, longitude);
         
         List<AgenceProche> agences = geocodingService.trouverAgencesProches(latitude, longitude, nombre);
         
@@ -101,13 +101,13 @@ public class ScanController {
     public ResponseEntity<?> extraireTexte(
             @RequestParam("image") MultipartFile image) {
         
-        log.info("📸 Requête d'extraction de bordereau");
+        log.info(" Requête d'extraction de bordereau");
         
         try {
             ScanColisResponseDTO response = ocrService.scannerColis(image, null);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("❌ Erreur lors du scan OCR + parsing IA", e);
+            log.error(" Erreur lors du scan OCR + parsing IA", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur: " + e.getMessage());
         }

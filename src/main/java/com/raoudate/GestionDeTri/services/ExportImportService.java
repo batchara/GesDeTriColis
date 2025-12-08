@@ -8,7 +8,7 @@ import com.raoudate.GestionDeTri.repository.UserRepository;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.repository.RoleRepository;
-import com.raoudate.GestionDeTri.Enum.StatutColis;
+import com.raoudate.GestionDeTri.enums.StatutColis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;

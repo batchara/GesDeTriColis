@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.repository;
 
-import com.raoudate.GestionDeTri.Enum.NotificationStatus;
+import com.raoudate.GestionDeTri.enums.NotificationStatus;
 import com.raoudate.GestionDeTri.model.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

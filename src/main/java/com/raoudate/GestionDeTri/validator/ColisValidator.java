@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.validator;
 
-import com.raoudate.GestionDeTri.Dto.ColisDTO;
+import com.raoudate.GestionDeTri.dto.response.ColisDTO;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;

@@ -1,12 +1,13 @@
 package com.raoudate.GestionDeTri.services;
 
-import com.raoudate.GestionDeTri.Enum.Permission;
-import com.raoudate.GestionDeTri.Enum.RoleType;
+import com.raoudate.GestionDeTri.enums.Permission;
+import com.raoudate.GestionDeTri.enums.RoleType;
 import com.raoudate.GestionDeTri.model.Permissions;
 import com.raoudate.GestionDeTri.model.Role;
 import com.raoudate.GestionDeTri.repository.PermissionRepository;
 import com.raoudate.GestionDeTri.repository.RoleRepository;
-import com.raoudate.GestionDeTri.services.api.RoleService;
+import com.raoudate.GestionDeTri.services.impl.RoleService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

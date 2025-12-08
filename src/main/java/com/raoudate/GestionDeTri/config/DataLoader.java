@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.config;
 
-import com.raoudate.GestionDeTri.Enum.StatutColis;
+import com.raoudate.GestionDeTri.enums.StatutColis;
 import com.raoudate.GestionDeTri.model.*;
 import com.raoudate.GestionDeTri.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -86,7 +86,7 @@ public class DataLoader implements CommandLineRunner {
                     .build();
             agenceRepository.save(agence);
         }
-        log.info("✓ {} agences created", agencesData.length);
+        log.info(" {} agences created", agencesData.length);
     }
 
     private void createUsers(Role roleAdmin, Role roleOp, Role roleSup) {
@@ -131,7 +131,7 @@ public class DataLoader implements CommandLineRunner {
             userRepository.save(operateur);
         }
 
-        log.info("✓ Users created (admin, superviseur, 3 operateurs)");
+        log.info(" Users created (admin, superviseur, 3 operateurs)");
     }
 
     private void createColis() {
@@ -174,6 +174,6 @@ public class DataLoader implements CommandLineRunner {
             colisRepository.save(colis);
         }
 
-        log.info("✓ 50 test colis created");
+        log.info(" 50 test colis created");
     }
 }

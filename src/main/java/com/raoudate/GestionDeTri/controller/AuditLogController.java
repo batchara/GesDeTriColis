@@ -24,7 +24,7 @@ public class AuditLogController {
 
     @PostConstruct
     public void init() {
-        log.info("✅ AuditLogController initialisé et prêt à recevoir des requêtes sur /api/v1/audit/**");
+        log.info(" AuditLogController initialisé et prêt à recevoir des requêtes sur /api/v1/audit/**");
     }
 
     /**
@@ -33,7 +33,7 @@ public class AuditLogController {
     @GetMapping("/logs")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN_READ')")
     public ResponseEntity<List<AuditLog>> getAllLogs() {
-        log.info("🔍 Récupération de tous les logs d'audit");
+        log.info(" Récupération de tous les logs d'audit");
         
         // Logger cette action
         auditLogService.logAction(
@@ -46,7 +46,7 @@ public class AuditLogController {
         );
         
         List<AuditLog> logs = auditLogService.getAllLogs();
-        log.info("📊 Nombre de logs récupérés: {}", logs.size());
+        log.info(" Nombre de logs récupérés: {}", logs.size());
         
         return ResponseEntity.ok(logs);
     }

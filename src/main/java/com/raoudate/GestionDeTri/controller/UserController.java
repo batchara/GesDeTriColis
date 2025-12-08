@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.controller;
 import com.raoudate.GestionDeTri.auth.ChangePasswordRequest;
-import com.raoudate.GestionDeTri.Dto.CreateUserRequest;
+import com.raoudate.GestionDeTri.dto.request.CreateUserRequest;
 import com.raoudate.GestionDeTri.model.User;
 import com.raoudate.GestionDeTri.services.UserServiceImp;
 import lombok.RequiredArgsConstructor;

@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 /**
- * 🔒 Service de gestion des tentatives de connexion échouées
+ *  Service de gestion des tentatives de connexion échouées
  * 
  * Fonctionnalités:
  * - Comptage des tentatives échouées

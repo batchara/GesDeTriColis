@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.repository;
 
-import com.raoudate.GestionDeTri.Enum.Permission;
+import com.raoudate.GestionDeTri.enums.Permission;
 import com.raoudate.GestionDeTri.model.Permissions;
 import org.springframework.data.jpa.repository.JpaRepository;
 

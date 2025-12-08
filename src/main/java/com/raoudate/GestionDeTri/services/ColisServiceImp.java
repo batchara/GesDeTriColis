@@ -1,11 +1,11 @@
 package com.raoudate.GestionDeTri.services;
 
-import com.raoudate.GestionDeTri.Dto.ColisDTO;
-import com.raoudate.GestionDeTri.Dto.NotificationDTO;
-import com.raoudate.GestionDeTri.Enum.NotificationEntity;
-import com.raoudate.GestionDeTri.Enum.NotificationStatus;
-import com.raoudate.GestionDeTri.Enum.NotificationType;
-import com.raoudate.GestionDeTri.Enum.StatutColis;
+import com.raoudate.GestionDeTri.dto.response.ColisDTO;
+import com.raoudate.GestionDeTri.dto.response.NotificationDTO;
+import com.raoudate.GestionDeTri.enums.NotificationEntity;
+import com.raoudate.GestionDeTri.enums.NotificationStatus;
+import com.raoudate.GestionDeTri.enums.NotificationType;
+import com.raoudate.GestionDeTri.enums.StatutColis;
 import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.model.Colis;
 import com.raoudate.GestionDeTri.model.Notification;
@@ -14,7 +14,8 @@ import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.repository.NotificationRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
-import com.raoudate.GestionDeTri.services.api.ColisService;
+import com.raoudate.GestionDeTri.services.impl.ColisService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,16 +43,16 @@ public class ColisServiceImp implements ColisService {
         
         Colis colis = ColisDTO.toEntity(colisDTO);
         
-        // ✅ Vérifier si un colis avec ce code de suivi existe déjà
+        // Vérifier si un colis avec ce code de suivi existe déjà
         if (colis.getCodeSuivi() != null && !colis.getCodeSuivi().isEmpty()) {
             boolean exists = colisRepository.existsByCodeSuivi(colis.getCodeSuivi());
             if (exists) {
-                log.error("❌ Un colis avec le code de suivi {} existe déjà", colis.getCodeSuivi());
+                log.error(" Un colis avec le code de suivi {} existe déjà", colis.getCodeSuivi());
                 throw new RuntimeException("Un colis avec le code de suivi " + colis.getCodeSuivi() + " existe déjà dans le système");
             }
         }
         
-        // ✅ Gérer la relation agenceAffectee : récupérer l'agence depuis la base de données
+        // Gérer la relation agenceAffectee : récupérer l'agence depuis la base de données
         if (colisDTO.getAgenceAffectee() != null && colisDTO.getAgenceAffectee().getId() != null) {
             Integer agenceId = colisDTO.getAgenceAffectee().getId();
             log.info("Récupération de l'agence avec ID: {}", agenceId);
@@ -79,7 +80,7 @@ public class ColisServiceImp implements ColisService {
         }
         
         Colis savedColis = colisRepository.save(colis);
-        log.info("✅ Colis enregistré avec succès - Code: {}", savedColis.getCodeSuivi());
+        log.info(" Colis enregistré avec succès - Code: {}", savedColis.getCodeSuivi());
         
         return ColisDTO.fromEntity(savedColis);
     }
@@ -87,9 +88,9 @@ public class ColisServiceImp implements ColisService {
     @Override
     @Transactional(readOnly = true)
     public List<ColisDTO> findAll() {
-        log.info("📋 Récupération de tous les colis NON supprimés");
+        log.info(" Récupération de tous les colis NON supprimés");
         List<Colis> colisList = colisRepository.findAllActive();
-        log.info("✅ {} colis actifs trouvés", colisList.size());
+        log.info(" {} colis actifs trouvés", colisList.size());
         
         return colisList.stream()
                 .map(ColisDTO::fromEntity)
@@ -166,15 +167,15 @@ public class ColisServiceImp implements ColisService {
 
     @Override
     public void delete(Integer id) {
-        log.info("🗑️ Demande de suppression du colis avec l'ID: {}", id);
+        log.info(" Demande de suppression du colis avec l'ID: {}", id);
         
         Colis colis = colisRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.error("❌ Colis non trouvé avec l'ID: {}", id);
+                    log.error(" Colis non trouvé avec l'ID: {}", id);
                     return new RuntimeException("Colis non trouvé avec l'ID: " + id);
                 });
         
-        log.info("📦 Colis trouvé - Code: {}, Deleted: {}", colis.getCodeSuivi(), colis.getDeleted());
+        log.info(" Colis trouvé - Code: {}, Deleted: {}", colis.getCodeSuivi(), colis.getDeleted());
         
         // Soft delete : marquer le colis comme supprimé au lieu de le supprimer physiquement
         colis.setDeleted(true);
@@ -190,23 +191,23 @@ public class ColisServiceImp implements ColisService {
         }
         
         colisRepository.save(colis);
-        log.info("✅ Colis marqué comme supprimé (soft delete): {} - Supprimé par: {} à {}", 
+        log.info(" Colis marqué comme supprimé (soft delete): {} - Supprimé par: {} à {}", 
                  colis.getCodeSuivi(), colis.getDeletedBy(), colis.getDeletedAt());
         
         // Vérification immédiate
         Colis verif = colisRepository.findById(id).orElse(null);
         if (verif != null) {
-            log.info("🔍 Vérification: deleted={}, deletedAt={}, deletedBy={}", 
+            log.info(" Vérification: deleted={}, deletedAt={}, deletedBy={}", 
                      verif.getDeleted(), verif.getDeletedAt(), verif.getDeletedBy());
         }
     }
     
     @Override
     public int deleteMultiple(List<Integer> ids) {
-        log.info("🗑️ Demande de suppression en masse de {} colis", ids.size());
+        log.info(" Demande de suppression en masse de {} colis", ids.size());
         
         if (ids == null || ids.isEmpty()) {
-            log.warn("⚠️ Aucun ID fourni pour la suppression en masse");
+            log.warn(" Aucun ID fourni pour la suppression en masse");
             return 0;
         }
         
@@ -230,18 +231,18 @@ public class ColisServiceImp implements ColisService {
                 Colis colis = colisRepository.findById(id).orElse(null);
                 
                 if (colis == null) {
-                    log.warn("⚠️ Colis avec ID {} non trouvé - ignoré", id);
+                    log.warn(" Colis avec ID {} non trouvé - ignoré", id);
                     errorCount++;
                     continue;
                 }
                 
                 if (colis.getDeleted()) {
-                    log.warn("⚠️ Colis {} (ID: {}) est déjà supprimé - ignoré", colis.getCodeSuivi(), id);
+                    log.warn(" Colis {} (ID: {}) est déjà supprimé - ignoré", colis.getCodeSuivi(), id);
                     errorCount++;
                     continue;
                 }
                 
-                log.info("📦 Suppression du colis: {} (ID: {})", colis.getCodeSuivi(), id);
+                log.info(" Suppression du colis: {} (ID: {})", colis.getCodeSuivi(), id);
                 
                 // Soft delete
                 colis.setDeleted(true);
@@ -252,12 +253,12 @@ public class ColisServiceImp implements ColisService {
                 successCount++;
                 
             } catch (Exception e) {
-                log.error("❌ Erreur lors de la suppression du colis ID {}: {}", id, e.getMessage());
+                log.error(" Erreur lors de la suppression du colis ID {}: {}", id, e.getMessage());
                 errorCount++;
             }
         }
         
-        log.info("✅ Suppression en masse terminée: {} colis supprimés avec succès, {} erreurs", 
+        log.info(" Suppression en masse terminée: {} colis supprimés avec succès, {} erreurs", 
                  successCount, errorCount);
         
         return successCount;
@@ -266,11 +267,11 @@ public class ColisServiceImp implements ColisService {
     @Override
     @Transactional
     public NotificationDTO requestDeletion(Integer colisId) {
-        log.info("📝 Demande de suppression du colis avec l'ID: {}", colisId);
+        log.info(" Demande de suppression du colis avec l'ID: {}", colisId);
         
         Colis colis = colisRepository.findById(colisId)
                 .orElseThrow(() -> {
-                    log.error("❌ Colis non trouvé avec l'ID: {}", colisId);
+                    log.error(" Colis non trouvé avec l'ID: {}", colisId);
                     return new RuntimeException("Colis non trouvé avec l'ID: " + colisId);
                 });
         
@@ -281,7 +282,7 @@ public class ColisServiceImp implements ColisService {
             ? authentication.getName() 
             : "SYSTEM";
         
-        log.info("👤 Demande créée par: {}", requestedBy);
+        log.info(" Demande créée par: {}", requestedBy);
         
         // Créer la notification pour l'admin
         NotificationDTO notificationDTO = new NotificationDTO();
@@ -290,7 +291,7 @@ public class ColisServiceImp implements ColisService {
         notificationDTO.setEntityId(colis.getId());
         notificationDTO.setEntityName(colis.getCodeSuivi());
         notificationDTO.setMessage(String.format(
-            "📝 Demande de suppression du colis '%s' (Expéditeur: %s, Destinataire: %s) par %s",
+            " Demande de suppression du colis '%s' (Expéditeur: %s, Destinataire: %s) par %s",
             colis.getCodeSuivi(),
             colis.getNomExp() != null ? colis.getNomExp() : "N/A",
             colis.getNomDest() != null ? colis.getNomDest() : "N/A",
@@ -312,7 +313,7 @@ public class ColisServiceImp implements ColisService {
         
         Notification savedNotification = notificationRepository.save(notification);
         
-        log.info("✅ Notification créée avec succès: ID {} pour l'admin {}", 
+        log.info(" Notification créée avec succès: ID {} pour l'admin {}", 
                  savedNotification.getId(), admin.getEmail());
         
         return NotificationDTO.fromEntity(savedNotification);

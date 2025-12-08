@@ -1,9 +1,10 @@
 package com.raoudate.GestionDeTri.controller;
 
-import com.raoudate.GestionDeTri.Dto.ColisDTO;
+import com.raoudate.GestionDeTri.dto.response.ColisDTO;
 import com.raoudate.GestionDeTri.model.Colis;
 import com.raoudate.GestionDeTri.scheduler.ColisRetourScheduler;
-import com.raoudate.GestionDeTri.services.api.ColisService;
+import com.raoudate.GestionDeTri.services.impl.ColisService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -48,17 +49,17 @@ public class ColisController {
         log.info("Création d'un nouveau colis pour destinataire: {}", colisDTO.getNomDest());
         try {
             ColisDTO savedColis = colisService.save(colisDTO);
-            log.info("✅ Colis créé avec succès: {}", savedColis.getCodeSuivi());
+            log.info(" Colis créé avec succès: {}", savedColis.getCodeSuivi());
             return ResponseEntity.status(HttpStatus.CREATED).body(savedColis);
         } catch (RuntimeException e) {
-            log.error("❌ Erreur métier lors de la création du colis: {}", e.getMessage());
+            log.error(" Erreur métier lors de la création du colis: {}", e.getMessage());
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Erreur de validation");
             errorResponse.put("message", e.getMessage());
             errorResponse.put("status", "BAD_REQUEST");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         } catch (Exception e) {
-            log.error("❌ Erreur technique lors de la création du colis", e);
+            log.error(" Erreur technique lors de la création du colis", e);
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Erreur serveur");
             errorResponse.put("message", "Une erreur technique est survenue. Veuillez réessayer.");
@@ -110,9 +111,9 @@ public class ColisController {
     @PostMapping("/{id}/request-deletion")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
     public ResponseEntity<?> requestDeleteColis(@PathVariable Integer id) {
-        log.info("📝 Demande de suppression du colis ID: {}", id);
+        log.info(" Demande de suppression du colis ID: {}", id);
         try {
-            com.raoudate.GestionDeTri.Dto.NotificationDTO notification = colisService.requestDeletion(id);
+            com.raoudate.GestionDeTri.dto.response.NotificationDTO notification = colisService.requestDeletion(id);
             return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
                 put("success", true);
                 put("message", "Demande de suppression créée avec succès");
@@ -134,7 +135,7 @@ public class ColisController {
     @DeleteMapping("/batch")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
     public ResponseEntity<Map<String, Object>> deleteMultipleColis(@RequestBody List<Integer> ids) {
-        log.info("🗑️ Demande de suppression en masse de {} colis", ids.size());
+        log.info(" Demande de suppression en masse de {} colis", ids.size());
         try {
             int deletedCount = colisService.deleteMultiple(ids);
             
@@ -145,11 +146,11 @@ public class ColisController {
             response.put("errorCount", ids.size() - deletedCount);
             response.put("message", deletedCount + " colis supprimé(s) avec succès");
             
-            log.info("✅ Suppression en masse terminée: {} colis sur {} supprimés", deletedCount, ids.size());
+            log.info(" Suppression en masse terminée: {} colis sur {} supprimés", deletedCount, ids.size());
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("❌ Erreur lors de la suppression en masse", e);
+            log.error(" Erreur lors de la suppression en masse", e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", "Erreur lors de la suppression en masse: " + e.getMessage());

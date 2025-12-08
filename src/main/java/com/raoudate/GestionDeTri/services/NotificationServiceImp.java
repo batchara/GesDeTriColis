@@ -1,8 +1,8 @@
 package com.raoudate.GestionDeTri.services;
 
-import com.raoudate.GestionDeTri.Dto.NotificationDTO;
-import com.raoudate.GestionDeTri.Enum.NotificationEntity;
-import com.raoudate.GestionDeTri.Enum.NotificationStatus;
+import com.raoudate.GestionDeTri.dto.response.NotificationDTO;
+import com.raoudate.GestionDeTri.enums.NotificationEntity;
+import com.raoudate.GestionDeTri.enums.NotificationStatus;
 import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.model.Colis;
 import com.raoudate.GestionDeTri.model.Notification;
@@ -12,7 +12,8 @@ import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.repository.NotificationRepository;
 import com.raoudate.GestionDeTri.repository.TokenRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
-import com.raoudate.GestionDeTri.services.api.NotificationService;
+import com.raoudate.GestionDeTri.services.impl.NotificationService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -65,7 +66,7 @@ public class NotificationServiceImp implements NotificationService {
                 .filter(n -> n.getStatus() == NotificationStatus.TRAITEE)
                 .count();
         
-        log.info("📊 Total notifications: {}, dont TRAITEE: {}", notifications.size(), traiteeCount);
+        log.info(" Total notifications: {}, dont TRAITEE: {}", notifications.size(), traiteeCount);
         
         return notifications.stream()
                 .map(NotificationDTO::fromEntity)
@@ -140,13 +141,13 @@ public class NotificationServiceImp implements NotificationService {
         // Sauvegarder les infos pour la notification de retour
         String supervisorEmail = notification.getCreatedBy();  // Email du superviseur qui a créé la demande
         String entityName = notification.getEntityName();
-        log.info("📧 Email du superviseur récupéré: {}", supervisorEmail);
-        log.info("📝 Nom de l'entité: {}", entityName);
+        log.info(" Email du superviseur récupéré: {}", supervisorEmail);
+        log.info(" Nom de l'entité: {}", entityName);
         
         // Effectuer la suppression selon le type d'entité
         switch (entityType) {
             case UTILISATEUR:
-                // ✅ SOFT DELETE: Désactiver l'utilisateur au lieu de le supprimer
+                // SOFT DELETE: Désactiver l'utilisateur au lieu de le supprimer
                 if (userRepository.existsById(entityId)) {
                     User userToDelete = userRepository.findById(entityId).get();
                     userToDelete.setDeleted(true);
@@ -161,7 +162,7 @@ public class NotificationServiceImp implements NotificationService {
                 break;
                 
             case AGENCE:
-                // ✅ SOFT DELETE: Désactiver l'agence au lieu de la supprimer
+                // SOFT DELETE: Désactiver l'agence au lieu de la supprimer
                 if (agenceRepository.existsById(entityId)) {
                     Agences agenceToDelete = agenceRepository.findById(entityId).get();
                     agenceToDelete.setDeleted(true);
@@ -176,7 +177,7 @@ public class NotificationServiceImp implements NotificationService {
                 break;
                 
             case COLIS:
-                // ✅ SOFT DELETE: Désactiver le colis au lieu de le supprimer
+                // SOFT DELETE: Désactiver le colis au lieu de le supprimer
                 if (colisRepository.existsById(entityId)) {
                     Colis colisToDelete = colisRepository.findById(entityId).get();
                     colisToDelete.setDeleted(true);
@@ -185,26 +186,26 @@ public class NotificationServiceImp implements NotificationService {
                     colisRepository.save(colisToDelete);
                     log.info(" Colis {} désactivé (soft delete)", entityId);
                 } else {
-                    log.warn("⚠️ Colis {} déjà supprimé, notification marquée comme traitée", entityId);
+                    log.warn(" Colis {} déjà supprimé, notification marquée comme traitée", entityId);
                 }
                 break;
             default:
                 throw new IllegalStateException("Type d'entité non géré: " + entityType);
         }
         
-        // ✅ Mettre à jour la notification originale et la garder dans l'historique
+        // Mettre à jour la notification originale et la garder dans l'historique
         notification.setStatus(NotificationStatus.TRAITEE);
         notification.setActionRequired(false); // Plus d'action requise
         notification.setReason("Approuvée par l'administrateur");
         Notification savedNotification = notificationRepository.save(notification);
-        log.info("📚 Notification {} marquée comme TRAITEE et conservée dans l'historique", notificationId);
-        log.info("📚 Vérification après save - Status: {}, ActionRequired: {}, Reason: {}", 
+        log.info(" Notification {} marquée comme TRAITEE et conservée dans l'historique", notificationId);
+        log.info(" Vérification après save - Status: {}, ActionRequired: {}, Reason: {}", 
                 savedNotification.getStatus(), savedNotification.getActionRequired(), savedNotification.getReason());
         
         // Créer une notification de réponse pour le superviseur
         Notification responseNotification = Notification.builder()
                 .type(notification.getType()) // Même type (SUPPRESSION_DEMANDE)
-                .message(String.format("✅ Votre demande de suppression de %s '%s' a été APPROUVÉE par l'administrateur. La suppression a été effectuée avec succès.", 
+                .message(String.format(" Votre demande de suppression de %s '%s' a été APPROUVÉE par l'administrateur. La suppression a été effectuée avec succès.", 
                         entityType.name().toLowerCase(), entityName))
                 .targetUserId(supervisorEmail) // Envoyer au superviseur qui a créé la demande
                 .createdBy(adminEmail) // Créée par l'admin qui a approuvé
@@ -216,7 +217,7 @@ public class NotificationServiceImp implements NotificationService {
                 .build();
         
         Notification savedResponse = notificationRepository.save(responseNotification);
-        log.info("✅ Notification de réponse (approbation) CRÉÉE - ID: {}, targetUserId: {}, createdBy: {}, status: {}", 
+        log.info(" Notification de réponse (approbation) CRÉÉE - ID: {}, targetUserId: {}, createdBy: {}, status: {}", 
                 savedResponse.getId(), savedResponse.getTargetUserId(), savedResponse.getCreatedBy(), savedResponse.getStatus());
         
         log.info("Suppression approuvée et effectuée avec succès");
@@ -239,10 +240,10 @@ public class NotificationServiceImp implements NotificationService {
         String entityName = notification.getEntityName();
         NotificationEntity entityType = notification.getEntityType();
         Integer entityId = notification.getEntityId();
-        log.info("📧 Email du superviseur récupéré (rejet): {}", supervisorEmail);
-        log.info("📝 Nom de l'entité (rejet): {}", entityName);
+        log.info(" Email du superviseur récupéré (rejet): {}", supervisorEmail);
+        log.info(" Nom de l'entité (rejet): {}", entityName);
         
-        // ✅ Mettre à jour la notification originale et la garder dans l'historique
+        // Mettre à jour la notification originale et la garder dans l'historique
         notification.setStatus(NotificationStatus.TRAITEE);
         notification.setActionRequired(false); // Plus d'action requise
         notification.setReason(reason != null ? reason : "Rejetée par l'administrateur");
@@ -252,7 +253,7 @@ public class NotificationServiceImp implements NotificationService {
         // Créer une notification de réponse pour le superviseur
         Notification responseNotification = Notification.builder()
                 .type(notification.getType()) // Même type
-                .message(String.format("❌ Votre demande de suppression de %s '%s' a été REJETÉE par l'administrateur. Raison: %s", 
+                .message(String.format(" Votre demande de suppression de %s '%s' a été REJETÉE par l'administrateur. Raison: %s", 
                         entityType.name().toLowerCase(), entityName, 
                         reason != null ? reason : "Non spécifiée"))
                 .targetUserId(supervisorEmail) // Envoyer au superviseur qui a créé la demande
@@ -265,7 +266,7 @@ public class NotificationServiceImp implements NotificationService {
                 .build();
         
         Notification savedResponse = notificationRepository.save(responseNotification);
-        log.info("✅ Notification de réponse (REJET) CRÉÉE - ID: {}, targetUserId: {}, createdBy: {}, status: {}", 
+        log.info(" Notification de réponse (REJET) CRÉÉE - ID: {}, targetUserId: {}, createdBy: {}, status: {}", 
                 savedResponse.getId(), savedResponse.getTargetUserId(), savedResponse.getCreatedBy(), savedResponse.getStatus());
         
         log.info("Demande de suppression rejetée");
@@ -306,7 +307,7 @@ public class NotificationServiceImp implements NotificationService {
         // Note: La modification réelle de l'agence sera faite dans le contrôleur
         // car nous avons besoin des données complètes de l'agence
         
-        // ✅ Mettre à jour la notification originale et la garder dans l'historique
+        // Mettre à jour la notification originale et la garder dans l'historique
         notification.setStatus(NotificationStatus.TRAITEE);
         notification.setActionRequired(false); // Plus d'action requise
         notification.setReason("Approuvée par l'administrateur");
@@ -316,7 +317,7 @@ public class NotificationServiceImp implements NotificationService {
         // Créer une notification de réponse pour le superviseur
         Notification responseNotification = Notification.builder()
                 .type(notification.getType())
-                .message(String.format("✅ Votre demande de modification de %s '%s' a été APPROUVÉE par l'administrateur.", 
+                .message(String.format(" Votre demande de modification de %s '%s' a été APPROUVÉE par l'administrateur.", 
                         entityType.name().toLowerCase(), entityName))
                 .targetUserId(createdBy)
                 .createdBy(adminEmail)
@@ -349,7 +350,7 @@ public class NotificationServiceImp implements NotificationService {
         NotificationEntity entityType = notification.getEntityType();
         Integer entityId = notification.getEntityId();
         
-        // ✅ Mettre à jour la notification originale et la garder dans l'historique
+        // Mettre à jour la notification originale et la garder dans l'historique
         notification.setStatus(NotificationStatus.TRAITEE);
         notification.setActionRequired(false); // Plus d'action requise
         notification.setReason(reason != null ? reason : "Rejetée par l'administrateur");
@@ -359,7 +360,7 @@ public class NotificationServiceImp implements NotificationService {
         // Créer une notification de réponse pour le superviseur
         Notification responseNotification = Notification.builder()
                 .type(notification.getType())
-                .message(String.format("❌ Votre demande de modification de %s '%s' a été REJETÉE par l'administrateur. Raison: %s", 
+                .message(String.format(" Votre demande de modification de %s '%s' a été REJETÉE par l'administrateur. Raison: %s", 
                         entityType.name().toLowerCase(), entityName, 
                         reason != null ? reason : "Non spécifiée"))
                 .targetUserId(createdBy)

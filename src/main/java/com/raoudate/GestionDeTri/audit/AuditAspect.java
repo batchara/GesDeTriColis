@@ -167,7 +167,7 @@ public class AuditAspect {
                         message
                 );
             } catch (Exception auditEx) {
-                log.error("❌ Erreur lors de l'enregistrement du log d'audit: {}", auditEx.getMessage());
+                log.error(" Erreur lors de l'enregistrement du log d'audit: {}", auditEx.getMessage());
                 // Ne pas interrompre le flux pour une erreur d'audit
             }
 
@@ -186,7 +186,7 @@ public class AuditAspect {
                         e.getMessage()
                 );
             } catch (Exception auditEx) {
-                log.error("❌ Erreur lors de l'enregistrement du log d'erreur: {}", auditEx.getMessage());
+                log.error(" Erreur lors de l'enregistrement du log d'erreur: {}", auditEx.getMessage());
                 // Ne pas interrompre le flux pour une erreur d'audit
             }
 

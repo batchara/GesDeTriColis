@@ -1,6 +1,6 @@
 package com.raoudate.GestionDeTri.model;
 
-import com.raoudate.GestionDeTri.Enum.StatutColis;
+import com.raoudate.GestionDeTri.enums.StatutColis;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;

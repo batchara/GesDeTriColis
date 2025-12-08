@@ -1,7 +1,7 @@
 package com.raoudate.GestionDeTri.scheduler;
 
 import com.raoudate.GestionDeTri.model.Colis;
-import com.raoudate.GestionDeTri.Enum.StatutColis;
+import com.raoudate.GestionDeTri.enums.StatutColis;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

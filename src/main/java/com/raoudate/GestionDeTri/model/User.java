@@ -1,7 +1,7 @@
 package com.raoudate.GestionDeTri.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-// import com.raoudate.GestionDeTri.Enum.RoleType; // DEPRECATED - Utiliser roles (ManyToMany)
+// import com.raoudate.GestionDeTri.enums.RoleType; // DEPRECATED - Utiliser roles (ManyToMany)
 import jakarta.persistence.*;
 import lombok.*;
 // audit fields are handled in AbstractEntity
@@ -56,16 +56,16 @@ public class User extends AbstractEntity implements UserDetails, Principal {
     @Builder.Default
     private boolean mustChangePassword = false;
     
-    // 🔒 Sécurité: Compteur de tentatives de connexion échouées
+    // Sécurité: Compteur de tentatives de connexion échouées
     @Column(name = "failed_login_attempts", nullable = false)
     @Builder.Default
     private int failedLoginAttempts = 0;
     
-    // 🔒 Sécurité: Date du dernier échec de connexion
+    // Sécurité: Date du dernier échec de connexion
     @Column(name = "last_failed_login")
     private LocalDate lastFailedLogin;
     
-    // 🔒 Sécurité: Date de verrouillage du compte
+    // Sécurité: Date de verrouillage du compte
     @Column(name = "lock_time")
     private LocalDate lockTime;
 

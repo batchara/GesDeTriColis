@@ -3,8 +3,8 @@ package com.raoudate.GestionDeTri.auth;
 import com.raoudate.GestionDeTri.audit.AuditLogService;
 import com.raoudate.GestionDeTri.email.EmailTemplateName;
 import com.raoudate.GestionDeTri.email.EmailsService;
-import com.raoudate.GestionDeTri.handler.InvalidTokenException;
-import com.raoudate.GestionDeTri.handler.TokenExpiredException;
+import com.raoudate.GestionDeTri.exception.InvalidTokenException;
+import com.raoudate.GestionDeTri.exception.TokenExpiredException;
 import com.raoudate.GestionDeTri.services.LoginAttemptService;
 // role entity not needed here
 import com.raoudate.GestionDeTri.repository.RoleRepository;
@@ -87,8 +87,8 @@ public class AuthenticationService {
             return sendValidationEmailWithPassword(user, null, request.getPassword());
         } catch (MessagingException e) {
             // Log l'erreur pour debugging
-            System.err.println("❌ Échec de l'envoi de l'email d'activation à : " + user.getEmail());
-            System.err.println("❌ Erreur : " + e.getMessage());
+            System.err.println(" Échec de l'envoi de l'email d'activation à : " + user.getEmail());
+            System.err.println(" Erreur : " + e.getMessage());
             // Propager l'exception pour annuler la transaction
             throw new MessagingException("Impossible d'envoyer l'email d'activation. Veuillez vérifier que l'adresse email est valide et fonctionnelle.", e);
         }
@@ -177,7 +177,7 @@ public class AuthenticationService {
         String ipAddress = getClientIpAddress();
         String userAgent = getUserAgent();
         
-        // 🔒 ÉTAPE 1: Vérifier si le compte existe et s'il est verrouillé AVANT d'authentifier
+        // ÉTAPE 1: Vérifier si le compte existe et s'il est verrouillé AVANT d'authentifier
         var existingUser = userRepository.findByEmail(request.getEmail());
         if (existingUser.isPresent() && existingUser.get().isAccountLocked()) {
             auditLogService.logAuthentication(
@@ -187,7 +187,7 @@ public class AuthenticationService {
                 ipAddress,
                 userAgent
             );
-            throw new IllegalStateException("🔒 Votre compte est bloqué après 3 tentatives de connexion échouées. Utilisez 'Mot de passe oublié' pour le débloquer ou contactez l'administrateur.");
+            throw new IllegalStateException(" Votre compte est bloqué après 3 tentatives de connexion échouées. Utilisez 'Mot de passe oublié' pour le débloquer ou contactez l'administrateur.");
         }
         
         try {
@@ -212,7 +212,7 @@ public class AuthenticationService {
                 throw new IllegalStateException("Votre compte n'est pas activé. Veuillez vérifier votre email pour activer votre compte.");
             }
             
-            // ✅ Connexion réussie - Réinitialiser le compteur
+            // Connexion réussie - Réinitialiser le compteur
             loginAttemptService.loginSucceeded(request.getEmail());
             
             // Vérifier si l'utilisateur doit changer son mot de passe
@@ -258,7 +258,7 @@ public class AuthenticationService {
                     .mustChangePassword(mustChangePassword)
                     .build();
         } catch (BadCredentialsException e) {
-            // ❌ Tentative échouée - Incrémenter le compteur
+            // Tentative échouée - Incrémenter le compteur
             loginAttemptService.loginFailed(request.getEmail());
             int remainingAttempts = loginAttemptService.getRemainingAttempts(request.getEmail());
             
@@ -272,9 +272,9 @@ public class AuthenticationService {
             );
             
             if (remainingAttempts == 0) {
-                throw new BadCredentialsException("🔒 Compte bloqué après 3 tentatives échouées. Contactez l'administrateur.");
+                throw new BadCredentialsException(" Compte bloqué après 3 tentatives échouées. Contactez l'administrateur.");
             } else {
-                throw new BadCredentialsException("❌ Identifiants invalides. Tentatives restantes: " + remainingAttempts);
+                throw new BadCredentialsException(" Identifiants invalides. Tentatives restantes: " + remainingAttempts);
             }
         }
     }
@@ -323,7 +323,7 @@ public class AuthenticationService {
                 "Votre compte a été activé - Mot de passe temporaire"
         );
         
-        System.out.println("📧 Email de confirmation envoyé avec mot de passe temporaire à: " + user.getEmail());
+        System.out.println(" Email de confirmation envoyé avec mot de passe temporaire à: " + user.getEmail());
     }
 
     public void resendActivation(String email) throws MessagingException {
@@ -396,7 +396,7 @@ public class AuthenticationService {
             // if persisting token fails for any reason, continue returning token
         }
         
-        System.out.println("✅ Mot de passe changé avec succès pour: " + user.getEmail());
+        System.out.println(" Mot de passe changé avec succès pour: " + user.getEmail());
         
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -404,7 +404,7 @@ public class AuthenticationService {
     }
     
     /**
-     * 🔐 Demande de réinitialisation de mot de passe
+     *  Demande de réinitialisation de mot de passe
      * Envoie un code par email
      */
     @Transactional
@@ -441,38 +441,38 @@ public class AuthenticationService {
                 "Réinitialisation de mot de passe"
         );
         
-        System.out.println("✅ Code de réinitialisation envoyé à: " + email);
+        System.out.println(" Code de réinitialisation envoyé à: " + email);
     }
     
     /**
-     * 🔐 Confirme la réinitialisation de mot de passe avec le code
+     *  Confirme la réinitialisation de mot de passe avec le code
      */
     @Transactional
     public void confirmPasswordReset(String email, String token, String newPassword) {
-        System.out.println("🔍 [RESET PASSWORD] Email reçu: " + email);
-        System.out.println("🔍 [RESET PASSWORD] Code reçu: '" + token + "' (longueur: " + token.length() + ")");
+        System.out.println(" [RESET PASSWORD] Email reçu: " + email);
+        System.out.println(" [RESET PASSWORD] Code reçu: '" + token + "' (longueur: " + token.length() + ")");
         
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
         
-        System.out.println("✅ [RESET PASSWORD] Utilisateur trouvé: " + user.getEmail() + " (ID: " + user.getId() + ")");
+        System.out.println(" [RESET PASSWORD] Utilisateur trouvé: " + user.getEmail() + " (ID: " + user.getId() + ")");
         
         var resetToken = tokenRepository.findByToken(token)
                 .filter(t -> {
-                    System.out.println("🔍 [RESET PASSWORD] Token trouvé en BDD: '" + t.getToken() + "' pour user ID: " + t.getUser().getId());
+                    System.out.println(" [RESET PASSWORD] Token trouvé en BDD: '" + t.getToken() + "' pour user ID: " + t.getUser().getId());
                     boolean matches = t.getUser().getId().equals(user.getId());
-                    System.out.println("🔍 [RESET PASSWORD] User ID correspond: " + matches);
+                    System.out.println(" [RESET PASSWORD] User ID correspond: " + matches);
                     return matches;
                 })
                 .orElseThrow(() -> {
-                    System.out.println("❌ [RESET PASSWORD] Token non trouvé ou user ID ne correspond pas");
+                    System.out.println(" [RESET PASSWORD] Token non trouvé ou user ID ne correspond pas");
                     return new InvalidTokenException("Code invalide");
                 });
         
-        System.out.println("✅ [RESET PASSWORD] Token valide, expiration: " + resetToken.getExpiresAt());
+        System.out.println(" [RESET PASSWORD] Token valide, expiration: " + resetToken.getExpiresAt());
         
         if (LocalDateTime.now().isAfter(resetToken.getExpiresAt())) {
-            System.out.println("❌ [RESET PASSWORD] Token expiré");
+            System.out.println(" [RESET PASSWORD] Token expiré");
             throw new TokenExpiredException("Code expiré. Veuillez demander un nouveau code.");
         }
         
@@ -490,7 +490,7 @@ public class AuthenticationService {
         userRepository.save(user);
         tokenRepository.delete(resetToken);
         
-        System.out.println("✅ Mot de passe réinitialisé pour: " + email);
+        System.out.println(" Mot de passe réinitialisé pour: " + email);
     }
     
     private String getClientIpAddress() {

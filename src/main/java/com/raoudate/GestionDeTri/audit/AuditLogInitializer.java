@@ -1,6 +1,5 @@
 package com.raoudate.GestionDeTri.audit;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -27,7 +26,7 @@ public class AuditLogInitializer {
             
             // Vérifier si le fichier existe et est vide
             if (!Files.exists(logFile) || Files.size(logFile) == 0) {
-                log.info("📝 Initialisation des logs d'audit avec des entrées de test...");
+                log.info(" Initialisation des logs d'audit avec des entrées de test...");
                 
                 // Créer quelques logs de test
                 auditLogService.logAuthentication(
@@ -72,13 +71,13 @@ public class AuditLogInitializer {
                     "Mot de passe incorrect pour user@example.com"
                 );
                 
-                log.info("✅ Logs d'audit initialisés avec succès");
+                log.info(" Logs d'audit initialisés avec succès");
             } else {
                 long logCount = Files.lines(logFile).count();
-                log.info("📊 Fichier audit.log existant avec {} entrées", logCount);
+                log.info(" Fichier audit.log existant avec {} entrées", logCount);
             }
         } catch (IOException e) {
-            log.error("❌ Erreur lors de l'initialisation des logs d'audit", e);
+            log.error(" Erreur lors de l'initialisation des logs d'audit", e);
         }
     }
 }

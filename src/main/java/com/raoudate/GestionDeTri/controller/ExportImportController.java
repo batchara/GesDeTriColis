@@ -33,7 +33,7 @@ public class ExportImportController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     @Operation(summary = "Exporter les utilisateurs en Excel", description = "Télécharge un fichier Excel contenant tous les utilisateurs")
     public ResponseEntity<InputStreamResource> exportUsersToExcel() {
-        log.info("📥 Export des utilisateurs en Excel");
+        log.info(" Export des utilisateurs en Excel");
         
         ByteArrayInputStream in = exportImportService.exportUsersToExcel();
         String filename = "utilisateurs_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx";
@@ -51,7 +51,7 @@ public class ExportImportController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     @Operation(summary = "Exporter les utilisateurs en CSV", description = "Télécharge un fichier CSV contenant tous les utilisateurs")
     public ResponseEntity<InputStreamResource> exportUsersToCSV() {
-        log.info("📥 Export des utilisateurs en CSV");
+        log.info(" Export des utilisateurs en CSV");
         
         ByteArrayInputStream in = exportImportService.exportUsersToCSV();
         String filename = "utilisateurs_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
@@ -71,7 +71,7 @@ public class ExportImportController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Importer les utilisateurs depuis Excel", description = "Importe des utilisateurs depuis un fichier Excel")
     public ResponseEntity<Map<String, Object>> importUsersFromExcel(@RequestParam("file") MultipartFile file) {
-        log.info("📤 Import des utilisateurs depuis Excel: {}", file.getOriginalFilename());
+        log.info(" Import des utilisateurs depuis Excel: {}", file.getOriginalFilename());
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Le fichier est vide"));
@@ -90,7 +90,7 @@ public class ExportImportController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Importer les utilisateurs depuis CSV", description = "Importe des utilisateurs depuis un fichier CSV")
     public ResponseEntity<Map<String, Object>> importUsersFromCSV(@RequestParam("file") MultipartFile file) {
-        log.info("📤 Import des utilisateurs depuis CSV: {}", file.getOriginalFilename());
+        log.info(" Import des utilisateurs depuis CSV: {}", file.getOriginalFilename());
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Le fichier est vide"));
@@ -111,7 +111,7 @@ public class ExportImportController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     @Operation(summary = "Exporter les agences en Excel", description = "Télécharge un fichier Excel contenant toutes les agences")
     public ResponseEntity<InputStreamResource> exportAgencesToExcel() {
-        log.info("📥 Export des agences en Excel");
+        log.info(" Export des agences en Excel");
         
         ByteArrayInputStream in = exportImportService.exportAgencesToExcel();
         String filename = "agences_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx";
@@ -129,7 +129,7 @@ public class ExportImportController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     @Operation(summary = "Exporter les agences en CSV", description = "Télécharge un fichier CSV contenant toutes les agences")
     public ResponseEntity<InputStreamResource> exportAgencesToCSV() {
-        log.info("📥 Export des agences en CSV");
+        log.info(" Export des agences en CSV");
         
         ByteArrayInputStream in = exportImportService.exportAgencesToCSV();
         String filename = "agences_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
@@ -149,7 +149,7 @@ public class ExportImportController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Importer les agences depuis Excel", description = "Importe des agences depuis un fichier Excel")
     public ResponseEntity<Map<String, Object>> importAgencesFromExcel(@RequestParam("file") MultipartFile file) {
-        log.info("📤 Import des agences depuis Excel: {}", file.getOriginalFilename());
+        log.info(" Import des agences depuis Excel: {}", file.getOriginalFilename());
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Le fichier est vide"));
@@ -168,7 +168,7 @@ public class ExportImportController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Importer les agences depuis CSV", description = "Importe des agences depuis un fichier CSV")
     public ResponseEntity<Map<String, Object>> importAgencesFromCSV(@RequestParam("file") MultipartFile file) {
-        log.info("📤 Import des agences depuis CSV: {}", file.getOriginalFilename());
+        log.info(" Import des agences depuis CSV: {}", file.getOriginalFilename());
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Le fichier est vide"));
@@ -189,7 +189,7 @@ public class ExportImportController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     @Operation(summary = "Exporter les colis en Excel", description = "Télécharge un fichier Excel contenant tous les colis")
     public ResponseEntity<InputStreamResource> exportColisToExcel() {
-        log.info("📥 Export des colis en Excel");
+        log.info(" Export des colis en Excel");
         
         ByteArrayInputStream in = exportImportService.exportColisToExcel();
         String filename = "colis_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx";
@@ -207,7 +207,7 @@ public class ExportImportController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR', 'ROLE_OPERATEUR')")
     @Operation(summary = "Exporter les colis en CSV", description = "Télécharge un fichier CSV contenant tous les colis")
     public ResponseEntity<InputStreamResource> exportColisToCSV() {
-        log.info("📥 Export des colis en CSV");
+        log.info(" Export des colis en CSV");
         
         ByteArrayInputStream in = exportImportService.exportColisToCSV();
         String filename = "colis_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
@@ -227,7 +227,7 @@ public class ExportImportController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     @Operation(summary = "Importer les colis depuis Excel", description = "Importe des colis depuis un fichier Excel")
     public ResponseEntity<Map<String, Object>> importColisFromExcel(@RequestParam("file") MultipartFile file) {
-        log.info("📤 Import des colis depuis Excel: {}", file.getOriginalFilename());
+        log.info(" Import des colis depuis Excel: {}", file.getOriginalFilename());
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Le fichier est vide"));
@@ -246,7 +246,7 @@ public class ExportImportController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     @Operation(summary = "Importer les colis depuis CSV", description = "Importe des colis depuis un fichier CSV")
     public ResponseEntity<Map<String, Object>> importColisFromCSV(@RequestParam("file") MultipartFile file) {
-        log.info("📤 Import des colis depuis CSV: {}", file.getOriginalFilename());
+        log.info(" Import des colis depuis CSV: {}", file.getOriginalFilename());
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Le fichier est vide"));

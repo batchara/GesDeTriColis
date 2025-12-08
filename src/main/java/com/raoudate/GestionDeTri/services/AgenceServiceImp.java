@@ -1,7 +1,7 @@
 package com.raoudate.GestionDeTri.services;
 
-import com.raoudate.GestionDeTri.Dto.AgenceDTO;
-import com.raoudate.GestionDeTri.services.api.AgenceService;
+import com.raoudate.GestionDeTri.dto.response.AgenceDTO;
+import com.raoudate.GestionDeTri.services.impl.AgenceService;
 
 import java.util.List;
 

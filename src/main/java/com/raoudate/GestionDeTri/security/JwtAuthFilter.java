@@ -31,10 +31,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         @NonNull HttpServletResponse response,
         @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        System.out.println("🔐 [JwtAuthFilter] Requête: " + request.getMethod() + " " + request.getRequestURI());
+        System.out.println(" [JwtAuthFilter] Requête: " + request.getMethod() + " " + request.getRequestURI());
         
         if(request.getServletPath().contains("/auth") ) {
-            System.out.println("✅ [JwtAuthFilter] Endpoint d'auth, skip filter");
+            System.out.println(" [JwtAuthFilter] Endpoint d'auth, skip filter");
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,34 +42,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
-        System.out.println("🔍 [JwtAuthFilter] Authorization header: " + (authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "null"));
+        System.out.println(" [JwtAuthFilter] Authorization header: " + (authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "null"));
         
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("❌ [JwtAuthFilter] Pas de token Bearer");
+            System.out.println(" [JwtAuthFilter] Pas de token Bearer");
             filterChain.doFilter(request, response);
             return;
         }
         jwt = authHeader.substring(7);
         userEmail = jwtService.extractUsername(jwt);
         
-        System.out.println("🔍 [JwtAuthFilter] User email extrait: " + userEmail);
+        System.out.println(" [JwtAuthFilter] User email extrait: " + userEmail);
         
         // TEMPORAIRE : Désactiver la vérification du token en DB pour tester
         /*
         // check token exists in DB (not revoked)
         if (!tokenRepository.findByToken(jwt).isPresent()) {
-            System.out.println("❌ [JwtAuthFilter] Token non trouvé en DB ou révoqué");
+            System.out.println(" [JwtAuthFilter] Token non trouvé en DB ou révoqué");
             filterChain.doFilter(request, response);
             return;
         }
         
-        System.out.println("✅ [JwtAuthFilter] Token trouvé en DB");
+        System.out.println(" [JwtAuthFilter] Token trouvé en DB");
         */
         
         if(userEmail != null && SecurityContextHolder.getContext().getAuthentication()==null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
             
-            System.out.println("🔍 [JwtAuthFilter] Authorities de l'utilisateur: " + userDetails.getAuthorities());
+            System.out.println(" [JwtAuthFilter] Authorities de l'utilisateur: " + userDetails.getAuthorities());
 
             if(jwtService.validateToken(jwt, userDetails)){
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -79,9 +79,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         new WebAuthenticationDetailsSource().buildDetails(request)
                         );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("✅ [JwtAuthFilter] Authentification réussie");
+                System.out.println(" [JwtAuthFilter] Authentification réussie");
             } else {
-                System.out.println("❌ [JwtAuthFilter] Token invalide");
+                System.out.println(" [JwtAuthFilter] Token invalide");
             }
 
         }
