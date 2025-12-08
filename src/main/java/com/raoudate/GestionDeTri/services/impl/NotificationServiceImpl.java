@@ -304,7 +304,7 @@ public class NotificationServiceImpl implements NotificationService {
         String createdBy = notification.getCreatedBy();
         String entityName = notification.getEntityName();
         
-        // Note: La modification réelle de l'agence sera faite dans le contrôleur
+        // Note : La modification réelle de l'agence sera faite dans le contrôleur
         // car nous avons besoin des données complètes de l'agence
         
         // Mettre à jour la notification originale et la garder dans l'historique

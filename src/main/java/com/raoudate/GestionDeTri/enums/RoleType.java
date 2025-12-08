@@ -28,7 +28,7 @@ public enum RoleType {
             )
     ),
 
-    // ----- Admin -----
+    
         ADMIN(
             Set.of(
                     // Permissions admin

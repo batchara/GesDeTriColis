@@ -298,18 +298,18 @@ public class AgenceController {
         String normalizedCode = codeBureau.trim().toUpperCase();
         
         //  Correction OCR: remplacer les caractères mal reconnus
-        // IMPORTANT: Ne remplacer que O/l/I (lett lettres), pas le chiffre 1
+        // Important : Ne remplacer que O/l/I (lett lettres), pas le chiffre 1
         normalizedCode = normalizedCode.replaceAll("^[Ol](?=\\d)", "0"); // l/O au début -> 0 si suivi de chiffre (pas "1"!)
         normalizedCode = normalizedCode.replaceAll("^I(?=[BP])", "1"); // I au début -> 1 si suivi de B ou P
         normalizedCode = normalizedCode.replaceAll("([BP])l$", "$10"); // l à la fin -> 0
         
         System.out.println(" Recherche agence par codeBureau: " + normalizedCode + " (original: " + codeBureau + ")");
         
-        // 1⃣ Essayer une correspondance exacte du codeBureau d'abord
+        // Essayer une correspondance exacte du codeBureau d'abord
         Optional<Agences> result = agenceRepository.findByCodeBureau(normalizedCode);
         System.out.println(" Recherche exacte: " + (result.isPresent() ? result.get().getNom() : "non trouvée"));
         
-        // 2⃣ Si pas trouvé et le format est valide (ex: 01BP479), extraire le préfixe et chercher exactement
+        // Si pas trouvé et le format est valide (ex: 01BP479), extraire le préfixe et chercher exactement
         if (result.isEmpty() && normalizedCode.contains("BP")) {
             String[] parts = normalizedCode.split("BP");
             if (parts.length > 0 && !parts[0].isEmpty()) {

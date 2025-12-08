@@ -130,7 +130,7 @@ public class StatisticsController {
         
         // Dernières connexions (si vous avez ce champ)
         List<Map<String, Object>> dernieresConnexions = new ArrayList<>();
-        // TODO: Implémenter si vous avez un champ lastLogin
+        // TODO : Implémenter si vous avez un champ lastLogin
         stats.put("dernieresConnexions", dernieresConnexions);
         
         // Performance du système
@@ -140,7 +140,7 @@ public class StatisticsController {
         stats.put("tauxReussite", Math.round(tauxReussite * 100.0) / 100.0);
         
         // Temps de traitement moyen (exemple simplifié)
-        stats.put("tempsTraitementMoyen", 24.5); // TODO: Calculer réellement
+        stats.put("tempsTraitementMoyen", 24.5); // TODO : calculer avec les vraies données
         
         // Statistiques par région pour le mois en cours
         LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);

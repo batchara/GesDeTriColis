@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface AgenceRepository extends JpaRepository<Agences, Integer> {
 
-    // ========== Méthodes de base avec soft delete ==========
+    
     
     @Query("SELECT a FROM Agences a WHERE a.label = :label AND a.deleted = false")
     Optional<Agences> findByLabel(@Param("label") String label);
@@ -35,7 +35,7 @@ public interface AgenceRepository extends JpaRepository<Agences, Integer> {
     @Query("SELECT a FROM Agences a WHERE a.id = :id AND a.deleted = false")
     Optional<Agences> findActiveById(@Param("id") Integer id);
     
-    // ========== Méthodes de pagination et recherche ==========
+    
     
     @Query("SELECT a FROM Agences a WHERE a.region LIKE %:region% AND a.deleted = false")
     Page<Agences> findByRegionContainingIgnoreCase(@Param("region") String region, Pageable pageable);

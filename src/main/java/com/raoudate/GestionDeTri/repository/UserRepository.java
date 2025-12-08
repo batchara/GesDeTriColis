@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
            "WHERE r.name = :roleName")
     Optional<User> findFirstByRolesName(@Param("roleName") String roleName);
     
-    // ========== Méthodes avec gestion du soft delete ==========
+    
     
     /**
      * Récupère tous les utilisateurs non supprimés

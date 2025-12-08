@@ -46,19 +46,19 @@ public class UserServiceImpl implements UserService {
 
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
-        // check if the current password is correct
+        // Vérifier si le mot de passe actuel est correct
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new IllegalStateException("Wrong password");
         }
-        // check if the two new passwords are the same
+        // Vérifier si les deux nouveaux mots de passe sont identiques
         if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
             throw new IllegalStateException("Password are not the same");
         }
 
-        // update the password
+        // Mettre à jour le mot de passe
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
 
-        // save the new password
+        // Sauvegarder new password
         repository.save(user);
     }
 

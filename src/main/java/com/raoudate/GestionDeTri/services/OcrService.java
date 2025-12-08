@@ -426,7 +426,7 @@ public class OcrService {
             }
 
             // Recherche de l'agence la plus proche
-            //  IMPORTANT: Filtrer d'abord par région si détectée
+            // Important : Filtrer d'abord par région si détectée
             String regionDetectee = (donneesStructurees != null) ? donneesStructurees.getRegion() : null;
             
             log.info(" Recherche de l'agence la plus proche - Région détectée: {}", regionDetectee);

@@ -39,7 +39,7 @@ public class GestionDeTriApplication {
 			com.raoudate.GestionDeTri.services.RoleService roleService) {
 	return args -> {
 
-		// create roles with 'ROLE_' prefix because AuthenticationService expects 'ROLE_ADMIN', etc.
+		// Créer roles with 'ROLE_' prefix because AuthenticationService expects 'ROLE_ADMIN', etc.
 		String adminRoleName = "ROLE_" + ADMIN.name();
 		if (roleRepository.findByName(adminRoleName).isEmpty()) {
 			Role r = new Role();

@@ -191,7 +191,7 @@ public class AuditLogService {
         }
     }
 
-    // ========== Méthodes utilitaires ==========
+    
 
     private void writeLogToFile(AuditLog auditLog) throws IOException {
         String jsonLog = objectMapper.writeValueAsString(auditLog);

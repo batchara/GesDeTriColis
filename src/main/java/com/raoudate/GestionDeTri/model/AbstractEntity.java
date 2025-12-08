@@ -20,7 +20,7 @@ public class AbstractEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // ========== Audit Temporel ==========
+    
     
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
@@ -33,7 +33,7 @@ public class AbstractEntity implements Serializable {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
-    // ========== Audit Utilisateur ==========
+    
     
     @CreatedBy
     @Column(name = "created_by", updatable = false)
@@ -46,7 +46,7 @@ public class AbstractEntity implements Serializable {
     @Column(name = "deleted_by")
     private String deletedBy;
     
-    // ========== Soft Delete ==========
+    
     
     @Column(name = "is_deleted", nullable = false)
     private Boolean deleted = false;

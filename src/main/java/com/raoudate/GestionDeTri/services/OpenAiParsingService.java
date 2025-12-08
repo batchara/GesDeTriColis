@@ -263,7 +263,7 @@ public class OpenAiParsingService {
         log.info(" Texte EXPÉDITEUR utilisé: {}", 
                  (sectionExpediteur != null) ? "Section EXPÉDITEUR isolée" : "Texte complet (pas de section EXPÉDITEUR détectée)");
         
-        // ========== DESTINATAIRE ==========
+        
         
         // Extraire le nom du DESTINATAIRE
         String nom = extraireNom(texteDestinataire);
@@ -289,7 +289,7 @@ public class OpenAiParsingService {
             donnees.setRegion(region);
         }
         
-        // ========== EXPÉDITEUR ==========
+        
         
         // Extraire le nom de l'EXPÉDITEUR
         String nomExpediteur = extraireNom(texteExpediteur);
@@ -300,7 +300,7 @@ public class OpenAiParsingService {
             log.warn(" Nom expéditeur: non extrait ou identique au destinataire");
         }
         
-        // ========== AUTRES CHAMPS (du texte complet) ==========
+        
         
         // Extraire le code de suivi (chercher dans le texte COMPLET)
         String codeSuivi = extraireCodeSuivi(texteOcr);

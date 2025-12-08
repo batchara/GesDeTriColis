@@ -35,7 +35,7 @@ public class ExportImportService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // ==================== EXPORT UTILISATEURS ====================
+    
 
     public ByteArrayInputStream exportUsersToExcel() {
         List<User> users = userRepository.findAll();
@@ -121,7 +121,7 @@ public class ExportImportService {
         }
     }
 
-    // ==================== IMPORT UTILISATEURS ====================
+    
 
     public Map<String, Object> importUsersFromExcel(MultipartFile file) {
         List<String> errors = new ArrayList<>();
@@ -263,7 +263,7 @@ public class ExportImportService {
         return result;
     }
 
-    // ==================== EXPORT AGENCES ====================
+    
 
     public ByteArrayInputStream exportAgencesToExcel() {
         List<Agences> agences = agenceRepository.findAll();
@@ -338,7 +338,7 @@ public class ExportImportService {
         }
     }
 
-    // ==================== EXPORT COLIS ====================
+    
 
     public ByteArrayInputStream exportColisToExcel() {
         List<Colis> colisList = colisRepository.findAllActive();
@@ -440,7 +440,7 @@ public class ExportImportService {
         }
     }
 
-    // ==================== IMPORT AGENCES ====================
+    
 
     public Map<String, Object> importAgencesFromExcel(MultipartFile file) {
         List<String> errors = new ArrayList<>();
@@ -562,7 +562,7 @@ public class ExportImportService {
         return result;
     }
 
-    // ==================== IMPORT COLIS ====================
+    
 
     public Map<String, Object> importColisFromExcel(MultipartFile file) {
         List<String> errors = new ArrayList<>();
@@ -714,7 +714,7 @@ public class ExportImportService {
         return result;
     }
 
-    // ==================== UTILITAIRES ====================
+    
 
     private String getCellValue(Cell cell) {
         if (cell == null) return "";

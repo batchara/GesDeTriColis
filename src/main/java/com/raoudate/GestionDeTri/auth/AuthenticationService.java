@@ -80,7 +80,7 @@ public class AuthenticationService {
 
         userRepository.saveAndFlush(user);
 
-        // send validation email and return the generated activation token
+        // Envoyer validation email and return the generated activation token
         // Si l'envoi d'email échoue, la transaction sera annulée automatiquement
         // grâce à @Transactional et l'utilisateur ne sera pas créé dans la base de données
         try {

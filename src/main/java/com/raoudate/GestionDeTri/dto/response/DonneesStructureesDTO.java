@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DonneesStructureesDTO {
     
-    // ========== DESTINATAIRE (PRINCIPAL) ==========
+    
     
     /**
      * Nom du destinataire
@@ -66,7 +66,7 @@ public class DonneesStructureesDTO {
      */
     private String pays;
     
-    // ========== EXPÉDITEUR ==========
+    
     
     /**
      * Nom de l'expéditeur (entreprise ou personne)
@@ -83,7 +83,7 @@ public class DonneesStructureesDTO {
      */
     private String adresseExpediteur;
     
-    // ========== AUTRES ==========
+    
     
     /**
      * Code de suivi du bordereau (ex: COL-TG-2025-001234)

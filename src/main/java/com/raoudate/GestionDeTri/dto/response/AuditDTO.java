@@ -32,7 +32,7 @@ public class AuditDTO {
      */
     private AuditOperation operation;
     
-    // ========== Informations de création ==========
+    
     
     /**
      * Date et heure de création
@@ -44,7 +44,7 @@ public class AuditDTO {
      */
     private String createdBy;
     
-    // ========== Informations de modification ==========
+    
     
     /**
      * Date et heure de dernière modification
@@ -56,7 +56,7 @@ public class AuditDTO {
      */
     private String lastModifiedBy;
     
-    // ========== Informations de suppression (soft delete) ==========
+    
     
     /**
      * Date et heure de suppression
@@ -73,7 +73,7 @@ public class AuditDTO {
      */
     private boolean deleted;
     
-    // ========== Informations additionnelles ==========
+    
     
     /**
      * Description de l'entité (nom, code, etc.)
