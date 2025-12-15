@@ -25,8 +25,6 @@ public class AuditService {
         
         return entity;
     }
-
-    
     public <T extends AbstractEntity> T restore(T entity) {
         if (entity == null) {
             throw new IllegalArgumentException("L'entité ne peut pas être null");
@@ -38,8 +36,6 @@ public class AuditService {
         
         return entity;
     }
-
-  
     public boolean isDeleted(AbstractEntity entity) {
         return entity != null && entity.getDeleted();
     }

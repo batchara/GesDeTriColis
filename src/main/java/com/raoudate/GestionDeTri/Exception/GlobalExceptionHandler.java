@@ -1,7 +1,6 @@
 package com.raoudate.GestionDeTri.exception;
 
-import com.raoudate.GestionDeTri.exception.BusinessErrorCode;
-import com.raoudate.GestionDeTri.exception.BusinessException;
+
 import jakarta.mail.MessagingException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -69,10 +68,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MessagingException.class)
 
     public  ResponseEntity<ExceptionResponse> handleException(MessagingException exp) {
-        // Message plus clair pour l'utilisateur
+       
         String userMessage = "Impossible d'envoyer l'email. Veuillez vérifier que votre adresse email est valide et fonctionnelle.";
         
-        // Log l'erreur complète pour le debug
+        
         exp.printStackTrace();
         
         return ResponseEntity

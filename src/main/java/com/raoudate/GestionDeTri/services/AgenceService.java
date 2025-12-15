@@ -10,6 +10,5 @@ public interface AgenceService {
 
     List<AgenceDTO> findAll();
 
-
     void delete(Integer id);
 }

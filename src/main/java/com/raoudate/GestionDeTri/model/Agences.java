@@ -52,7 +52,7 @@ public class Agences extends AbstractEntity {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    // Getter et Setter pour les anciens noms de colonnes (pour compatibilité)
+  
     public String getNom() {
         return label;
     }

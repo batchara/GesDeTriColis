@@ -12,13 +12,10 @@ public class AgenceServiceImpl implements AgenceService {
         return null;
     }
 
-
-
     @Override
     public List<AgenceDTO> findAll() {
         return List.of();
     }
-
 
     @Override
     public void delete(Integer id) {

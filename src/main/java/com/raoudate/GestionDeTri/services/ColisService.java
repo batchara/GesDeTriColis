@@ -23,15 +23,11 @@ public interface ColisService {
 	
 	/**
 	 * Supprimer plusieurs colis en une seule opération (soft delete)
-	 * @param ids Liste des IDs des colis à supprimer
-	 * @return Nombre de colis supprimés avec succès
 	 */
 	int deleteMultiple(List<Integer> ids);
 	
 	/**
 	 * Créer une demande de suppression (génère une notification pour l'admin)
-	 * @param id ID du colis à supprimer
-	 * @return La notification créée
 	 */
 	com.raoudate.GestionDeTri.dto.response.NotificationDTO requestDeletion(Integer id);
 }

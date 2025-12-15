@@ -28,7 +28,6 @@ public class ColisDTO {
     private CentreDeTriDTO centreTri;
     private AgenceDTO agenceAffectee;
     
-    // Champs de soft delete
     private Boolean deleted;
     private Instant deletedAt;
     private String deletedBy;

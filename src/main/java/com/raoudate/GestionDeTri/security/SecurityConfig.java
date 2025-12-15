@@ -78,28 +78,20 @@ public class SecurityConfig {
                                 .requestMatchers(DELETE,"/api/v1/admin/**").hasAuthority(ADMIN_DELETE.name())
 
                                 .requestMatchers("/home/**").permitAll()
-                                // Permettre la lecture des agences sans authentification (pour tests)
                                 .requestMatchers(GET, "/api/v1/agences/**").permitAll()
-                                // Permettre l'accès à l'OCR sans authentification (pour tests)
                                 .requestMatchers("/scan/**").permitAll()
-                                // Les autres opérations sur les agences nécessitent une authentification
                                 .requestMatchers(POST, "/api/v1/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 .requestMatchers(PUT, "/api/v1/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 .requestMatchers(DELETE, "/api/v1/agences/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 
-                                // Colis - Tous les utilisateurs authentifiés peuvent accéder
                                 .requestMatchers("/api/v1/colis/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR", "ROLE_OPERATEUR")
                                 
-                                // Audit - Réservé aux admins (ROLE_ADMIN ou permission ADMIN_READ)
                                 .requestMatchers("/api/v1/audit/**").hasAnyAuthority("ROLE_ADMIN", "ADMIN_READ")
                                 
-                                // Profil utilisateur - Permettre à tous les utilisateurs authentifiés d'accéder à leur propre profil
                                 .requestMatchers(GET, "/api/v1/users/me").authenticated()
                                 .requestMatchers(PUT, "/api/v1/users/me").authenticated()
-                                // Les autres endpoints /users nécessitent ADMIN ou SUPERVISEUR
                                 .requestMatchers("/api/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERVISEUR")
                                 
-                                // OCR endpoints
                                 .requestMatchers("/api/v1/ocr/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OPERATEUR")
                                 
                                 .anyRequest().authenticated()
@@ -120,7 +112,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Autoriser l'UI Angular en dev : localhost + accès via IP du réseau local
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:4200",
             "http://127.0.0.1:4200",
@@ -130,7 +121,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L); // Cache preflight requests for 1 hour
+        configuration.setMaxAge(3600L); 
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -2,6 +2,8 @@ package com.raoudate.GestionDeTri.controller;
 
 import com.raoudate.GestionDeTri.model.Agences;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
+import com.raoudate.GestionDeTri.repository.ColisRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 
@@ -21,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
 public class AgenceControllerPaginationTest {
 
     @Autowired
@@ -29,9 +34,14 @@ public class AgenceControllerPaginationTest {
     @Autowired
     private AgenceRepository agenceRepository;
 
+    @Autowired
+    private ColisRepository colisRepository;
+
     @BeforeEach
     public void setUp() {
-        // Nettoyer la base avant chaque test
+        // Supprimer d'abord tous les colis (références étrangères)
+        colisRepository.deleteAll();
+        // Ensuite nettoyer la base des agences
         agenceRepository.deleteAll();
         
         // Créer 25 agences de test

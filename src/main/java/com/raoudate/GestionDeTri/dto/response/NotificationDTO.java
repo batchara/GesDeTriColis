@@ -26,14 +26,12 @@ public class NotificationDTO {
     private Boolean actionRequired;
     private String reason;
     private String createdBy;
-    private String initiatedBy;  // Email du superviseur qui a initié la demande
+    private String initiatedBy;  
     private String targetUserId;
     private String details;
     private Instant createdAt;
 
-    /**
-     * Convertit une entité Notification en DTO
-     */
+    
     public static NotificationDTO fromEntity(Notification notification) {
         if (notification == null) {
             return null;

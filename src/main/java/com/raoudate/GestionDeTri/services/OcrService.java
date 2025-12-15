@@ -90,9 +90,15 @@ public class OcrService {
         // Optimisations pour vitesse (moins de 5 secondes)
         tesseract.setPageSegMode(3); // PSM_AUTO = 3 (plus rapide que 1)
         tesseract.setOcrEngineMode(1); // Neural nets LSTM engine only
-        // Configurations pour accélérer
-        tesseract.setTessVariable("tessedit_char_blacklist", "");
-        tesseract.setTessVariable("debug_file", "/dev/null");
+        // Configurations pour accélérer (deprecated mais aucune alternative)
+        @SuppressWarnings("deprecation")
+        var suppressWarnings = new Object() {
+            void call() {
+                tesseract.setTessVariable("tessedit_char_blacklist", "");
+                tesseract.setTessVariable("debug_file", "/dev/null");
+            }
+        };
+        suppressWarnings.call();
         
         log.info(" Tesseract OCR initialisé (mode optimisé pour vitesse)");
     }
@@ -106,8 +112,18 @@ public class OcrService {
 
         // Convertir MultipartFile en File temporaire
         File tempFile = File.createTempFile("ocr-", ".tmp");
+        final File finalTempFile = tempFile;
         try {
-            imageFile.transferTo(tempFile);
+            if (tempFile == null) {
+                throw new IOException("Impossible de créer le fichier temporaire");
+            }
+            @SuppressWarnings("null")
+            var suppressedTransfer = new Object() {
+                void transfer() throws IOException {
+                    imageFile.transferTo(finalTempFile);
+                }
+            };
+            suppressedTransfer.transfer();
             
             // Lire et compresser l'image pour accélérer l'OCR
             BufferedImage image = ImageIO.read(tempFile);
@@ -147,8 +163,8 @@ public class OcrService {
             return texte;
         } finally {
             // Nettoyer le fichier temporaire
-            if (tempFile.exists()) {
-                tempFile.delete();
+            if (finalTempFile != null && finalTempFile.exists()) {
+                finalTempFile.delete();
             }
         }
     }

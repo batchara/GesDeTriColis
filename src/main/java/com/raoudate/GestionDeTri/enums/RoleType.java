@@ -15,9 +15,6 @@ import static com.raoudate.GestionDeTri.enums.Permission.*;
 @Getter
 public enum RoleType {
 
-
-   
-
     SUPERVISEUR(
             Set.of(
                     SUPERVISEUR_READ,
@@ -27,7 +24,6 @@ public enum RoleType {
                     SUPERVISEUR_VIEW_DASHBOARD
             )
     ),
-
     
         ADMIN(
             Set.of(
@@ -55,8 +51,7 @@ public enum RoleType {
     }
 
         public List<SimpleGrantedAuthority> getAuthorities(){
-                // toList() may return an immutable list depending on the JVM implementation
-                // so create a mutable ArrayList to allow additions later
+               
                 List<SimpleGrantedAuthority> authorities = getPermissions()
                         .stream()
                         .map(permission -> new SimpleGrantedAuthority(permission.name()))

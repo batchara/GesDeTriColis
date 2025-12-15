@@ -36,6 +36,7 @@ public class RegistrationRequest {
     private String email;
 
     // Utiliser RoleType enum pour la compatibilité avec le code existant
+    
     private RoleType role;
 
 

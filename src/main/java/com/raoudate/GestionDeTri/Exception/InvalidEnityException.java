@@ -25,7 +25,7 @@ public class InvalidEnityException extends RuntimeException     {
         this.businessErrorCode = businessErrorCode;
     }
 
-    public InvalidEnityException(String message, BusinessErrorCode businessErrorCode) {
+    public InvalidEnityException(String message, BusinessErrorCode businessErrorCode, List<String> errors) {
         super(message);
         this.businessErrorCode = businessErrorCode;
         this.errors = errors;

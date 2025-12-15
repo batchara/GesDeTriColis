@@ -14,18 +14,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class OcrResultDTO {
     
-    /**
-     * Succès de l'extraction
-     */
     private boolean succes;
-    
-    /**
-     * Texte extrait de l'image
-     */
+
     private String texte;
     
-    /**
-     * Message informatif
-     */
     private String message;
 }

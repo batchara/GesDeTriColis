@@ -27,6 +27,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
@@ -55,8 +56,10 @@ public class AuthenticationService {
 
     @Transactional
     public String register( RegistrationRequest request) throws MessagingException {
+
         // Si aucun rôle n'est spécifié, utiliser OPERATEUR par défaut (inscription publique)
         // Si un rôle est spécifié, l'utiliser (création par admin)
+
         String requestedRoleName = request.getRole() != null 
             ? "ROLE_" + request.getRole().name() 
             : "ROLE_OPERATEUR";
@@ -80,9 +83,7 @@ public class AuthenticationService {
 
         userRepository.saveAndFlush(user);
 
-        // Envoyer validation email and return the generated activation token
-        // Si l'envoi d'email échoue, la transaction sera annulée automatiquement
-        // grâce à @Transactional et l'utilisateur ne sera pas créé dans la base de données
+
         try {
             return sendValidationEmailWithPassword(user, null, request.getPassword());
         } catch (MessagingException e) {
@@ -215,6 +216,10 @@ public class AuthenticationService {
             // Connexion réussie - Réinitialiser le compteur
             loginAttemptService.loginSucceeded(request.getEmail());
             
+            // Mettre à jour la date de dernière connexion
+            user.setLastLogin(LocalDate.now());
+            userRepository.save(user);
+            
             // Vérifier si l'utilisateur doit changer son mot de passe
             boolean mustChangePassword = user.isMustChangePassword();
             
@@ -307,9 +312,7 @@ public class AuthenticationService {
 
     }
 
-    /**
-     * Envoyer l'email de confirmation avec le mot de passe temporaire
-     */
+    
     private void sendActivationConfirmationEmailWithPassword(User user, String temporaryPassword) throws MessagingException {
         String loginUrl = "http://localhost:4200/login";
 
@@ -341,9 +344,7 @@ public class AuthenticationService {
         sendValidationEmail(user, oldToken);
     }
     
-    /**
-     * Changer le mot de passe temporaire lors de la première connexion
-     */
+   
     @Transactional
     public AuthenticationResponse changeTemporaryPassword(FirstLoginPasswordChangeRequest request) {
         // Vérifier que les mots de passe correspondent
@@ -403,10 +404,7 @@ public class AuthenticationService {
                 .build();
     }
     
-    /**
-     *  Demande de réinitialisation de mot de passe
-     * Envoie un code par email
-     */
+    
     @Transactional
     public void requestPasswordReset(String email) throws MessagingException {
         var user = userRepository.findByEmail(email)
@@ -444,9 +442,7 @@ public class AuthenticationService {
         System.out.println(" Code de réinitialisation envoyé à: " + email);
     }
     
-    /**
-     *  Confirme la réinitialisation de mot de passe avec le code
-     */
+   
     @Transactional
     public void confirmPasswordReset(String email, String token, String newPassword) {
         System.out.println(" [RESET PASSWORD] Email reçu: " + email);

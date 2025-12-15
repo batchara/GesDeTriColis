@@ -23,15 +23,9 @@ public interface AgenceRepository extends JpaRepository<Agences, Integer> {
     @Query("SELECT a FROM Agences a WHERE a.codeBureau = :codeBureau AND a.deleted = false")
     Optional<Agences> findByCodeBureau(@Param("codeBureau") String codeBureau);
     
-    /**
-     * Récupère toutes les agences non supprimées
-     */
     @Query("SELECT a FROM Agences a WHERE a.deleted = false")
     List<Agences> findAllActive();
     
-    /**
-     * Récupère une agence non supprimée par son ID
-     */
     @Query("SELECT a FROM Agences a WHERE a.id = :id AND a.deleted = false")
     Optional<Agences> findActiveById(@Param("id") Integer id);
     

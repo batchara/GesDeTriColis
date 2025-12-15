@@ -18,7 +18,7 @@ public class CreateUserRequest {
     private String password;
     private String numTel;
     private LocalDate dateNaissance;
-    private String role; // Le rôle à assigner (ADMIN, SUPERVISEUR, OPERATEUR)
+    private String role; 
     private Boolean enabled;
     private Boolean accountLocked;
 }

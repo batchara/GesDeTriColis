@@ -19,12 +19,12 @@ public class AgenceDTO {
     private String code;
     private String email;
     private String tel;
-    private String numTel; // Alias pour tel
+    private String numTel; 
     private String region;
     private String adresseComplete;
     private BigDecimal latitude;
     private BigDecimal longitude;
-    private String status; // ACTIVE, INACTIVE
+    private String status; 
     private String codeBureau;
 
     public static AgenceDTO fromEntity(Agences agences) {

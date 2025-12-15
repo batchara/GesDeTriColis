@@ -95,7 +95,11 @@ public class UserServiceImpl implements UserService {
      * Récupérer un utilisateur par son ID
      */
     public User getUserById(Integer id) {
-        return repository.findById(id)
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
+        return repository.findById(finalId)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
     }
 
@@ -225,7 +229,9 @@ public class UserServiceImpl implements UserService {
                 .temporaryPassword(temporaryPassword) // Stocker le mot de passe temporaire
                 .user(user)
                 .build();
-        tokenRepository.save(token);
+        final Token finalToken = token;
+        @SuppressWarnings({"null", "unused"})
+        var ignored = tokenRepository.save(finalToken);
         
         // Envoyer l'email avec le code d'activation uniquement
         emailsService.sendEmail(
@@ -260,7 +266,11 @@ public class UserServiceImpl implements UserService {
      * Mettre à jour un utilisateur existant
      */
     public User updateUser(Integer id, CreateUserRequest request) {
-        User user = repository.findById(id)
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
 
         // Mettre à jour les champs
@@ -290,7 +300,9 @@ public class UserServiceImpl implements UserService {
             user.setRoles(roles);
         }
 
-        User updatedUser = repository.save(user);
+        final User finalUser = user;
+        @SuppressWarnings("null")
+        User updatedUser = repository.save(finalUser);
         System.out.println(" Utilisateur mis à jour avec succès: " + updatedUser.getEmail());
         return updatedUser;
     }
@@ -301,7 +313,11 @@ public class UserServiceImpl implements UserService {
     public User updateUserRoles(Integer id, List<String> roleNames) {
         System.out.println(" [updateUserRoles] Début - User ID: " + id + ", Rôles demandés: " + roleNames);
         
-        User user = repository.findById(id)
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
 
         // Construire le set de rôles
@@ -336,8 +352,12 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Integer id) {
         System.out.println(" [deleteUser] Début - User ID: " + id);
         
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
         // Vérifier que l'utilisateur existe
-        User user = repository.findById(id)
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> {
                     System.out.println(" [deleteUser] Utilisateur introuvable - ID: " + id);
                     return new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable");
@@ -372,8 +392,12 @@ public class UserServiceImpl implements UserService {
     public User restoreUser(Integer id) {
         System.out.println(" [restoreUser] Début restauration - User ID: " + id);
         
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
         // Vérifier que l'utilisateur existe
-        User user = repository.findById(id)
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> {
                     System.out.println(" [restoreUser] Utilisateur introuvable - ID: " + id);
                     return new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable");
@@ -413,7 +437,11 @@ public class UserServiceImpl implements UserService {
      * Activer un utilisateur
      */
     public void enableUser(Integer id) {
-        User user = repository.findById(id)
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
         
         user.setEnabled(true);
@@ -425,7 +453,11 @@ public class UserServiceImpl implements UserService {
      * Désactiver un utilisateur
      */
     public void disableUser(Integer id) {
-        User user = repository.findById(id)
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
         
         user.setEnabled(false);
@@ -437,7 +469,11 @@ public class UserServiceImpl implements UserService {
      * Verrouiller un utilisateur
      */
     public void lockUser(Integer id) {
-        User user = repository.findById(id)
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
         
         user.setAccountLocked(true);
@@ -449,7 +485,11 @@ public class UserServiceImpl implements UserService {
      *  Déverrouiller un utilisateur et réinitialiser le compteur de tentatives
      */
     public void unlockUser(Integer id) {
-        User user = repository.findById(id)
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
         
         user.setAccountLocked(false);
@@ -521,7 +561,11 @@ public class UserServiceImpl implements UserService {
      * Cette méthode est utilisée lorsqu'un utilisateur modifie son propre profil
      */
     public User updateUserPersonalInfo(Integer id, CreateUserRequest request) {
-        User user = repository.findById(id)
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur ne peut pas être null");
+        }
+        final Integer finalId = id;
+        User user = repository.findById(finalId)
                 .orElseThrow(() -> new IllegalStateException("Utilisateur avec l'ID " + id + " introuvable"));
 
         // Mettre à jour uniquement les informations personnelles
@@ -536,7 +580,9 @@ public class UserServiceImpl implements UserService {
         // - les rôles
         // - le statut enabled/locked
 
-        User updatedUser = repository.save(user);
+        final User finalUser = user;
+        @SuppressWarnings("null")
+        User updatedUser = repository.save(finalUser);
         System.out.println(" Informations personnelles mises à jour pour: " + updatedUser.getEmail());
         return updatedUser;
     }

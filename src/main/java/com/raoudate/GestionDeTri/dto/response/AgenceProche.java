@@ -5,9 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO pour représenter une agence proche avec sa distance
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,5 +18,5 @@ public class AgenceProche {
     private String adresse;
     private CoordinatesDTO coordonnees;
     private Double distanceKm;
-    private String tempsEstime; // Ex: "15 min", "2h 30min"
+    private String tempsEstime; 
 }

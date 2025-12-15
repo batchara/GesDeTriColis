@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 @Builder
 public class PermissionDTO {
-    // Correction : le champ nom doit être de type Permission (l'enum), pas Permissions (l'entité)
     private Permission nom;
     private String description;
 

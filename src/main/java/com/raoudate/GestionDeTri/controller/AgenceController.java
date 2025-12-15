@@ -77,7 +77,11 @@ public class AgenceController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AgenceDTO> getAgenceById(@PathVariable Integer id) {
-        return agenceRepository.findById(id)
+        if (id == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        final Integer finalId = id;
+        return agenceRepository.findById(finalId)
                 .map(AgenceDTO::fromEntity)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -96,7 +100,9 @@ public class AgenceController {
         }
         
         Agences agence = AgenceDTO.toEntity(agenceDTO);
-        Agences savedAgence = agenceRepository.save(agence);
+        final Agences finalAgence = agence;
+        @SuppressWarnings("null")
+        Agences savedAgence = agenceRepository.save(finalAgence);
         return ResponseEntity.ok(AgenceDTO.fromEntity(savedAgence));
     }
 
@@ -105,7 +111,11 @@ public class AgenceController {
     public ResponseEntity<AgenceDTO> updateAgence(
             @PathVariable Integer id,
             @RequestBody AgenceDTO agenceDTO) {
-        return agenceRepository.findById(id)
+        if (id == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        final Integer finalId = id;
+        return agenceRepository.findById(finalId)
                 .map(existingAgence -> {
                     // Vérifier si le code est modifié et s'il existe déjà pour une autre agence
                     if (agenceDTO.getCode() != null && !agenceDTO.getCode().equals(existingAgence.getCode())) {
@@ -148,7 +158,11 @@ public class AgenceController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPERVISEUR')")
     public ResponseEntity<Void> deleteAgence(@PathVariable Integer id) {
-        return agenceRepository.findById(id)
+        if (id == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        final Integer finalId = id;
+        return agenceRepository.findById(finalId)
                 .map(agence -> {
                     // Soft delete : marquer l'agence comme supprimée au lieu de la supprimer physiquement
                     agence.setDeleted(true);

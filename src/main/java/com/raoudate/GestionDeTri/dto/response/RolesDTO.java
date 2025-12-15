@@ -10,7 +10,6 @@ public class RolesDTO {
     private Integer id;
     private String name;
 
-    // Conversion de l'entité vers le DTO
     public static RolesDTO fromEntity(Role role) {
         if (role == null) {
             return null;
@@ -22,7 +21,6 @@ public class RolesDTO {
                 .build();
     }
 
-    // Conversion de DTO vers l'entité
     public static Role toEntity(RolesDTO rolesDTO) {
         if (rolesDTO == null) {
             return null;

@@ -1,10 +1,8 @@
 package com.raoudate.GestionDeTri.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-// import com.raoudate.GestionDeTri.enums.RoleType; // DEPRECATED - Utiliser roles (ManyToMany)
 import jakarta.persistence.*;
 import lombok.*;
-// audit fields are handled in AbstractEntity
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -51,27 +49,22 @@ public class User extends AbstractEntity implements UserDetails, Principal {
     @Column(name = "num_tel", length = 32)
     private String numTel;
     
-    // Indicateur pour forcer le changement de mot de passe à la première connexion
     @Column(name = "must_change_password", nullable = false)
     @Builder.Default
     private boolean mustChangePassword = false;
     
-    // Sécurité: Compteur de tentatives de connexion échouées
     @Column(name = "failed_login_attempts", nullable = false)
     @Builder.Default
     private int failedLoginAttempts = 0;
     
-    // Sécurité: Date du dernier échec de connexion
     @Column(name = "last_failed_login")
     private LocalDate lastFailedLogin;
     
-    // Sécurité: Date de verrouillage du compte
     @Column(name = "lock_time")
     private LocalDate lockTime;
-
-    // Ancienne colonne role (ENUM) - DEPRECATED - Utiliser roles (ManyToMany) à la place
-    // @Enumerated(EnumType.STRING)
-    // private RoleType role;
+    
+    @Column(name = "last_login")
+    private LocalDate lastLogin;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -108,13 +101,10 @@ public class User extends AbstractEntity implements UserDetails, Principal {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
         
-        // Ajouter les permissions depuis les rôles de la base de données
         if (roles != null) {
             for (Role dbRole : roles) {
-                // Ajouter le rôle lui-même
                 authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(dbRole.getName()));
                 
-                // Ajouter toutes les permissions du rôle
                 if (dbRole.getPermissions() != null) {
                     for (Permissions permission : dbRole.getPermissions()) {
                         authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(permission.getNom().name()));
@@ -123,7 +113,6 @@ public class User extends AbstractEntity implements UserDetails, Principal {
             }
         }
         
-        // Si aucun rôle n'est assigné, donner un rôle par défaut
         if (authorities.isEmpty()) {
             authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_OPERATEUR"));
         }

@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * Scheduler pour gérer le retour automatique des colis
- * après 30 jours de réception non réclamés
+ * après 30 jours de réception non réclamés, fonction pas implémenté dans in entièreté
  */
 @Component
 @RequiredArgsConstructor

@@ -4,6 +4,7 @@ import com.raoudate.GestionDeTri.model.User;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ public class UserDTO {
     private String email;
     private String numTel;
     private List<String> roles;
+    private LocalDate lastLogin;
 
     // Conversion de l'entité vers le DTO
     public static UserDTO fromEntity(User user) {
@@ -29,8 +31,9 @@ public class UserDTO {
                 .prenom(user.getPrenom())
                 .email(user.getEmail())
         .numTel(user.getNumTel())
+        .lastLogin(user.getLastLogin())
         .roles(user.getRoles().stream()
-            .map(role -> role.getName()) // Extraire juste les noms des rôles
+            .map(role -> role.getName())
             .collect(Collectors.toList()))
                 .build();
     }

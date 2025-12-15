@@ -18,7 +18,7 @@ public class ExceptionResponse {
     private String businessErrorCode;
     private String businessErrorDescription;
     private String error;
-    private String message; // Alias pour error, pour compatibilité frontend
+    private String message; 
     private Set<String> validationErrors;
     private Map<String, String> errors;
 

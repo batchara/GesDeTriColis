@@ -7,9 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- *  DTO pour confirmer la réinitialisation de mot de passe avec le token
- */
+
 @Getter
 @Setter
 @Builder

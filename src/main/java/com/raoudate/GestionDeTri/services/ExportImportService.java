@@ -121,8 +121,6 @@ public class ExportImportService {
         }
     }
 
-    
-
     public Map<String, Object> importUsersFromExcel(MultipartFile file) {
         List<String> errors = new ArrayList<>();
         int successCount = 0;
@@ -132,7 +130,6 @@ public class ExportImportService {
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rows = sheet.iterator();
 
-            // Skip header
             if (rows.hasNext()) rows.next();
 
             while (rows.hasNext()) {
@@ -176,7 +173,9 @@ public class ExportImportService {
                         user.setRoles(roles);
                     }
 
-                    userRepository.save(user);
+                    final User finalUser = user;
+                    @SuppressWarnings({"null", "unused"})
+                    var ignored = userRepository.save(finalUser);
                     successCount++;
                 } catch (Exception e) {
                     errors.add("Ligne " + (row.getRowNum() + 1) + ": " + e.getMessage());
@@ -244,7 +243,9 @@ public class ExportImportService {
                         user.setRoles(roles);
                     }
 
-                    userRepository.save(user);
+                    final User finalUser2 = user;
+                    @SuppressWarnings({"null", "unused"})
+                    var ignored2 = userRepository.save(finalUser2);
                     successCount++;
                 } catch (Exception e) {
                     errors.add("Ligne " + (i + 1) + ": " + e.getMessage());
@@ -621,7 +622,9 @@ public class ExportImportService {
                     }
 
                     Colis colis = colisBuilder.build();
-                    colisRepository.save(colis);
+                    final Colis finalColis = colis;
+                    @SuppressWarnings({"null", "unused"})
+                    var ignored3 = colisRepository.save(finalColis);
                     successCount++;
                 } catch (Exception e) {
                     errors.add("Ligne " + (row.getRowNum() + 1) + ": " + e.getMessage());
@@ -695,7 +698,9 @@ public class ExportImportService {
                     }
 
                     Colis colis = colisBuilder.build();
-                    colisRepository.save(colis);
+                    final Colis finalColis2 = colis;
+                    @SuppressWarnings({"null", "unused"})
+                    var ignored4 = colisRepository.save(finalColis2);
                     successCount++;
                 } catch (Exception e) {
                     errors.add("Ligne " + (i + 1) + ": " + e.getMessage());

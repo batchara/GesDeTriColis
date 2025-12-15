@@ -54,7 +54,10 @@ public class ColisServiceImpl implements ColisService {
         
         // Gérer la relation agenceAffectee : récupérer l'agence depuis la base de données
         if (colisDTO.getAgenceAffectee() != null && colisDTO.getAgenceAffectee().getId() != null) {
-            Integer agenceId = colisDTO.getAgenceAffectee().getId();
+            final Integer agenceId = colisDTO.getAgenceAffectee().getId();
+            if (agenceId == null) {
+                throw new IllegalArgumentException("L'ID de l'agence ne peut pas être null");
+            }
             log.info("Récupération de l'agence avec ID: {}", agenceId);
             
             Agences agence = agenceRepository.findById(agenceId)
@@ -100,6 +103,9 @@ public class ColisServiceImpl implements ColisService {
     @Override
     @Transactional(readOnly = true)
     public ColisDTO findById(Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID du colis ne peut pas être null");
+        }
         log.info("Récupération du colis avec l'ID: {}", id);
         Colis colis = colisRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Colis non trouvé avec l'ID: " + id));
@@ -109,6 +115,9 @@ public class ColisServiceImpl implements ColisService {
     @Override
     @Transactional(readOnly = true)
     public Colis findEntityById(Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID du colis ne peut pas être null");
+        }
         log.info("Récupération de l'entité Colis avec l'ID: {}", id);
         return colisRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Colis non trouvé avec l'ID: " + id));
@@ -116,6 +125,9 @@ public class ColisServiceImpl implements ColisService {
 
     @Override
     public ColisDTO update(Integer id, ColisDTO colisDTO) {
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID du colis ne peut pas être null");
+        }
         log.info("Mise à jour du colis avec l'ID: {}", id);
         
         Colis existingColis = colisRepository.findById(id)
@@ -167,6 +179,9 @@ public class ColisServiceImpl implements ColisService {
 
     @Override
     public void delete(Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("L'ID du colis ne peut pas être null");
+        }
         log.info(" Demande de suppression du colis avec l'ID: {}", id);
         
         Colis colis = colisRepository.findById(id)
@@ -195,7 +210,8 @@ public class ColisServiceImpl implements ColisService {
                  colis.getCodeSuivi(), colis.getDeletedBy(), colis.getDeletedAt());
         
         // Vérification immédiate
-        Colis verif = colisRepository.findById(id).orElse(null);
+        final Integer finalId = id;
+        Colis verif = colisRepository.findById(finalId).orElse(null);
         if (verif != null) {
             log.info(" Vérification: deleted={}, deletedAt={}, deletedBy={}", 
                      verif.getDeleted(), verif.getDeletedAt(), verif.getDeletedBy());
@@ -227,6 +243,12 @@ public class ColisServiceImpl implements ColisService {
         Instant deletedAt = java.time.Instant.now();
         
         for (Integer id : ids) {
+            if (id == null) {
+                log.warn(" ID null ignoré");
+                errorCount++;
+                continue;
+            }
+            
             try {
                 Colis colis = colisRepository.findById(id).orElse(null);
                 
@@ -267,6 +289,9 @@ public class ColisServiceImpl implements ColisService {
     @Override
     @Transactional
     public NotificationDTO requestDeletion(Integer colisId) {
+        if (colisId == null) {
+            throw new IllegalArgumentException("L'ID du colis ne peut pas être null");
+        }
         log.info(" Demande de suppression du colis avec l'ID: {}", colisId);
         
         Colis colis = colisRepository.findById(colisId)
@@ -298,9 +323,9 @@ public class ColisServiceImpl implements ColisService {
             requestedBy
         ));
         notificationDTO.setStatus(NotificationStatus.EN_ATTENTE_VALIDATION);
-        notificationDTO.setInitiatedBy(requestedBy);  // Enregistrer qui a initié la demande
+        notificationDTO.setInitiatedBy(requestedBy);  
         notificationDTO.setActionRequired(true);
-        notificationDTO.setTargetUserId(null); // Sera assignée à l'admin automatiquement
+        notificationDTO.setTargetUserId(null); 
         
         // Convertir en entité Notification
         Notification notification = NotificationDTO.toEntity(notificationDTO);

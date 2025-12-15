@@ -10,7 +10,6 @@ import com.raoudate.GestionDeTri.model.User;
 import com.raoudate.GestionDeTri.repository.AgenceRepository;
 import com.raoudate.GestionDeTri.repository.ColisRepository;
 import com.raoudate.GestionDeTri.repository.NotificationRepository;
-import com.raoudate.GestionDeTri.repository.TokenRepository;
 import com.raoudate.GestionDeTri.repository.UserRepository;
 import com.raoudate.GestionDeTri.services.NotificationService;
 
@@ -31,7 +30,6 @@ public class NotificationServiceImpl implements NotificationService {
     private final UserRepository userRepository;
     private final AgenceRepository agenceRepository;
     private final ColisRepository colisRepository;
-    private final TokenRepository tokenRepository;
 
     @Override
     @Transactional
@@ -48,7 +46,11 @@ public class NotificationServiceImpl implements NotificationService {
         }
         
         Notification notification = NotificationDTO.toEntity(notificationDTO);
-        Notification savedNotification = notificationRepository.save(notification);
+        if (notification == null) {
+            throw new IllegalArgumentException("La notification ne peut pas être null");
+        }
+        final Notification finalNotification = notification;
+        Notification savedNotification = notificationRepository.save(finalNotification);
         
         log.info("Notification créée avec succès: ID {}", savedNotification.getId());
         return NotificationDTO.fromEntity(savedNotification);
@@ -98,9 +100,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public NotificationDTO markAsRead(Integer notificationId) {
+        if (notificationId == null) {
+            throw new IllegalArgumentException("L'ID de la notification ne peut pas être null");
+        }
         log.info("Marquage de la notification {} comme lue", notificationId);
         
-        Notification notification = notificationRepository.findById(notificationId)
+        final Integer finalNotificationId = notificationId;
+        Notification notification = notificationRepository.findById(finalNotificationId)
                 .orElseThrow(() -> new IllegalStateException("Notification introuvable: " + notificationId));
         
         notification.setStatus(NotificationStatus.LUE);
@@ -126,11 +132,16 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void approveDeleteRequest(Integer notificationId, NotificationEntity entityType, Integer entityId, String adminEmail) {
+        if (notificationId == null || entityId == null) {
+            throw new IllegalArgumentException("Les IDs ne peuvent pas être null");
+        }
         log.info("Approbation de la suppression: notification {}, entité {} ID {}, admin: {}", 
                 notificationId, entityType, entityId, adminEmail);
         
         // Récupérer la notification originale
-        Notification notification = notificationRepository.findById(notificationId)
+        final Integer finalNotificationId = notificationId;
+        final Integer finalEntityId = entityId;
+        Notification notification = notificationRepository.findById(finalNotificationId)
                 .orElseThrow(() -> new IllegalStateException("Notification introuvable: " + notificationId));
         
         // Vérifier que c'est une demande de suppression
@@ -148,8 +159,8 @@ public class NotificationServiceImpl implements NotificationService {
         switch (entityType) {
             case UTILISATEUR:
                 // SOFT DELETE: Désactiver l'utilisateur au lieu de le supprimer
-                if (userRepository.existsById(entityId)) {
-                    User userToDelete = userRepository.findById(entityId).get();
+                if (userRepository.existsById(finalEntityId)) {
+                    User userToDelete = userRepository.findById(finalEntityId).get();
                     userToDelete.setDeleted(true);
                     userToDelete.setDeletedAt(java.time.Instant.now());
                     userToDelete.setDeletedBy(supervisorEmail);
@@ -163,8 +174,8 @@ public class NotificationServiceImpl implements NotificationService {
                 
             case AGENCE:
                 // SOFT DELETE: Désactiver l'agence au lieu de la supprimer
-                if (agenceRepository.existsById(entityId)) {
-                    Agences agenceToDelete = agenceRepository.findById(entityId).get();
+                if (agenceRepository.existsById(finalEntityId)) {
+                    Agences agenceToDelete = agenceRepository.findById(finalEntityId).get();
                     agenceToDelete.setDeleted(true);
                     agenceToDelete.setDeletedAt(java.time.Instant.now());
                     agenceToDelete.setDeletedBy(supervisorEmail);
@@ -178,8 +189,8 @@ public class NotificationServiceImpl implements NotificationService {
                 
             case COLIS:
                 // SOFT DELETE: Désactiver le colis au lieu de le supprimer
-                if (colisRepository.existsById(entityId)) {
-                    Colis colisToDelete = colisRepository.findById(entityId).get();
+                if (colisRepository.existsById(finalEntityId)) {
+                    Colis colisToDelete = colisRepository.findById(finalEntityId).get();
                     colisToDelete.setDeleted(true);
                     colisToDelete.setDeletedAt(java.time.Instant.now());
                     colisToDelete.setDeletedBy(supervisorEmail);
@@ -216,7 +227,9 @@ public class NotificationServiceImpl implements NotificationService {
                 .entityName(entityName)
                 .build();
         
-        Notification savedResponse = notificationRepository.save(responseNotification);
+        final Notification finalResponseNotif0 = responseNotification;
+        @SuppressWarnings("null")
+        Notification savedResponse = notificationRepository.save(finalResponseNotif0);
         log.info(" Notification de réponse (approbation) CRÉÉE - ID: {}, targetUserId: {}, createdBy: {}, status: {}", 
                 savedResponse.getId(), savedResponse.getTargetUserId(), savedResponse.getCreatedBy(), savedResponse.getStatus());
         
@@ -226,9 +239,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void rejectDeleteRequest(Integer notificationId, String reason, String adminEmail) {
+        if (notificationId == null) {
+            throw new IllegalArgumentException("L'ID de la notification ne peut pas être null");
+        }
         log.info("Rejet de la suppression: notification {}, raison: {}, admin: {}", notificationId, reason, adminEmail);
         
-        Notification notification = notificationRepository.findById(notificationId)
+        final Integer finalNotificationId = notificationId;
+        Notification notification = notificationRepository.findById(finalNotificationId)
                 .orElseThrow(() -> new IllegalStateException("Notification introuvable: " + notificationId));
         
         if (!notification.getActionRequired()) {
@@ -265,7 +282,9 @@ public class NotificationServiceImpl implements NotificationService {
                 .entityName(entityName)
                 .build();
         
-        Notification savedResponse = notificationRepository.save(responseNotification);
+        final Notification finalResponseNotif = responseNotification;
+        @SuppressWarnings("null")
+        Notification savedResponse = notificationRepository.save(finalResponseNotif);
         log.info(" Notification de réponse (REJET) CRÉÉE - ID: {}, targetUserId: {}, createdBy: {}, status: {}", 
                 savedResponse.getId(), savedResponse.getTargetUserId(), savedResponse.getCreatedBy(), savedResponse.getStatus());
         
@@ -275,24 +294,32 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void deleteNotification(Integer notificationId) {
+        if (notificationId == null) {
+            throw new IllegalArgumentException("L'ID de la notification ne peut pas être null");
+        }
         log.info("Suppression de la notification: {}", notificationId);
         
-        if (!notificationRepository.existsById(notificationId)) {
+        final Integer finalId = notificationId;
+        if (!notificationRepository.existsById(finalId)) {
             throw new IllegalStateException("Notification introuvable: " + notificationId);
         }
         
-        notificationRepository.deleteById(notificationId);
+        notificationRepository.deleteById(finalId);
         log.info("Notification supprimée avec succès");
     }
 
     @Override
     @Transactional
     public void approveModificationRequest(Integer notificationId, NotificationEntity entityType, Integer entityId, String modificationsJson, String adminEmail) {
+        if (notificationId == null) {
+            throw new IllegalArgumentException("L'ID de la notification ne peut pas être null");
+        }
         log.info("Approbation de la modification: notification {}, entité {} ID {}, admin: {}", 
                 notificationId, entityType, entityId, adminEmail);
         
         // Récupérer la notification originale
-        Notification notification = notificationRepository.findById(notificationId)
+        final Integer finalNotificationId = notificationId;
+        Notification notification = notificationRepository.findById(finalNotificationId)
                 .orElseThrow(() -> new IllegalStateException("Notification introuvable: " + notificationId));
         
         // Vérifier que c'est une demande de modification
@@ -328,16 +355,22 @@ public class NotificationServiceImpl implements NotificationService {
                 .entityName(entityName)
                 .build();
         
-        notificationRepository.save(responseNotification);
+        final Notification finalResponseNotif2 = responseNotification;
+        @SuppressWarnings({"null", "unused"})
+        var ignored = notificationRepository.save(finalResponseNotif2);
         log.info("Notification de réponse (approbation modification) envoyée au superviseur: {}", createdBy);
     }
 
     @Override
     @Transactional
     public void rejectModificationRequest(Integer notificationId, String reason, String adminEmail) {
+        if (notificationId == null) {
+            throw new IllegalArgumentException("L'ID de la notification ne peut pas être null");
+        }
         log.info("Rejet de la modification: notification {}, raison: {}, admin: {}", notificationId, reason, adminEmail);
         
-        Notification notification = notificationRepository.findById(notificationId)
+        final Integer finalNotificationId = notificationId;
+        Notification notification = notificationRepository.findById(finalNotificationId)
                 .orElseThrow(() -> new IllegalStateException("Notification introuvable: " + notificationId));
         
         if (!notification.getActionRequired()) {
@@ -372,7 +405,9 @@ public class NotificationServiceImpl implements NotificationService {
                 .entityName(entityName)
                 .build();
         
-        notificationRepository.save(responseNotification);
+        final Notification finalResponseNotif3 = responseNotification;
+        @SuppressWarnings({"null", "unused"})
+        var ignored = notificationRepository.save(finalResponseNotif3);
         log.info("Notification de réponse (rejet modification) envoyée au superviseur: {}", createdBy);
     }
     

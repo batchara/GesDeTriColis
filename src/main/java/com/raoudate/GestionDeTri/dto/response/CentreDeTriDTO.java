@@ -12,7 +12,6 @@ public class CentreDeTriDTO {
     private String telephone;
     private String adresseCentre;
 
-    // Conversion de l'entité vers le DTO
     public static CentreDeTriDTO fromEntity(CentreDeTri centre) {
         if (centre == null) {
             return null;
@@ -26,7 +25,6 @@ public class CentreDeTriDTO {
                 .build();
     }
 
-    // Conversion de DTO vers l'entité
     public static CentreDeTri toEntity(CentreDeTriDTO centreDeTriDTO) {
         if (centreDeTriDTO == null) {
             return null;

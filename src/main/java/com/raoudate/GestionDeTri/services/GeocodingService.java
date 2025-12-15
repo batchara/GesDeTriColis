@@ -78,7 +78,7 @@ public class GeocodingService {
         try {
             log.info(" Géocodage de l'adresse: {} (région: {})", adresse, regionDetectee);
 
-            // ENRICHISSEMENT: Ajouter la ville si l'adresse est trop vague
+           // Ajouter la ville si l'adresse est trop vague
             String adresseComplete = adresse;
             String adresseLower = adresse.toLowerCase();
             
@@ -173,14 +173,8 @@ public class GeocodingService {
     }
 
     /**
-     * Calcule la distance routière réelle et le temps de trajet entre deux points
-     * en utilisant Google Maps Distance Matrix API (EXACTEMENT comme Google Maps web)
-     * 
-     * @param originLat Latitude d'origine
-     * @param originLon Longitude d'origine
-     * @param destLat Latitude de destination
-     * @param destLon Longitude de destination
-     * @return Tableau [distance en km, durée en secondes] ou null si erreur
+      Calcule la distance routière réelle et le temps de trajet entre deux points
+      en utilisant Google Maps Distance Matrix API (comme Google Maps web
      */
     private double[] calculerDistanceReelle(double originLat, double originLon, double destLat, double destLon) {
         try {

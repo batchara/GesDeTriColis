@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * DTO pour la réponse du scan d'un colis
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +18,6 @@ public class ScanColisResponseDTO {
     private String adresseDetectee;
     private Boolean ocrSucces;
     
-    // Parsing intelligent (nouveauté)
     private DonneesStructureesDTO donneesStructurees;
     
     // Géocodage

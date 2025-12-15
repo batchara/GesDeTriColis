@@ -27,6 +27,5 @@ public class LogoutServiceImpl implements LogoutHandler {
 		String jwt = authHeader.substring(7);
 		Optional<Token> tokenOptional = tokenRepository.findByToken(jwt);
 		tokenOptional.ifPresent(tokenRepository::delete);
-		// SecurityContext cleared by logout success handler in SecurityConfig
 	}
 }
