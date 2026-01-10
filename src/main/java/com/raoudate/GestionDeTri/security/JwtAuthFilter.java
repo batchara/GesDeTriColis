@@ -1,5 +1,8 @@
 package com.raoudate.GestionDeTri.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,42 +49,70 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
         
-        System.out.println(" [JwtAuthFilter] User email extrait: " + userEmail);
-        
-        // TEMPORAIRE : Désactiver la vérification du token en DB pour tester
-        /*
-        // check token exists in DB (not revoked)
-        if (!tokenRepository.findByToken(jwt).isPresent()) {
-            System.out.println(" [JwtAuthFilter] Token non trouvé en DB ou révoqué");
-            filterChain.doFilter(request, response);
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+            
+            System.out.println(" [JwtAuthFilter] User email extrait: " + userEmail);
+            
+            // TEMPORAIRE : Désactiver la vérification du token en DB pour tester
+            /*
+            // check token exists in DB (not revoked)
+            if (!tokenRepository.findByToken(jwt).isPresent()) {
+                System.out.println(" [JwtAuthFilter] Token non trouvé en DB ou révoqué");
+                filterChain.doFilter(request, response);
+                return;
+            }
+            
+            System.out.println(" [JwtAuthFilter] Token trouvé en DB");
+            */
+            
+            if(userEmail != null && SecurityContextHolder.getContext().getAuthentication()==null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                
+                System.out.println(" [JwtAuthFilter] Authorities de l'utilisateur: " + userDetails.getAuthorities());
+
+                if(jwtService.validateToken(jwt, userDetails)){
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null,
+                            userDetails.getAuthorities());
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                            );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println(" [JwtAuthFilter] Authentification réussie");
+                } else {
+                    System.out.println(" [JwtAuthFilter] Token invalide");
+                }
+            }
+        } catch (ExpiredJwtException e) {
+            System.out.println(" [JwtAuthFilter] Token JWT expiré: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Token expiré\", \"message\": \"Veuillez vous reconnecter\"}");
+            return;
+        } catch (MalformedJwtException e) {
+            System.out.println(" [JwtAuthFilter] Token JWT malformé: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Token invalide\", \"message\": \"Format du token incorrect\"}");
+            return;
+        } catch (SignatureException e) {
+            System.out.println(" [JwtAuthFilter] Signature JWT invalide: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Token invalide\", \"message\": \"Signature incorrecte\"}");
+            return;
+        } catch (Exception e) {
+            System.out.println(" [JwtAuthFilter] Erreur lors de la validation du token: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Erreur d'authentification\", \"message\": \"" + e.getMessage() + "\"}");
             return;
         }
         
-        System.out.println(" [JwtAuthFilter] Token trouvé en DB");
-        */
-        
-        if(userEmail != null && SecurityContextHolder.getContext().getAuthentication()==null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-            
-            System.out.println(" [JwtAuthFilter] Authorities de l'utilisateur: " + userDetails.getAuthorities());
-
-            if(jwtService.validateToken(jwt, userDetails)){
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null,
-                        userDetails.getAuthorities());
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                        );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println(" [JwtAuthFilter] Authentification réussie");
-            } else {
-                System.out.println(" [JwtAuthFilter] Token invalide");
-            }
-
-        }
         filterChain.doFilter(request, response);
     }
 }

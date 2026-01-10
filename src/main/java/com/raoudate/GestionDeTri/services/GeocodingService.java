@@ -78,34 +78,28 @@ public class GeocodingService {
         try {
             log.info(" Géocodage de l'adresse: {} (région: {})", adresse, regionDetectee);
 
-           // Ajouter la ville si l'adresse est trop vague
-            String adresseComplete = adresse;
-            String adresseLower = adresse.toLowerCase();
+           // Construire l'adresse pour Google Maps
+            String adresseComplete = adresse.trim();
             
-            // Vérifier si l'adresse contient déjà une ville
-            boolean aDejaVille = adresseLower.contains("lomé") 
-                || adresseLower.contains("lome")
-                || adresseLower.contains("kara") 
-                || adresseLower.contains("sokodé")
-                || adresseLower.contains("sokode")
-                || adresseLower.contains("atakpamé")
-                || adresseLower.contains("kpalimé")
-                || adresseLower.contains("tsévié")
-                || adresseLower.contains("aného");
-            
-            // Si adresse courte (<25 chars) et sans ville, ajouter la ville principale de la région
-            if (!aDejaVille && adresse.length() < 25 && regionDetectee != null) {
-                String ville = determinerVillePrincipale(regionDetectee);
-                if (ville != null) {
-                    adresseComplete = adresse + ", " + ville;
-                    log.info(" Adresse enrichie: '{}' → '{}'", adresse, adresseComplete);
+            // Si une région est fournie, l'ajouter pour aider Google Maps
+            if (regionDetectee != null && !regionDetectee.trim().isEmpty()) {
+                String regionNormalisee = regionDetectee.trim();
+                // Ne pas ajouter la région si elle est déjà dans l'adresse
+                if (!adresseComplete.toLowerCase().contains(regionNormalisee.toLowerCase())) {
+                    String ville = determinerVillePrincipale(regionNormalisee);
+                    if (ville != null && !adresseComplete.toLowerCase().contains(ville.toLowerCase())) {
+                        adresseComplete = adresseComplete + ", " + ville;
+                        log.info(" Région ajoutée: '{}' → '{}'", adresse, adresseComplete);
+                    }
                 }
             }
             
-            // Ajouter le pays si non présent
-            if (!adresseComplete.toLowerCase().contains("togo") && !adresseComplete.toLowerCase().contains("tog")) {
+            // Toujours ajouter ", Togo" à la fin si pas déjà présent
+            if (!adresseComplete.toLowerCase().contains("togo")) {
                 adresseComplete = adresseComplete + ", Togo";
             }
+            
+            log.info(" Adresse finale pour géocodage: '{}'", adresseComplete);
 
             GeocodingResult[] results = GeocodingApi.newRequest(geoApiContext)
                     .address(adresseComplete)
@@ -116,6 +110,16 @@ public class GeocodingService {
             if (results != null && results.length > 0) {
                 GeocodingResult result = results[0];
                 LatLng location = result.geometry.location;
+                
+                // Validation basique: Vérifier que les coordonnées sont raisonnables pour le Togo
+                // Togo: Latitude 6°-11°N, Longitude 0°-2°E (avec marge)
+                boolean coordonneesValides = location.lat >= 5.5 && location.lat <= 12.0 &&
+                                             location.lng >= -1.0 && location.lng <= 2.5;
+                
+                if (!coordonneesValides) {
+                    log.warn("⚠️ Coordonnées aberrantes détectées: ({}, {}) pour '{}'. Adresse formattée: '{}'",
+                            location.lat, location.lng, adresse, result.formattedAddress);
+                }
 
                 CoordinatesDTO coords = new CoordinatesDTO(location.lat, location.lng);
 
